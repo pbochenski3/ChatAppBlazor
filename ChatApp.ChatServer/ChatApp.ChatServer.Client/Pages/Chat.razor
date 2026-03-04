@@ -4,6 +4,9 @@
 @inject IConfiguration Configuration
 @inject UserDateService UserDateService
 @inject NavigationManager NavManager
+@inject ChatHubService ChatHubService
+@implements IDisposable
+
 <TopBarComponent user="@UserDateService.User?.Username" />
 <ChatComponent Title="Czat" Messages="@receivedMessage" />
 
@@ -15,12 +18,11 @@
         <InputText @bind-Value="messageModel.Content" class="form-control" />
     </div>
 
-    <button type="submit" class="btn btn-primary mt-2">Wyślij</button>
+    <button type="submit" class="btn btn-primary mt-2">Send</button>
 </EditForm>
 
 @code {
     private MessageDTO messageModel = new MessageDTO();
-    private HubConnection? hubConnection;
     private List<MessageDTO> receivedMessage = new();
 
     protected override async Task OnInitializedAsync()
@@ -28,44 +30,41 @@
         if (UserDateService.User is null)
         {
             NavManager.NavigateTo("/");
-            return; 
+            return;
         }
 
-        var hubUrl = Configuration["SignalR:HubUrl"];
+        ChatHubService.OnMessageReceived += HandleReceiveMessage;
+        await ChatHubService.StartAsync();
+    }
 
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl(hubUrl)
-            .WithAutomaticReconnect()
-            .Build();
-
-        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+    private void HandleReceiveMessage(string user, string message)
+    {
+        receivedMessage.Add(new MessageDTO
         {
-            if (!string.IsNullOrWhiteSpace(user) && !string.IsNullOrWhiteSpace(message))
-            {
-                var newMessage = new MessageDTO
-                {
-                    SenderName = user,
-                    Content = message,
-                    SentAt = DateTime.Now
-                };
-
-                receivedMessage.Add(newMessage);
-                InvokeAsync(StateHasChanged);
-            }
+            SenderName = user,
+            Content = message,
+            SentAt = DateTime.Now
         });
 
-        await hubConnection.StartAsync();
-    } 
+        InvokeAsync(StateHasChanged);
+    }
 
     private async Task HandleSubmit()
     {
-        if (hubConnection is not null && hubConnection.State == HubConnectionState.Connected)
+        if (ChatHubService.HubConnection is not null &&
+            ChatHubService.HubConnection.State == HubConnectionState.Connected)
         {
             messageModel.SentAt = DateTime.Now;
             messageModel.SenderName = UserDateService.User?.Username;
 
-            await hubConnection.InvokeAsync("SendMessage", messageModel);
+            await ChatHubService.HubConnection.InvokeAsync("SendMessage", messageModel);
+
             messageModel.Content = string.Empty;
         }
+    }
+
+    public void Dispose()
+    {
+        ChatHubService.OnMessageReceived -= HandleReceiveMessage;
     }
 }
