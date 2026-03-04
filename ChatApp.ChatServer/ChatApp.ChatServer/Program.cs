@@ -1,5 +1,7 @@
-using ChatServer.Client.Pages;
-using ChatServer.Components;
+using ChatApp.Infrastructure.Persistence;
+using ChatApp.ChatServer.Client.Pages;
+using ChatApp.ChatServer.Components;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,12 +15,11 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseWebAssemblyDebugging();
+    //app.UseWebAssemblyDebugging();
 }
 else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
@@ -29,5 +30,5 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(ChatServer.Client._Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(ChatApp.ChatServer.Client._Imports).Assembly);
 app.Run();

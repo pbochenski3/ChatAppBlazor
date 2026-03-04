@@ -6,7 +6,10 @@ namespace ChatApp.Application.Models
 {
     public class ChatLog
     {
-        public DateTime MessageSendTime { get; set; }
-        public string Message { get; set; }
+        public int ChatID { get; set; }
+        public string Title { get; set; }
+
+        public ICollection<Message> Messages { get; set; } 
+        public ICollection<User> Users { get; set; }
     }
 }

@@ -12,9 +12,29 @@ namespace ChatApp.Infrastructure.Persistence
         {
         }
         public DbSet<ChatLog> ChatLogs { get; set; }
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        public DbSet<User> Users { get; set; }
+        protected override void OnModelCreating(ModelBuilder mb)
         {
-            base.OnModelCreating(modelBuilder);
+            mb.Entity<ChatLog>(entity =>
+            {
+                entity.HasKey(cl => cl.ChatID);
+
+                entity.HasMany(c => c.Users)
+                      .WithMany(u => u.ChatLogs)
+                      .UsingEntity(j => j.ToTable("ChatLogUsers"));
+            });
+
+            mb.Entity<User>(entity =>
+            {
+                entity.HasKey(u => u.UserID);
+            });
+
+            mb.Entity<Message>(entity =>
+            {
+                entity.HasKey(m => m.MessageID);
+            });
+
+
         }
     }
 }
