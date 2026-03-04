@@ -7,7 +7,7 @@
         "Action": "Start"
       },
       {
-        "Path": "ChatServer\\ChatServer\\ChatApp.ChatServer.csproj",
+        "Path": "ChatApp.ChatServer\\ChatApp.ChatServer\\ChatApp.ChatServer.csproj",
         "Action": "Start"
       }
     ]

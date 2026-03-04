@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSignalR();
-builder.Services.AddDatabase(builder.Configuration.GetConnectionString("ChatDatabase"));
+builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("ChatDatabase"));
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChatApp.Application.Models
+namespace ChatApp.Domain.Models
 {
     public class Message
     {

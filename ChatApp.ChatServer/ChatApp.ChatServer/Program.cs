@@ -1,7 +1,5 @@
-using ChatApp.Infrastructure.Persistence;
 using ChatApp.ChatServer.Client.Pages;
 using ChatApp.ChatServer.Components;
-using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 

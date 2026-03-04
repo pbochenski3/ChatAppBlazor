@@ -1,8 +1,9 @@
-﻿using ChatApp.Application.Models;
+﻿
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ChatApp.Domain.Models;  
 
 namespace ChatApp.Infrastructure.Persistence
 {
@@ -13,6 +14,7 @@ namespace ChatApp.Infrastructure.Persistence
         }
         public DbSet<ChatLog> ChatLogs { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Message> Messages { get; set; }
         protected override void OnModelCreating(ModelBuilder mb)
         {
             mb.Entity<ChatLog>(entity =>

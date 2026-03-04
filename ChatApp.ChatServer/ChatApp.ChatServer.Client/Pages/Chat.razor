@@ -1,0 +1,72 @@
+﻿@page "/chat"
+@using Microsoft.AspNetCore.SignalR.Client
+@using ChatApp.ChatServer.Client.Components
+@inject IConfiguration Configuration
+@inject UserDateService UserDateService
+@inject NavigationManager NavManager
+
+<p>Welcome @UserDateService.User?.Username</p>
+<ChatComponent Title="Czat" Messages="@receivedMessage" />
+
+<EditForm Model="@messageModel" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="form-group">
+        <label>Message:</label>
+        <InputText @bind-Value="messageModel.Content" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-2">Wyślij</button>
+</EditForm>
+
+@code {
+    private MessageDTO messageModel = new MessageDTO();
+    private HubConnection? hubConnection;
+    private List<MessageDTO> receivedMessage = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (UserDateService.User is null)
+        {
+            NavManager.NavigateTo("/");
+            return; 
+        }
+
+        var hubUrl = Configuration["SignalR:HubUrl"];
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(hubUrl)
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        {
+            if (!string.IsNullOrEmpty(user) && !string.IsNullOrEmpty(message))
+            {
+                var newMessage = new MessageDTO
+                {
+                    SenderName = user,
+                    Content = message,
+                    SentAt = DateTime.Now
+                };
+
+                receivedMessage.Add(newMessage);
+                InvokeAsync(StateHasChanged);
+            }
+        });
+
+        await hubConnection.StartAsync();
+    } 
+
+    private async Task HandleSubmit()
+    {
+        if (hubConnection is not null && hubConnection.State == HubConnectionState.Connected)
+        {
+            messageModel.SentAt = DateTime.Now;
+            messageModel.SenderName = UserDateService.User?.Username;
+
+            await hubConnection.InvokeAsync("SendMessage", messageModel);
+            messageModel.Content = string.Empty;
+        }
+    }
+}

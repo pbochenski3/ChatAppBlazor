@@ -1,0 +1,29 @@
+﻿@page "/"
+@inject IConfiguration Configuration
+@inject NavigationManager NavManager
+@inject UserDateService UserDateService
+
+<EditForm Model="@userDTO" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label>Enter username:</label>
+        <InputText @bind-Value="userDTO.Username" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-2">Send</button>
+</EditForm>
+
+@code {
+    private UserDTO userDTO = new UserDTO();
+
+    private async Task HandleSubmit()
+    {
+        if(userDTO.Username is not null)
+        {
+            UserDateService.User = userDTO;
+            NavManager.NavigateTo("/chat");
+        }
+    }
+}
