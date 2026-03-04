@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/register"
 @inject IConfiguration Configuration
 @inject NavigationManager NavManager
 @inject UserDateService UserDateService
@@ -14,7 +14,8 @@
         <InputText @bind-Value="userDTO.Password" class="form-control" />
     </div>
 
-    <button type="submit" class="btn btn-primary mt-2">Login</button>
+    <button type="submit" class="btn btn-primary mt-2">Register</button>
+    <a href="/register" class="btn btn-primary mt-2">Register</a>
 </EditForm>
 
 @code {
@@ -22,7 +23,7 @@
 
     private async Task HandleSubmit()
     {
-        if(userDTO.Username is not null && userDTO.Password is not null)
+        if(userDTO.Username is not null)
         {
             UserDateService.User = userDTO;
             NavManager.NavigateTo("/chat");
