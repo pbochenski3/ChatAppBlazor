@@ -9,8 +9,6 @@ namespace ChatApp.ChatHub
     {
         private readonly IMessageRepository _messageRepo;
         private readonly ILogger<ChatHub> _logger;
-        public string  name { get; set; }
-        public string message { get; set; }
         public ChatHub(ILogger<ChatHub> logger, IMessageRepository messageRepo) 
         {
             _logger = logger;

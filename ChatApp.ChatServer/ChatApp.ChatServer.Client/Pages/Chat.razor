@@ -4,8 +4,7 @@
 @inject IConfiguration Configuration
 @inject UserDateService UserDateService
 @inject NavigationManager NavManager
-
-<p>Welcome @UserDateService.User?.Username</p>
+<TopBarComponent user="@UserDateService.User?.Username" />
 <ChatComponent Title="Czat" Messages="@receivedMessage" />
 
 <EditForm Model="@messageModel" OnValidSubmit="HandleSubmit">
@@ -41,7 +40,7 @@
 
         hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
         {
-            if (!string.IsNullOrEmpty(user) && !string.IsNullOrEmpty(message))
+            if (!string.IsNullOrWhiteSpace(user) && !string.IsNullOrWhiteSpace(message))
             {
                 var newMessage = new MessageDTO
                 {

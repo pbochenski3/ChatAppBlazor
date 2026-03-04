@@ -1,0 +1,13 @@
+﻿
+<div class="top-bar">
+    <div class="user-profile">
+        <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=@User"
+             class="user-avatar"
+             alt="Avatar" />
+        <p>@User</p>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string User { get; set; } = "Unknown User";
+}
