@@ -1,31 +1,68 @@
 ﻿@page "/"
 @inject IConfiguration Configuration
 @inject NavigationManager NavManager
-@inject UserDateService UserDateService
-
-<EditForm Model="@userDTO" OnValidSubmit="HandleSubmit">
+@inject ChatHubService ChatHubService
+@inject AppStateService AppState
+@implements IDisposable
+@if (!string.IsNullOrEmpty(notification))
+    {
+        <div class="alert alert-info mt-3">@notification</div>
+    }
+<EditForm Model="@userDTO" OnValidSubmit="HandleLogin">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <div class="form-group">
         <label>Enter username:</label>
-        <InputText @bind-Value="userDTO.Username" class="form-control" />
+        <InputText @bind-Value="userDTO.Username" class="form-control" disabled="@isProcessing" maxlength="20" />
         <label>Enter password:</label>
-        <InputText @bind-Value="userDTO.Password" class="form-control" />
+        <InputText type="password" @bind-Value="userDTO.Password" class="form-control" disabled="@isProcessing" maxlength="128" />
     </div>
 
-    <button type="submit" class="btn btn-primary mt-2">Login</button>
+    <button type="submit" class="btn btn-primary mt-2" disabled="@isProcessing">Login</button>
     <a href="/register" class="btn btn-primary mt-2">Register</a>
 </EditForm>
 
 @code {
-    private UserDTO userDTO = new UserDTO();
-    private async Task HandleSubmit()
+    bool isProcessing = false;
+    string? notification = string.Empty;
+    override protected async Task OnInitializedAsync()
     {
-        if(userDTO.Username is not null && userDTO.Password is not null)
+        notification = AppState.Message;
+        AppState.Message = null;
+        ChatHubService.LoginStatusMessage += HandleLoginNotification;
+        await ChatHubService.StartAsync();
+    }
+    private UserDTO userDTO = new UserDTO();
+    private void HandleLoginNotification(string message,UserDTO user)
+    {
+        notification = message;
+        if (message.Equals("User logged in successfully."))
         {
-            UserDateService.User = userDTO;
+            AppState.Message = "Logged in successfully!";
+            AppState.CurrentUser = user;
+            userDTO = new UserDTO();
             NavManager.NavigateTo("/chat");
         }
+        isProcessing = false;
+        InvokeAsync(StateHasChanged);
     }
+    private async Task HandleLogin()
+    {
+        isProcessing = true;
+        try
+        {
+            await ChatHubService.LoginUserAsync(userDTO);
+        }
+        catch (Exception ex)
+        {
+            notification = $"{ex.Message}";
+            isProcessing = false;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+   public void Dispose()
+    {
+        ChatHubService.LoginStatusMessage -= HandleLoginNotification;
+    }   
 }

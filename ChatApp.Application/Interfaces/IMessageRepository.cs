@@ -9,5 +9,6 @@ namespace ChatApp.Application.Interfaces
     {
         Task AddAsync(Message message);
         Task SaveChangesAsync();
+        Task<List<Message>> GetRecentMessagesAsync(int count);
     }
 }

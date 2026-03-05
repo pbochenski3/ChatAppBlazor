@@ -17,6 +17,18 @@
 
 <body>
     <Routes @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
+    <script>
+        window.scrollToBottom = (elementId) => {
+            var element = document.getElementById(elementId);
+            if (element) {
+     
+                element.scrollTo({
+                    top: element.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }
+        };
+    </script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 

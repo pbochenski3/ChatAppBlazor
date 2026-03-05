@@ -11,7 +11,7 @@ namespace ChatApp.Domain.Models
 
         public string Password { get; set; }
 
-        public ICollection<ChatLog> ChatLogs { get; set; }
+        public ICollection<Message> Messages { get; set; } = new List<Message>();
 
 
     }

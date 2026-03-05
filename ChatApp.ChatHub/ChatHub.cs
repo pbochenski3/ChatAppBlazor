@@ -17,21 +17,17 @@ namespace ChatApp.ChatHub
             _messageService = messageService;
             _userService = userService;
         }
-        public override Task OnConnectedAsync()
-        {
-            _logger.LogInformation($"User {Context.ConnectionId} connected successfully");
-            return base.OnConnectedAsync();
-        }
         public async Task SendMessage(MessageDTO dto)
         {
+            dto.SentAt = DateTime.UtcNow;
             await _messageService.SendMessageAsync(dto);
-            await Clients.All.SendAsync("ReceiveMessage", dto.SenderName, dto.Content);
+            await Clients.All.SendAsync("ReceiveMessage", dto);
         }
         public async Task SendMessageToUsers(string receiverConnectionId, string senderUsername, string message)
         {
             await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", senderUsername, message);
         }
-        public async Task SendUser(UserDTO dto)
+        public async Task RegisterUser(UserDTO dto)
         {
             try
             {
@@ -41,6 +37,22 @@ namespace ChatApp.ChatHub
             catch (Exception ex)
             {
                 await Clients.Caller.SendAsync("ReceiveRegistrationStatus", $"{ex.Message}");
+            }
+        }
+        public async Task<List<MessageDTO>> GetHistory(int count)
+        { 
+            return await _messageService.GetMessagesHistoryAsync(count);
+        }
+        public  async Task LoginUser(UserDTO dto)
+        {
+            try
+            {
+                var user = await _userService.Login(dto);
+                await Clients.Caller.SendAsync("ReceiveLoginStatus", "User logged in successfully.",user);
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("ReceiveLoginStatus", $"{ex.Message}", null);
             }
         }
     }

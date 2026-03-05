@@ -2,12 +2,15 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using ChatApp.ChatServer.Client.Components
 @inject IConfiguration Configuration
-@inject UserDateService UserDateService
 @inject NavigationManager NavManager
 @inject ChatHubService ChatHubService
+@inject AppStateService AppState
 @implements IDisposable
-
-<TopBarComponent user="@UserDateService.User?.Username" />
+<TopBarComponent user="@user.Username" />
+@if (!string.IsNullOrEmpty(notification))
+{
+    <div class="alert alert-info mt-3">@notification</div>
+}
 <ChatComponent Title="Czat" Messages="@receivedMessage" />
 
 <EditForm Model="@messageModel" OnValidSubmit="HandleSubmit">
@@ -22,37 +25,56 @@
 </EditForm>
 
 @code {
+    private string? notification = string.Empty;
+    UserDTO user = new UserDTO();
     private MessageDTO messageModel = new MessageDTO();
     private List<MessageDTO> receivedMessage = new();
 
     protected override async Task OnInitializedAsync()
     {
-        if (UserDateService.User is null)
+        if(AppState.CurrentUser == null)
         {
             NavManager.NavigateTo("/");
             return;
-        }
+        };
+        user = AppState.CurrentUser;
+        notification = AppState.Message;
+        AppState.Message = null;
 
         ChatHubService.OnMessageReceived += HandleReceiveMessage;
         await ChatHubService.StartAsync();
+        try
+        {
+            var messages = await ChatHubService.GetHistoryAsync(15);
+            receivedMessage = messages.ToList();
+        }
+        catch(Exception ex)
+        {
+            notification = $"{ex.Message}";
+            InvokeAsync(StateHasChanged);
+        }
     }
 
-    private void HandleReceiveMessage(string user, string message)
+    private void HandleReceiveMessage(MessageDTO dto)
     {
-        receivedMessage.Add(new MessageDTO
-        {
-            SenderName = user,
-            Content = message,
-            SentAt = DateTime.Now
-        });
-
+        receivedMessage.Add(dto);
         InvokeAsync(StateHasChanged);
     }
 
     private async Task HandleSubmit()
     {
+        messageModel.SenderUsername = user.Username;
+        messageModel.SenderID = user.UserID;
+        try
+        {
             await ChatHubService.SendMessageAsync(messageModel);
             messageModel.Content = string.Empty;
+        }
+        catch(Exception ex)
+        {
+            notification = $"{ex.Message}";
+            InvokeAsync(StateHasChanged);
+        }
     }
 
 

@@ -32,6 +32,9 @@ namespace ChatApp.Application.Services
             {
                 throw new Exception("Password must be less than 128 characters.");
             }
+            var check = await _userRepo.GetByUsernameAsync(dto.Username);
+            if (check == null)
+            {
                 var user = new User
                 {
                     Username = dto.Username,
@@ -39,7 +42,30 @@ namespace ChatApp.Application.Services
                 };
                 await _userRepo.RegisterAsync(user);
                 await _userRepo.SaveChangesAsync();
-           
+            }
+            else
+            {
+                throw new Exception("Username already exists.");
+            }
+
         }
+        public async Task<UserDTO> Login(UserDTO dto)
+        {
+           if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password))
+            {
+                throw new Exception("Username or password cannot be empty.");
+            }
+            string username = dto.Username;
+            var user = await _userRepo.GetByUsernameAsync(username);
+           if(user is not null && BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
+            {
+                return new UserDTO() {Username = user.Username,UserID = user.UserID};
+            }
+            else
+            {
+                throw new Exception("Invalid username or password.");
+            }
+        }
+
     }
 }

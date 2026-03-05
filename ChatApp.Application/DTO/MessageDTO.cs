@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ChatApp.Domain.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -10,7 +11,7 @@ namespace ChatApp.Application.DTO
         public string Content { get; set; } = string.Empty;
         public DateTime SentAt { get; set; }
         public int SenderID { get; set; }
-        public string SenderName { get; set; } = string.Empty;
+        public string SenderUsername { get; set; } = string.Empty;
         public int ChatID { get; set; }
     }
 }

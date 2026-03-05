@@ -18,15 +18,17 @@ public class UserRepository : IUserRepository
 
     public async Task RegisterAsync(User user)
     {
-        {
-           bool exists = await _context.Users.AnyAsync(u => u.Username == user.Username);
-            if (exists) { 
-                _logger.LogInformation("Username already exists.");
-                throw new Exception("Username already exists.");
-            }
                 await _context.Users.AddAsync(user);
-                _logger.LogInformation($"Registered Username: {user.Username} UserId: {user.UserID} Password: {user.Password}");
-                _logger.LogInformation("User registered successfully.");
+    }
+    public async Task<User?> GetByUsernameAsync(string username)
+    {
+        _logger.LogInformation("Retrieving user by username: {Username}", username);
+        return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+    }
+    public async Task<User?> GetByIdAsync(int id)
+    {
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.UserID == id);
         }
     }
 
@@ -35,4 +37,5 @@ public class UserRepository : IUserRepository
         _logger.LogInformation("Saving changes to the database.");
         await _context.SaveChangesAsync();
     }
+
 }

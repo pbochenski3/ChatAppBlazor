@@ -9,5 +9,8 @@ namespace ChatApp.Application.Interfaces
     {
         Task RegisterAsync(User user);
         Task SaveChangesAsync();
+        //Task LoginAsync(User user);
+        Task<User?> GetByUsernameAsync(string username);
+        Task<User?> GetByIdAsync(int id);
     }
 }

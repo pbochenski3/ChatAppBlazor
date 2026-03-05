@@ -10,22 +10,49 @@ namespace ChatApp.Application.Services
     public class MessageService : IMessageService
     {
         private readonly IMessageRepository _messageRepo;
+        private readonly IUserRepository _userRepo;
 
-        public MessageService(IMessageRepository messageRepo)
+        public MessageService(IMessageRepository messageRepo,IUserRepository userRepo)
         {
             _messageRepo = messageRepo;
+            _userRepo = userRepo;
         }
+
         public async Task SendMessageAsync(MessageDTO dto)
         {
+            var sender = await _userRepo.GetByIdAsync(dto.SenderID);
+            if(sender == null)
+            {
+                throw new Exception($"User: {dto.SenderID} not found");
+            }
+            else if(string.IsNullOrWhiteSpace(dto.Content))
+            {
+                throw new Exception("Message content cannot be empty");
+            }
             var message = new Message
             {
                 Content = dto.Content,
-                SentAt = DateTime.UtcNow,
-                SenderID = dto.SenderID,
+                SentAt = dto.SentAt,
+                Sender = sender,
                 ChatID = dto.ChatID
+                
             };
             await _messageRepo.AddAsync(message);
             await _messageRepo.SaveChangesAsync();
+        }
+        public async Task<List<MessageDTO>> GetMessagesHistoryAsync(int count)
+        {
+            var howMany = 15;
+            var rawMessage = await _messageRepo.GetRecentMessagesAsync(count);
+            return rawMessage.Select(m => new MessageDTO
+            {
+                MessageID = m.MessageID,
+                Content = m.Content,
+                SentAt = m.SentAt,
+                SenderID = m.Sender.UserID,
+                SenderUsername = m.Sender.Username,
+                ChatID = m.ChatID
+            }).ToList();
         }
     }
 }

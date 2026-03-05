@@ -8,5 +8,6 @@ namespace ChatApp.Application.Interfaces
     public interface IUserService
     {
         Task Register(UserDTO user);
+        Task<UserDTO> Login(UserDTO user);
     }
 }

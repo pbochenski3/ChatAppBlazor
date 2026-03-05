@@ -1,6 +1,8 @@
-﻿<div class="chat-container">
+﻿@inject IJSRuntime JSRuntime
+
+<div class="chat-container">
     <h3 class="chat-title">@Title</h3>
-    <div class="chat-box">
+    <div class="chat-box" id="chat-window">
         <div class="chat-messages">
             @if (Messages != null)
             {
@@ -8,7 +10,7 @@
                 {
                     <div class="message">
                         <span class="message-user">[@msg.SentAt.ToString("HH:mm")]</span>
-                        <span class="message-user">@msg.SenderName:</span>
+                        <span class="message-user">@msg.SenderUsername:</span>
                         <span class="message-user">@msg.Content</span>
                     </div>
                 }
@@ -16,9 +18,13 @@
         </div>
     </div>
 </div>
-
 @code {
     [Parameter] public string Title { get; set; } = "TYTUŁ CZATU";
     [Parameter] public List<MessageDTO> Messages { get; set; } = new();
 
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JSRuntime.InvokeVoidAsync("scrollToBottom", "chat-window");
+    }
 }

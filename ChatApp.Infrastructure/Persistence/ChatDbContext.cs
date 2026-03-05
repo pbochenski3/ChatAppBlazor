@@ -12,31 +12,26 @@ namespace ChatApp.Infrastructure.Persistence
         public ChatDbContext(DbContextOptions<ChatDbContext> options) : base(options)
         {
         }
-        public DbSet<ChatLog> ChatLogs { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Message> Messages { get; set; }
         protected override void OnModelCreating(ModelBuilder mb)
         {
-            mb.Entity<ChatLog>(entity =>
-            {
-                entity.HasKey(cl => cl.ChatID);
-
-                entity.HasMany(c => c.Users)
-                      .WithMany(u => u.ChatLogs)
-                      .UsingEntity(j => j.ToTable("ChatLogUsers"));
-            });
-
             mb.Entity<User>(entity =>
             {
                 entity.HasKey(u => u.UserID);
+
+                entity.HasMany(u => u.Messages)      
+                      .WithOne(m => m.Sender)       
+                      .HasForeignKey(m => m.SenderID) 
+                      .OnDelete(DeleteBehavior.Cascade); 
             });
 
             mb.Entity<Message>(entity =>
             {
                 entity.HasKey(m => m.MessageID);
+                entity.Property(m => m.Content).IsRequired().HasMaxLength(1000);
             });
-
-
         }
     }
 }
+
