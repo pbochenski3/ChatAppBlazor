@@ -15,11 +15,11 @@
     </div>
 
     <button type="submit" class="btn btn-primary mt-2">Login</button>
+    <a href="/register" class="btn btn-primary mt-2">Register</a>
 </EditForm>
 
 @code {
     private UserDTO userDTO = new UserDTO();
-
     private async Task HandleSubmit()
     {
         if(userDTO.Username is not null && userDTO.Password is not null)

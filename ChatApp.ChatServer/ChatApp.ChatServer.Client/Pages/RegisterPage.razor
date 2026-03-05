@@ -2,31 +2,73 @@
 @inject IConfiguration Configuration
 @inject NavigationManager NavManager
 @inject UserDateService UserDateService
+@inject ChatHubService ChatHubService
+@implements IDisposable
 
 <EditForm Model="@userDTO" OnValidSubmit="HandleSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
-
+    @if (!string.IsNullOrEmpty(notification))
+    {
+        <div class="alert alert-info mt-3">@notification</div>
+    }
     <div class="form-group">
         <label>Enter username:</label>
-        <InputText @bind-Value="userDTO.Username" class="form-control" />
+        <InputText @bind-Value="userDTO.Username" class="form-control" disabled="@isProcessing"/>
         <label>Enter password:</label>
-        <InputText @bind-Value="userDTO.Password" class="form-control" />
+        <InputText @bind-Value="userDTO.Password" class="form-control" disabled="@isProcessing" />
     </div>
 
-    <button type="submit" class="btn btn-primary mt-2">Register</button>
-    <a href="/register" class="btn btn-primary mt-2">Register</a>
+    <button type="submit"
+            class="btn btn-primary mt-2"
+            disabled="@isProcessing">
+        @if (isProcessing)
+        {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        }
+        else
+        {
+            <span>Register</span>
+        }
+    </button>
 </EditForm>
 
 @code {
+    private bool isProcessing = false;
+    string notification = string.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+        ChatHubService.RegisterStatusMessage += HandleRegisterNotification;
+        await ChatHubService.StartAsync();
+    }
     private UserDTO userDTO = new UserDTO();
 
+    private void HandleRegisterNotification(string message)
+    {
+        notification = message;
+        if (message.Equals("User registered successfully."))
+        {
+            userDTO = new UserDTO();
+        }
+        isProcessing = false;
+        InvokeAsync(StateHasChanged);
+    }
     private async Task HandleSubmit()
     {
-        if(userDTO.Username is not null)
+        isProcessing = true;
+        try
         {
-            UserDateService.User = userDTO;
-            NavManager.NavigateTo("/chat");
+            await ChatHubService.RegisterUserAsync(userDTO);
         }
+        catch (Exception ex)
+        {
+            notification = $"{ex.Message}";
+            isProcessing = false;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+    public void Dispose()
+    {
+        ChatHubService.RegisterStatusMessage -= HandleRegisterNotification;
     }
 }

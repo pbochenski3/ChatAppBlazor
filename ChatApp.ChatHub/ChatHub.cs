@@ -1,5 +1,6 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces;
+using ChatApp.Application.Services;
 using ChatApp.Domain.Models;
 using Microsoft.AspNetCore.SignalR;
 
@@ -7,12 +8,14 @@ namespace ChatApp.ChatHub
 {
     public class ChatHub : Hub
     {
-        private readonly IMessageRepository _messageRepo;
+        private readonly IMessageService _messageService;
+        private readonly IUserService _userService;
         private readonly ILogger<ChatHub> _logger;
-        public ChatHub(ILogger<ChatHub> logger, IMessageRepository messageRepo) 
+        public ChatHub(ILogger<ChatHub> logger, IMessageService messageService, IUserService userService)
         {
             _logger = logger;
-            _messageRepo = messageRepo;
+            _messageService = messageService;
+            _userService = userService;
         }
         public override Task OnConnectedAsync()
         {
@@ -21,20 +24,24 @@ namespace ChatApp.ChatHub
         }
         public async Task SendMessage(MessageDTO dto)
         {
-            var message = new Message
-            {
-                Content = dto.Content,
-                SentAt = DateTime.UtcNow,
-                SenderID = dto.SenderID,
-                ChatID = dto.ChatID
-            };
-            await _messageRepo.AddAsync(message);
-            await _messageRepo.SaveChangesAsync();
+            await _messageService.SendMessageAsync(dto);
             await Clients.All.SendAsync("ReceiveMessage", dto.SenderName, dto.Content);
         }
         public async Task SendMessageToUsers(string receiverConnectionId, string senderUsername, string message)
         {
             await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", senderUsername, message);
+        }
+        public async Task SendUser(UserDTO dto)
+        {
+            try
+            {
+                await _userService.Register(dto);
+                await Clients.Caller.SendAsync("ReceiveRegistrationStatus", "User registered successfully.");
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("ReceiveRegistrationStatus", $"{ex.Message}");
+            }
         }
     }
 }

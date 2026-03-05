@@ -1,3 +1,5 @@
+using ChatApp.Application.Interfaces;
+using ChatApp.Application.Services;
 using ChatApp.ChatHub;
 using ChatApp.Infrastructure.Extensions;
 using ChatApp.Infrastructure.Persistence;
@@ -17,6 +19,10 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
 });
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IUserService, UserService>();
 var app = builder.Build();
 app.UseCors();
 app.UseRouting();

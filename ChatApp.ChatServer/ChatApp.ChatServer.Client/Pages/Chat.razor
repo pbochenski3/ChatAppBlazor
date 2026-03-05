@@ -51,17 +51,10 @@
 
     private async Task HandleSubmit()
     {
-        if (ChatHubService.HubConnection is not null &&
-            ChatHubService.HubConnection.State == HubConnectionState.Connected)
-        {
-            messageModel.SentAt = DateTime.Now;
-            messageModel.SenderName = UserDateService.User?.Username;
-
-            await ChatHubService.HubConnection.InvokeAsync("SendMessage", messageModel);
-
+            await ChatHubService.SendMessageAsync(messageModel);
             messageModel.Content = string.Empty;
-        }
     }
+
 
     public void Dispose()
     {
