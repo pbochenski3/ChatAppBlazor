@@ -10,7 +10,9 @@
     <ValidationSummary />
     @if (!string.IsNullOrEmpty(notification))
     {
-        <div class="alert alert-info mt-3">@notification</div>
+        <div class="notification-toast">
+            <div>@notification</div>
+        </div>
     }
     <div class="form-group">
         <label>Enter username:</label>

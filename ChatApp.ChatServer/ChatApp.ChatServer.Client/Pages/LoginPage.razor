@@ -5,9 +5,11 @@
 @inject AppStateService AppState
 @implements IDisposable
 @if (!string.IsNullOrEmpty(notification))
-    {
-        <div class="alert alert-info mt-3">@notification</div>
-    }
+{
+    <div class="notification-toast">
+        <div>@notification</div>
+    </div>
+}
 <EditForm Model="@userDTO" OnValidSubmit="HandleLogin">
     <DataAnnotationsValidator />
     <ValidationSummary />

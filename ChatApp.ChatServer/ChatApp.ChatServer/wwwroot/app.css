@@ -187,3 +187,34 @@ ul.validation-errors {
     font-size: 0.95rem;
     font-weight: 500;
 }
+/*notyfikacja*/
+.notification-toast {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000;
+    background-color: #2d2d30;
+    color: #4dc9ff; /
+    border-left: 4px solid #007bff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    min-width: 200px;
+    max-width: 300px;
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    animation: slideInLeft 0.3s ease-out;
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
