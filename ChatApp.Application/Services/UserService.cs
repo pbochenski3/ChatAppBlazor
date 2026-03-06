@@ -1,9 +1,10 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Domain.Models;
-using ChatApp.Application.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ChatApp.Application.Interfaces.Repository;
+using ChatApp.Application.Interfaces.Service;
 
 namespace ChatApp.Application.Services
 {
@@ -38,7 +39,8 @@ namespace ChatApp.Application.Services
                 var user = new User
                 {
                     Username = dto.Username,
-                    Password = BCrypt.Net.BCrypt.HashPassword(dto.Password)
+                    Password = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                    AvatarUrl = $"https://api.dicebear.com/7.x/avataaars/svg?seed={dto.Username}"
                 };
                 await _userRepo.RegisterAsync(user);
                 await _userRepo.SaveChangesToDbAsync();
@@ -59,6 +61,7 @@ namespace ChatApp.Application.Services
             var user = await _userRepo.GetByUsernameAsync(username);
            if(user is not null && BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
             {
+                await _userRepo.SetStatus(user.UserID,true);
                 return new UserDTO() {Username = user.Username,UserID = user.UserID, IsOnline = true};
             }
             else
@@ -66,6 +69,19 @@ namespace ChatApp.Application.Services
                 throw new Exception("Invalid username or password.");
             }
         }
+        public async Task<List<UserDTO>> GetAllUsersToInvite(Guid currentUserId, string query)
+        {
+            var users = await _userRepo.GetAllUsersToInviteAsync(currentUserId, query);
+            return users.Select(u => new UserDTO
+            {
+                UserID = u.UserID,
+                Username = u.Username,
+                AvatarUrl = u.AvatarUrl
+            }).ToList();
+        }
 
+        }
     }
-}
+
+
+

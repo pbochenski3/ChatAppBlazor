@@ -1,60 +1,171 @@
-﻿
-   <aside class="sidebar">
-        <div class="sidebar-header">
-            <h3>Kontakty</h3>
-        <div class="search-container">
-            <input type="text" class="form-control search-input" placeholder="Szukaj kontaktu..." />
+﻿<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="nav-tabs">
+            <button class="@(currentView == View.Contacts ? "active" : "")" @onclick="() => currentView = View.Contacts">
+                Kontakty
+            </button>
+            <button class="@(currentView == View.Invites ? "active" : "")" @onclick="() => currentView = View.Invites">
+                Zaproszenia @(PendingInvitesCount > 0 ? $"({PendingInvitesCount})" : "")
+            </button>
         </div>
-        </div>
-        <div class="contacts-list">
-            @foreach (var contact in Contacts)
-            {
-                <div class="contact-item @(SelectedContactId == contact.UserID ? "active" : "")" 
-                 @onclick="async () => await SelectContact(contact.UserID)">
-                <div class="contact-avatar-container">
-                    <img src="@contact.avatarUrl" class="contact-img" alt="avatar" />
+
+        @if (currentView == View.Contacts)
+        {
+            <div class="search-container">
+                <input type="text" class="form-control search-input"
+                       placeholder="Szukaj na liście..."
+                       @bind="searchTerm"
+                       @bind:event="oninput" />
+            </div>
+        }
+    </div>
+
+    <div class="sidebar-content">
+        @switch (currentView)
+        {
+            case View.Contacts:
+                <div class="contacts-list">
+                    @if (InitialContacts == null || !FilteredContacts.Any())
+                    {
+                        <p class="section-hint">Nie znaleziono kontaktów.</p>
+                    }
+                    else
+                    {
+                        @foreach (var contact in FilteredContacts)
+                        {
+                            <div class="contact-item @(SelectedContactId == contact.ContactUserID ? "active" : "")"
+                                 @onclick="async () => await SelectContact(contact.ContactUserID)">
+                                <div class="contact-avatar-container">
+                                    <img src="@contact.AvatarUrl" class="contact-img" alt="avatar" />
+                                    <div class="status-indicator @(contact.IsOnline ? "online" : "offline")"></div>
+                                </div>
+                                <div class="contact-info">
+                                    <p class="contact-name">@contact.Username</p>
+                                    <p class="contact-status">@(contact.IsOnline ? "Online" : "Offline")</p>
+                                </div>
+                            </div>
+                        }
+                    }
                 </div>
-                    <div class="contact-info">
-                        <p class="contact-name">@contact.Username</p>
-                        <p class="contact-status">@(contact.IsOnline ? "Online" : "Offline")</p>
+                break;
+
+            case View.Invites:
+                <div class="invites-list">
+                    <div class="empty-state-container">
+                        <p class="section-hint">Brak nowych zaproszeń.</p>
                     </div>
                 </div>
-            }
-        </div>
-    <div class="sidebar-footer">
-        <button class="btn-add-contact" @onclick="HandleAddContact">
-            <span class="plus-icon">+</span> Dodaj kontakt
-        </button>
+                break;
+
+            case View.AddContact:
+                <div class="add-contact-view">
+                    <h4 class="view-title">Znajdź użytkownika</h4>
+                    <div class="search-container">
+                        <input type="text" class="form-control search-input"
+                               placeholder="Wpisz nazwę użytkownika..."
+                               @bind="globalSearchQuery"
+                               @bind:event="oninput"
+                               @onkeyup="OnGlobalSearchInput" />
+                    </div>
+
+                    <div class="search-results">
+                        @if (IsSearching)
+                        {
+                            <div class="loading-spinner-container">
+                                <p class="section-hint">Szukanie "@globalSearchQuery"...</p>
+                            </div>
+                        }
+                        else if (UsersList != null && UsersList.Any())
+                        {
+                            @foreach (var user in UsersList)
+                            {
+                                <div class="search-result-item">
+                                    <div class="user-search-info">
+                                        <img src="@user.AvatarUrl" class="user-avatar" />
+                                        <span class="search-username">@user.Username</span>
+                                    </div>
+                                    <button disabled="@isPending" class="btn-add-action" @onclick="() => SendInvite(user.UserID)">
+                                        Dodaj
+                                    </button>
+                                </div>
+                            }
+                        }
+                        else if (!string.IsNullOrEmpty(globalSearchQuery) && globalSearchQuery.Length >= 3)
+                        {
+                            <p class="section-hint">Nie znaleziono użytkownika.</p>
+                        }
+                        else
+                        {
+                            <p class="section-hint">Wpisz min. 3 znaki, aby wyszukać.</p>
+                        }
+                    </div>
+                </div>
+                break;
+        }
     </div>
-    </aside>
-    @code 
-{
+
+    <div class="sidebar-footer">
+        @if (currentView != View.AddContact)
+        {
+            <button class="btn-add-contact" @onclick="() => currentView = View.AddContact">
+                <span class="plus-icon">+</span> Dodaj kontakt
+            </button>
+        }
+        else
+        {
+            <button class="btn-secondary" @onclick="() => currentView = View.Contacts">
+                Anuluj i wróć
+            </button>
+        }
+    </div>
+</aside>
+
+@code {
+    [Parameter] public EventCallback<string> OnSearchRequested { get; set; }
     [Parameter] public EventCallback<Guid> OnContactSelected { get; set; }
+    [Parameter] public List<ContactDTO> InitialContacts { get; set; } = new();
+    [Parameter] public EventCallback<Guid> OnContactInvited { get; set; }
+    [Parameter] public List<UserDTO> UsersList { get; set; } = new();
+    [Parameter] public bool IsSearching { get; set; }
+
+    private enum View { Contacts, Invites, AddContact }
+    private View currentView = View.Contacts;
+
     private Guid SelectedContactId;
-    private Guid ChatID = Guid.Parse("018F10B5-A3D4-7B3F-8E12-3C4D5E6F7A8B");
-    private List<UserDTO> Contacts = new() 
+    private string searchTerm = "";
+    private string globalSearchQuery = "";
+    private int PendingInvitesCount = 2;
+    private bool isPending = false;
+
+    private IEnumerable<ContactDTO> FilteredContacts =>
+        InitialContacts?.Where(c => string.IsNullOrWhiteSpace(searchTerm) ||
+                               c.Username.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+        ?? Enumerable.Empty<ContactDTO>();
+
+    private async Task SelectContact(Guid id)
     {
-        new UserDTO {
-            UserID = Guid.CreateVersion7(),
-            Username = "Test1",
-            avatarUrl="https://i.pravatar.cc/150?u=a042581f4e29026704d",
-            IsOnline = true
-        },
-        new UserDTO {
-            UserID = Guid.CreateVersion7(),
-            Username = "Test2",
-            avatarUrl="https://i.pravatar.cc/150?u=a042581f4e29026704d",
-            IsOnline = false
-        },
-    };
-    private async Task SelectContact(Guid id,Guid chatid)
-    {
-        ChatID = chatid;
         SelectedContactId = id;
         await OnContactSelected.InvokeAsync(id);
     }
-    private async Task HandleAddContact()
+
+    private async Task OnGlobalSearchInput()
     {
-        
+        if (string.IsNullOrWhiteSpace(globalSearchQuery))
+        {
+            UsersList?.Clear();
+            isPending = false;
+            return;
+        }
+
+        await OnSearchRequested.InvokeAsync(globalSearchQuery);
     }
+
+    private async Task SendInvite(Guid targetUserId)
+    {
+        isPending = true;
+        await OnContactInvited.InvokeAsync(targetUserId);
+ 
+        globalSearchQuery = "";
+        currentView = View.Contacts;
     }
+}

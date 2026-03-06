@@ -3,11 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChatApp.Application.Interfaces
+namespace ChatApp.Application.Interfaces.Service
 {
     public interface IUserService
     {
         Task Register(UserDTO user);
         Task<UserDTO> Login(UserDTO user);
+        Task<List<UserDTO>> GetAllUsersToInvite(Guid currentUserId, string query);
     }
 }

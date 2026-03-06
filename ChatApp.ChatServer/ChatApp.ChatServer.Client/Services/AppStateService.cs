@@ -6,11 +6,6 @@ namespace ChatApp.ChatServer.Client.Services
 {
     public class AppStateService
     {
-        private readonly NavigationManager _navigate;
-        public AppStateService(NavigationManager navigate)
-        {
-            _navigate = navigate;
-        }
         public string? Message { get; set; }
 
         public UserDTO? CurrentUser { get; set; }

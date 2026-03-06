@@ -1,4 +1,5 @@
-using ChatApp.Application.Interfaces;
+using ChatApp.Application.Interfaces.Repository;
+using ChatApp.Application.Interfaces.Service;
 using ChatApp.Application.Services;
 using ChatApp.ChatHub;
 using ChatApp.Infrastructure.Extensions;
@@ -19,10 +20,18 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
 });
-builder.Services.AddScoped<IMessageRepository, MessageRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+//Messages
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+//Users
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+//Contacts
+builder.Services.AddScoped<IContactService, ContactService>();
+builder.Services.AddScoped<IContactRepository, ContactRepository>();
+//Invites
+builder.Services.AddScoped<IInviteService, InviteService>();
+builder.Services.AddScoped<IInviteRepository, InviteRepository>();
 var app = builder.Build();
 app.UseCors();
 app.UseRouting();

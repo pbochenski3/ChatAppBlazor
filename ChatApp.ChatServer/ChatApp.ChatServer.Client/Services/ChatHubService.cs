@@ -7,6 +7,7 @@ public class ChatHubService : IAsyncDisposable
     public HubConnection HubConnection { get; private set; }
     public event Action<MessageDTO>? OnMessageReceived;
     public event Action<string>? RegisterStatusMessage;
+    public event Action<string>? InviteStatusMessage;
     public event Action<string,UserDTO>? LoginStatusMessage;
 
     public ChatHubService(IConfiguration configuration)
@@ -29,6 +30,10 @@ public class ChatHubService : IAsyncDisposable
         HubConnection.On<string,UserDTO>("ReceiveLoginStatus", (loginStatusMessage,user) =>
         {
             LoginStatusMessage?.Invoke(loginStatusMessage,user);
+        });
+        HubConnection.On<string>("ReceiveInviteStatus", (inviteStatusMessage) =>
+        {
+            InviteStatusMessage?.Invoke(inviteStatusMessage);
         });
     }
     public async Task SendMessageAsync(MessageDTO message)
@@ -94,11 +99,22 @@ public class ChatHubService : IAsyncDisposable
             throw new InvalidOperationException("Connection Error");
         }
     }
-    public async Task<List<MessageDTO>> GetHistoryAsync(Guid contactid,int count)
+    public async Task<List<MessageDTO>> GetHistoryAsync(int count)
     {
-        return await HubConnection.InvokeAsync<List<MessageDTO>>("GetHistory",contactid,count);
+        return await HubConnection.InvokeAsync<List<MessageDTO>>("GetHistory",count);
     }
-
+    public async Task<List<ContactDTO>> GetContactsAsync(Guid contactId)
+    {
+        return await HubConnection.InvokeAsync<List<ContactDTO>>("GetContacts",contactId);
+    }
+    public async Task<List<UserDTO>> GetUsersToInviteAsync(Guid currentUserId, string query)
+    {
+        return await HubConnection.InvokeAsync<List<UserDTO>>("GetUsersToInvite", currentUserId, query);
+    }
+    public async Task SendInviteAsync(Guid senderId, Guid receiverId)
+    {
+        await HubConnection.InvokeAsync("SendInvite", senderId, receiverId);
+    }
     public async ValueTask DisposeAsync()
     {
         if (HubConnection is not null)

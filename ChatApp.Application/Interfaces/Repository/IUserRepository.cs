@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChatApp.Application.Interfaces
+namespace ChatApp.Application.Interfaces.Repository
 {
     public interface IUserRepository
     {
@@ -12,5 +12,7 @@ namespace ChatApp.Application.Interfaces
         //Task LoginAsync(User user);
         Task<User?> GetByUsernameAsync(string username);
         Task<User?> GetByIdAsync(Guid id);
+        Task<List<User>> GetAllUsersToInviteAsync(Guid currentUserId, string query);
+        Task SetStatus(Guid id, bool status);
     }
 }

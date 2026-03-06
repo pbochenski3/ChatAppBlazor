@@ -1,5 +1,5 @@
 ﻿using ChatApp.Application.DTO;
-using ChatApp.Application.Interfaces;
+using ChatApp.Application.Interfaces.Service;
 using ChatApp.Application.Services;
 using ChatApp.Domain.Models;
 using Microsoft.AspNetCore.SignalR;
@@ -10,12 +10,43 @@ namespace ChatApp.ChatHub
     {
         private readonly IMessageService _messageService;
         private readonly IUserService _userService;
+        private readonly IContactService _contactService;
+        private readonly IInviteService _inviteService;
         private readonly ILogger<ChatHub> _logger;
-        public ChatHub(ILogger<ChatHub> logger, IMessageService messageService, IUserService userService)
+        public ChatHub(ILogger<ChatHub> logger,
+            IMessageService messageService,
+            IUserService userService,
+            IContactService contactService,
+            IInviteService inviteService
+            )
         {
             _logger = logger;
             _messageService = messageService;
             _userService = userService;
+            _contactService = contactService;
+            _inviteService = inviteService;
+        }
+        public async Task SendInvite(Guid senderId, Guid receiverId)
+        {
+            try
+            {
+                await _inviteService.SendInvite(senderId, receiverId);
+                await Clients.Caller.SendAsync("ReceiveInviteStatus", "Invite sent!");
+            }
+            catch(Exception ex)
+            {
+                await Clients.Caller.SendAsync("ReceiveInviteStatus", "An error occurred while trying to send the invite.");
+            }
+
+        }
+   
+        public async Task<List<UserDTO>> GetUsersToInvite(Guid currentUserId, string query)
+        {
+            return await _userService.GetAllUsersToInvite(currentUserId, query);
+        }
+        public async Task<List<ContactDTO>> GetContacts(Guid id)
+        {
+            return await _contactService.GetUserContactsAsync(id);
         }
         public async Task SendMessage(MessageDTO dto)
         {

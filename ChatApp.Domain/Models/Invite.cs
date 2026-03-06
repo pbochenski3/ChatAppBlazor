@@ -14,7 +14,7 @@ namespace ChatApp.Domain.Models
         public Guid ReceiverID { get; set; }
         public User Receiver { get; set; }
 
-        public InviteStatus Status { get; set; } = InviteStatus.Pending;
+        public InviteStatus Status { get; set; } 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 

@@ -1,4 +1,4 @@
-﻿using ChatApp.Application.Interfaces;
+﻿using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

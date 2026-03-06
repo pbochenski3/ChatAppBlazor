@@ -11,8 +11,6 @@ namespace ChatApp.Application.DTO
         public string AvatarUrl { get; set; }
         public bool IsOnline { get; set; }
         public DateTime AddedAt { get; set; }
-
-        // Pomocnicze: ID czatu 1:1 z tą osobą, jeśli już istnieje
         public Guid? ChatID { get; set; }
     }
 }

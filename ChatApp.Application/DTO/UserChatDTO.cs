@@ -7,12 +7,10 @@ namespace ChatApp.Application.DTO
     internal class UserChatDTO
     {
         public Guid UserID { get; set; }
-        public string Username { get; set; } // Dodajemy dla wygody frontendu
+        public string Username { get; set; }
         public string AvatarUrl { get; set; }
-
         public Guid ChatID { get; set; }
-        public string ChatName { get; set; } // Jeśli czat ma nazwę (np. grupa)
-
+        public string ChatName { get; set; }
         public DateTime JoinedAt { get; set; }
         public bool IsAdmin { get; set; }
     }

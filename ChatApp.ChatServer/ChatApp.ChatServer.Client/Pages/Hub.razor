@@ -7,7 +7,13 @@
 @inject AppStateService AppState
 @implements IDisposable
 <div class="main-layout">
-    <ContactsComponent OnContactSelected="HandleContactChange"/>
+    <ContactsComponent 
+        OnSearchRequested="HandleGlobalSearch"
+         OnContactInvited="HandleContactInvite"
+        InitialContacts="receivedContact"
+        UsersList="foundUsers"
+        IsSearching="isSearchingGlobal"
+        />
 
     <main class="chat-content">
         <TopBarComponent user="@user.Username" />
@@ -39,7 +45,10 @@
     private string? notification = string.Empty;
     UserDTO user = new UserDTO();
     private MessageDTO messageModel = new MessageDTO();
-    private List<MessageDTO> receivedMessage = new();
+    private List<MessageDTO> receivedMessage = new List<MessageDTO>();
+    private List<ContactDTO> receivedContact = new List<ContactDTO>();
+    private List<UserDTO> foundUsers = new List<UserDTO>();
+    private bool isSearchingGlobal = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -49,7 +58,6 @@
             return;
         };
         user = AppState.CurrentUser;
-
         notification = AppState.Message;
         if (!string.IsNullOrEmpty(notification))
         {
@@ -58,15 +66,26 @@
         }
 
         ChatHubService.OnMessageReceived += HandleReceiveMessage;
+        ChatHubService.InviteStatusMessage += (status) => _ = ShowNotification(status);
         await ChatHubService.StartAsync();
         try
         {
-            receivedMessage = messages.ToList();
+
+            receivedContact = await ChatHubService.GetContactsAsync(user.UserID);
+            // var messages = await ChatHubService.GetHistoryAsync(15);
+            // receivedMessage = messages.ToList();
         }
         catch(Exception ex)
         {
             _ = ShowNotification($"{ex.Message}");
         }
+    }
+    private async Task HandleGlobalSearch(string query)
+    {
+        isSearchingGlobal = true;
+        foundUsers = await ChatHubService.GetUsersToInviteAsync(user.UserID, query);
+        isSearchingGlobal = false;
+        StateHasChanged();
     }
     private async Task ShowNotification(string message, int durationInSeconds = 5)
     {
@@ -78,10 +97,17 @@
         notification = string.Empty;
         StateHasChanged(); 
     }
-    private async Task HandleContactChange(Guid contactId)
+    private async Task HandleContactLoad(Guid contactId)
     {
-        receivedMessage.Clear();
-        var messages = await ChatHubService.GetHistoryAsync(contactId,15);
+        receivedContact.Clear();
+        await ChatHubService.GetContactsAsync(contactId);
+        
+    }
+    private async Task HandleContactInvite(Guid contactId)
+    {
+        await ChatHubService.SendInviteAsync(user.UserID,contactId);
+        foundUsers.RemoveAll(u => u.UserID == contactId);
+        isSearchingGlobal = false;
     }
 
     private void HandleReceiveMessage(MessageDTO dto)
@@ -109,5 +135,6 @@
     public void Dispose()
     {
         ChatHubService.OnMessageReceived -= HandleReceiveMessage;
+        ChatHubService.InviteStatusMessage -= (status) => _ = ShowNotification(status);
     }
 }
