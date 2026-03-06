@@ -41,7 +41,7 @@ namespace ChatApp.Application.Services
                     Password = BCrypt.Net.BCrypt.HashPassword(dto.Password)
                 };
                 await _userRepo.RegisterAsync(user);
-                await _userRepo.SaveChangesAsync();
+                await _userRepo.SaveChangesToDbAsync();
             }
             else
             {

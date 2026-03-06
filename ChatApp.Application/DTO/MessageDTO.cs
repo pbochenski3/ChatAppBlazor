@@ -7,11 +7,11 @@ namespace ChatApp.Application.DTO
 {
     public class MessageDTO
     {
-        public int MessageID { get; set; }
+        public Guid MessageID { get; set; }
         public string Content { get; set; } = string.Empty;
         public DateTime SentAt { get; set; }
-        public int SenderID { get; set; }
+        public Guid SenderID { get; set; }
         public string SenderUsername { get; set; } = string.Empty;
-        public int ChatID { get; set; }
+        public Guid ChatID { get; set; }
     }
 }

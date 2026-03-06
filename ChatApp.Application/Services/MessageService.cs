@@ -18,7 +18,7 @@ namespace ChatApp.Application.Services
             _userRepo = userRepo;
         }
 
-        public async Task SendMessageAsync(MessageDTO dto)
+        public async Task SendChatMessageAsync(MessageDTO dto)
         {
             var sender = await _userRepo.GetByIdAsync(dto.SenderID);
             if(sender == null)
@@ -32,10 +32,9 @@ namespace ChatApp.Application.Services
             var message = new Message
             {
                 Content = dto.Content,
-                SentAt = dto.SentAt,
                 Sender = sender,
-                ChatID = dto.ChatID
-                
+                ChatID = Guid.Parse("018F10B5-A3D4-7B3F-8E12-3C4D5E6F7A8B")
+
             };
             await _messageRepo.AddAsync(message);
             await _messageRepo.SaveChangesAsync();

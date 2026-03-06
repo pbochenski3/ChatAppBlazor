@@ -20,7 +20,7 @@ namespace ChatApp.ChatHub
         public async Task SendMessage(MessageDTO dto)
         {
             dto.SentAt = DateTime.UtcNow;
-            await _messageService.SendMessageAsync(dto);
+            await _messageService.SendChatMessageAsync(dto);
             await Clients.All.SendAsync("ReceiveMessage", dto);
         }
         public async Task SendMessageToUsers(string receiverConnectionId, string senderUsername, string message)

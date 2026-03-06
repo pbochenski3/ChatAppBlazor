@@ -39,7 +39,6 @@ public class ChatHubService : IAsyncDisposable
         }
         if (HubConnection is not null && HubConnection.State == HubConnectionState.Connected)
         {
-            message.SentAt = DateTime.Now;
 
             await HubConnection.InvokeAsync("SendMessage", message);
         }
@@ -57,22 +56,7 @@ public class ChatHubService : IAsyncDisposable
         {
             throw new Exception("Username or password cannot be empty.");
         }
-        else if (dto.Username.Length < 5)
-        {
-            throw new Exception("Username must be at least 5 characters.");
-        }
-        else if (dto.Password.Length < 8)
-        {
-            throw new Exception("Password must be at least 8 characters.");
-        }
-         else if (dto.Username.Length > 20)
-        {
-            throw new Exception("Username must be less than 20 characters.");
-        }
-        else if (dto.Password.Length > 128)
-        {
-            throw new Exception("Password must be less than 128 characters.");
-        }
+  
         if (HubConnection is not null && HubConnection.State == HubConnectionState.Connected)
         {
             await HubConnection.InvokeAsync("LoginUser", dto);

@@ -25,14 +25,14 @@ public class UserRepository : IUserRepository
         _logger.LogInformation("Retrieving user by username: {Username}", username);
         return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
     }
-    public async Task<User?> GetByIdAsync(int id)
+    public async Task<User?> GetByIdAsync(Guid id)
     {
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.UserID == id);
         }
     }
 
-    public async Task SaveChangesAsync()
+    public async Task SaveChangesToDbAsync()
     {
         _logger.LogInformation("Saving changes to the database.");
         await _context.SaveChangesAsync();
