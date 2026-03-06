@@ -7,6 +7,7 @@ namespace ChatApp.Domain.Models
     public class Chat
     {
         public Guid ChatID { get; set; } = Guid.CreateVersion7();
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string ChatName { get; set; }
         public ICollection<UserChat> UserChats { get; set; } = new HashSet<UserChat>();
         public ICollection<Message> Messages { get; set; } = new HashSet<Message>();

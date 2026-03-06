@@ -8,6 +8,8 @@ namespace ChatApp.Domain.Models
     {
         public Guid UserID { get; set; } = Guid.CreateVersion7();
         public string Username { get; set; }
+        public bool isOnline { get; set; } = false;
+        public string avatarUrl { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string Password { get; set; }
