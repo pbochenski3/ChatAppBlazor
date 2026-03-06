@@ -16,9 +16,43 @@ namespace ChatApp.Infrastructure.Persistence
         public DbSet<Message> Messages { get; set; }
         public DbSet<Chat> Chats { get; set; }
         public DbSet<UserChat> ChatUsers { get; set; }
+        public DbSet<Contact> Contacts { get; set; }
+        public DbSet<Invite> Invites { get; set; }
         protected override void OnModelCreating(ModelBuilder mb)
         {
-            mb.Entity<User>(entity =>
+            mb.Entity<Contact>(entity =>
+            {
+                entity.HasKey(c => new { c.UserID, c.ContactUserID });
+
+                entity.HasOne(c => c.User)
+                    .WithMany(u => u.Contacts)
+                    .HasForeignKey(c => c.UserID)
+                    .OnDelete(DeleteBehavior.Cascade); 
+
+                entity.HasOne(c => c.ContactUser)
+                    .WithMany() 
+                    .HasForeignKey(c => c.ContactUserID)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+            mb.Entity<Invite>(entity =>
+            {
+                entity.HasKey(i => i.InviteID);
+
+                entity.Property(i => i.Status)
+                    .HasConversion<string>() 
+                    .HasMaxLength(20);
+                entity.HasOne(i => i.Sender)
+                    .WithMany(u => u.SentInvites)
+                    .HasForeignKey(i => i.SenderID)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+   
+                entity.HasOne(i => i.Receiver)
+                    .WithMany(u => u.ReceivedInvites)
+                    .HasForeignKey(i => i.ReceiverID)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+        mb.Entity<User>(entity =>
             {
                 entity.HasKey(u => u.UserID);
 

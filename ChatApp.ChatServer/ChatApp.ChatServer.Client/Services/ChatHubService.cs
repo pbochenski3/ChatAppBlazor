@@ -94,9 +94,9 @@ public class ChatHubService : IAsyncDisposable
             throw new InvalidOperationException("Connection Error");
         }
     }
-    public async Task<List<MessageDTO>> GetHistoryAsync(int count)
+    public async Task<List<MessageDTO>> GetHistoryAsync(Guid contactid,int count)
     {
-        return await HubConnection.InvokeAsync<List<MessageDTO>>("GetHistory",count);
+        return await HubConnection.InvokeAsync<List<MessageDTO>>("GetHistory",contactid,count);
     }
 
     public async ValueTask DisposeAsync()

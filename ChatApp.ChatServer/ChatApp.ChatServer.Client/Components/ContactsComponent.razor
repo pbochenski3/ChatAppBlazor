@@ -1,0 +1,60 @@
+﻿
+   <aside class="sidebar">
+        <div class="sidebar-header">
+            <h3>Kontakty</h3>
+        <div class="search-container">
+            <input type="text" class="form-control search-input" placeholder="Szukaj kontaktu..." />
+        </div>
+        </div>
+        <div class="contacts-list">
+            @foreach (var contact in Contacts)
+            {
+                <div class="contact-item @(SelectedContactId == contact.UserID ? "active" : "")" 
+                 @onclick="async () => await SelectContact(contact.UserID)">
+                <div class="contact-avatar-container">
+                    <img src="@contact.avatarUrl" class="contact-img" alt="avatar" />
+                </div>
+                    <div class="contact-info">
+                        <p class="contact-name">@contact.Username</p>
+                        <p class="contact-status">@(contact.IsOnline ? "Online" : "Offline")</p>
+                    </div>
+                </div>
+            }
+        </div>
+    <div class="sidebar-footer">
+        <button class="btn-add-contact" @onclick="HandleAddContact">
+            <span class="plus-icon">+</span> Dodaj kontakt
+        </button>
+    </div>
+    </aside>
+    @code 
+{
+    [Parameter] public EventCallback<Guid> OnContactSelected { get; set; }
+    private Guid SelectedContactId;
+    private Guid ChatID = Guid.Parse("018F10B5-A3D4-7B3F-8E12-3C4D5E6F7A8B");
+    private List<UserDTO> Contacts = new() 
+    {
+        new UserDTO {
+            UserID = Guid.CreateVersion7(),
+            Username = "Test1",
+            avatarUrl="https://i.pravatar.cc/150?u=a042581f4e29026704d",
+            IsOnline = true
+        },
+        new UserDTO {
+            UserID = Guid.CreateVersion7(),
+            Username = "Test2",
+            avatarUrl="https://i.pravatar.cc/150?u=a042581f4e29026704d",
+            IsOnline = false
+        },
+    };
+    private async Task SelectContact(Guid id,Guid chatid)
+    {
+        ChatID = chatid;
+        SelectedContactId = id;
+        await OnContactSelected.InvokeAsync(id);
+    }
+    private async Task HandleAddContact()
+    {
+        
+    }
+    }

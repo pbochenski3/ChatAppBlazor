@@ -1,4 +1,4 @@
-﻿@page "/chat"
+﻿@page "/hub"
 @using Microsoft.AspNetCore.SignalR.Client
 @using ChatApp.ChatServer.Client.Components
 @inject IConfiguration Configuration
@@ -6,27 +6,36 @@
 @inject ChatHubService ChatHubService
 @inject AppStateService AppState
 @implements IDisposable
-<TopBarComponent user="@user.Username" />
-@if (!string.IsNullOrEmpty(notification))
-{
-    <div class="notification-toast">
-        <div>@notification</div>
-    </div>
-}
-<ChatComponent Title="Czat" Messages="@receivedMessage" />
+<div class="main-layout">
+    <ContactsComponent OnContactSelected="HandleContactChange"/>
 
-<EditForm Model="@messageModel" OnValidSubmit="HandleSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-    <div class="form-group">
-        <label>Message:</label>
-        <InputText @bind-Value="messageModel.Content" class="form-control" />
-    </div>
+    <main class="chat-content">
+        <TopBarComponent user="@user.Username" />
 
-    <button type="submit" class="btn btn-primary mt-2">Send</button>
-</EditForm>
+        @if (!string.IsNullOrEmpty(notification))
+        {
+            <div class="notification-toast">
+                <div>@notification</div>
+            </div>
+        }
 
+        <div class="chat-container">
+            <ChatComponent Title="Czat" Messages="@receivedMessage" />
+
+            <div class="message-input-area">
+                <EditForm Model="@messageModel" OnValidSubmit="HandleSubmit">
+                    <DataAnnotationsValidator />
+                    <div class="input-group">
+                        <InputText @bind-Value="messageModel.Content" class="form-control" placeholder="Napisz wiadomość..." />
+                        <button type="submit" class="btn-primary">Send</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </main>
+</div>
 @code {
+    private Guid ActiveChatId;
     private string? notification = string.Empty;
     UserDTO user = new UserDTO();
     private MessageDTO messageModel = new MessageDTO();
@@ -52,7 +61,6 @@
         await ChatHubService.StartAsync();
         try
         {
-            var messages = await ChatHubService.GetHistoryAsync(15);
             receivedMessage = messages.ToList();
         }
         catch(Exception ex)
@@ -69,6 +77,11 @@
 
         notification = string.Empty;
         StateHasChanged(); 
+    }
+    private async Task HandleContactChange(Guid contactId)
+    {
+        receivedMessage.Clear();
+        var messages = await ChatHubService.GetHistoryAsync(contactId,15);
     }
 
     private void HandleReceiveMessage(MessageDTO dto)

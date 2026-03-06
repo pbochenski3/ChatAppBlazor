@@ -15,7 +15,9 @@ namespace ChatApp.Domain.Models
         public string Password { get; set; }
 
         public ICollection<UserChat> UserChats { get; set; } = new HashSet<UserChat>();
-
+        public ICollection<Contact> Contacts { get; set; } = new HashSet<Contact>();
+        public ICollection<Invite> SentInvites { get; set; } = new HashSet<Invite>();
+        public ICollection<Invite> ReceivedInvites { get; set; } = new HashSet<Invite>();
         public ICollection<Message> Messages { get; set; } = new HashSet<Message>();
 
 

@@ -44,7 +44,7 @@
             AppState.Message = "Logged in successfully!";
             AppState.CurrentUser = user;
             userDTO = new UserDTO();
-            NavManager.NavigateTo("/chat");
+            NavManager.NavigateTo("/hub");
         }
         isProcessing = false;
         InvokeAsync(StateHasChanged);

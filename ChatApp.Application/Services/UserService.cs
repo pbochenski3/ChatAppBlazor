@@ -59,7 +59,7 @@ namespace ChatApp.Application.Services
             var user = await _userRepo.GetByUsernameAsync(username);
            if(user is not null && BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
             {
-                return new UserDTO() {Username = user.Username,UserID = user.UserID};
+                return new UserDTO() {Username = user.Username,UserID = user.UserID, IsOnline = true};
             }
             else
             {
