@@ -1,19 +1,25 @@
 ﻿using ChatApp.Application.DTO;
-using ChatApp.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
+using ChatApp.Domain.Models;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace ChatApp.Application.Services
 {
     public class UserService : IUserService
     {
+        private readonly JwtSettings _jwtSettings;
         private readonly IUserRepository _userRepo;
-        public UserService(IUserRepository userRepo)
+        public UserService(IUserRepository userRepo, IOptions<JwtSettings> jwtSettings)
         {
             _userRepo = userRepo;
+            _jwtSettings = jwtSettings.Value;
         }
         public async Task Register(UserDTO dto)
         {
@@ -53,16 +59,16 @@ namespace ChatApp.Application.Services
         }
         public async Task<UserDTO> Login(UserDTO dto)
         {
-           if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password))
+            if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password))
             {
                 throw new Exception("Username or password cannot be empty.");
             }
-            string username = dto.Username;
-            var user = await _userRepo.GetByUsernameAsync(username);
-           if(user is not null && BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
+            var user = await _userRepo.GetByUsernameAsync(dto.Username);
+            if (user is not null && BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
             {
-                await _userRepo.SetStatus(user.UserID,true);
-                return new UserDTO() {Username = user.Username,UserID = user.UserID, IsOnline = true};
+                await _userRepo.SetStatus(user.UserID, true);
+                var token = GenerateToken(user);
+                return new UserDTO() { Username = user.Username, UserID = user.UserID, IsOnline = true, Token = token };
             }
             else
             {
@@ -79,9 +85,27 @@ namespace ChatApp.Application.Services
                 AvatarUrl = u.AvatarUrl
             }).ToList();
         }
+        private string GenerateToken(User user)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
+                new Claim(ClaimTypes.Name, user.Username)
+            };
+            var tokenDescriptor = new JwtSecurityToken(
+             issuer: _jwtSettings.Issuer,
+             audience: _jwtSettings.Audience,
+             claims: claims,
+             expires: DateTime.Now.AddDays(1),
+             signingCredentials: creds
+         );
+            return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
 
         }
     }
+}
 
 
 
