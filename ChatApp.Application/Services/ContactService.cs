@@ -1,6 +1,7 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
+using ChatApp.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -21,7 +22,7 @@ namespace ChatApp.Application.Services
         }
         public async Task<List<ContactDTO>> GetUserContactsAsync(Guid id)
         {
-           var contacts = await _contactRepo.GetAllContactAsync(id);
+            var contacts = await _contactRepo.GetAllContactAsync(id);
 
             if (contacts == null) return new List<ContactDTO>();
             return contacts.Select(c => new ContactDTO
@@ -32,7 +33,22 @@ namespace ChatApp.Application.Services
                 IsOnline = c.ContactUser.IsOnline,
                 // ChatID = await _messageRepo.GetChatIdByUsersAsync(id, c.UserID)
             }).ToList();
-
+        }
+        public async Task AddContactAsync(Guid userId, Guid contactUserId)
+        {
+            var contact1 = new Contact
+            {
+                UserID = userId,
+                ContactUserID = contactUserId
+            };
+            var contact2 = new Contact
+            {
+                UserID = contactUserId,
+                ContactUserID = userId
+            };
+            await _contactRepo.AddContactToDb(contact1);
+            await _contactRepo.AddContactToDb(contact2);
+            await _contactRepo.SaveChangesToDbAsync();
         }
     }
 }

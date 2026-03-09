@@ -6,15 +6,19 @@
 @inject ChatHubService ChatHubService
 @inject AppStateService AppState
 @implements IDisposable
+@inject ILogger<Hub> _logger
 <div class="main-layout">
     <ContactsComponent 
+        @key="receivedInvites.Count"
         OnSearchRequested="HandleGlobalSearch"
-         OnContactInvited="HandleContactInvite"
+        OnContactInvited="HandleContactInvite"
+        OnInviteAction="@(args => HandleContactStatus(args.InviteId, args.Status))"
         InitialContacts="receivedContact"
         UsersList="foundUsers"
+        InvitesList="receivedInvites"
         IsSearching="isSearchingGlobal"
         />
-
+       
     <main class="chat-content">
         <TopBarComponent user="@user.Username" />
 
@@ -47,9 +51,12 @@
     private MessageDTO messageModel = new MessageDTO();
     private List<MessageDTO> receivedMessage = new List<MessageDTO>();
     private List<ContactDTO> receivedContact = new List<ContactDTO>();
+    private List<InviteDTO> receivedInvites = new List<InviteDTO>();
     private List<UserDTO> foundUsers = new List<UserDTO>();
+    private Action<bool> _inviteHandler;
+    private Action<bool> _contactHandler;
+    private Action<bool> _dataReloadHandler;
     private bool isSearchingGlobal = false;
-
     protected override async Task OnInitializedAsync()
     {
         if(AppState.CurrentUser == null)
@@ -64,16 +71,19 @@
             AppState.Message = null;
             _ = ShowNotification(notification);
         }
+        _inviteHandler = async (reload) => await HandleInviteLoad(reload, user.UserID);
+        _contactHandler = async (reload) => await HandleContactLoad(reload, user.UserID);
+        _dataReloadHandler = async (reload) => await HandleDataReload(reload, user.UserID);
 
+        ChatHubService.ContactReload += _contactHandler;
+        ChatHubService.InviteReload += _inviteHandler;
+        ChatHubService.ContactInviteReload += _dataReloadHandler;
         ChatHubService.OnMessageReceived += HandleReceiveMessage;
         ChatHubService.InviteStatusMessage += (status) => _ = ShowNotification(status);
         await ChatHubService.StartAsync();
         try
         {
-
-            receivedContact = await ChatHubService.GetContactsAsync(user.UserID);
-            // var messages = await ChatHubService.GetHistoryAsync(15);
-            // receivedMessage = messages.ToList();
+            await HandleDataReload(true,user.UserID);
         }
         catch(Exception ex)
         {
@@ -97,17 +107,51 @@
         notification = string.Empty;
         StateHasChanged(); 
     }
-    private async Task HandleContactLoad(Guid contactId)
+    private async Task HandleDataReload(bool reload,Guid UserId)
     {
-        receivedContact.Clear();
-        await ChatHubService.GetContactsAsync(contactId);
-        
+        if (reload)
+        {
+            await HandleContactLoad(reload,UserId);
+            await HandleInviteLoad(reload,UserId);
+            await InvokeAsync(StateHasChanged);
+            _logger.LogInformation("Data reload triggered for user {UserId}", UserId);
+        }
+    }
+    private async Task HandleInviteLoad(bool reload,Guid userId)
+    {
+        if (true)
+        {
+            receivedInvites = await ChatHubService.GetInvitesAsync(userId);
+            await InvokeAsync(StateHasChanged);
+            _logger.LogInformation("Invite reload triggered for user {UserId}", userId);
+        }
+    }
+    private async Task HandleContactLoad(bool reload,Guid contactId)
+    {
+        if(true)
+        {
+            receivedContact = await ChatHubService.GetContactsAsync(contactId);
+            await InvokeAsync(StateHasChanged);
+
+        }
+
     }
     private async Task HandleContactInvite(Guid contactId)
     {
         await ChatHubService.SendInviteAsync(user.UserID,contactId);
         foundUsers.RemoveAll(u => u.UserID == contactId);
         isSearchingGlobal = false;
+    }
+    private async Task HandleContactStatus(Guid InviteId,bool Status)
+    {
+        try
+        {
+            await ChatHubService.SendInviteActionAsync(InviteId, Status);
+        }
+        catch (Exception ex)
+        {
+            _ = ShowNotification($"{ex.Message}");
+        }
     }
 
     private void HandleReceiveMessage(MessageDTO dto)
@@ -136,5 +180,8 @@
     {
         ChatHubService.OnMessageReceived -= HandleReceiveMessage;
         ChatHubService.InviteStatusMessage -= (status) => _ = ShowNotification(status);
+        ChatHubService.InviteReload -= _inviteHandler;
+        ChatHubService.ContactInviteReload -= _dataReloadHandler;
+        ChatHubService.ContactReload -= _contactHandler;
     }
 }

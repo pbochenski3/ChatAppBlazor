@@ -52,7 +52,30 @@
             case View.Invites:
                 <div class="invites-list">
                     <div class="empty-state-container">
-                        <p class="section-hint">Brak nowych zaproszeń.</p>
+                        @if(!InvitesList.Any())
+                        {
+                            <p class="section-hint">Brak nowych zaproszeń.</p>
+                        }
+                        else
+                        {
+                            @foreach(var invite in InvitesList)
+                            {
+                                <div class="invite-item">
+                                    <div class="invite-info">
+                                        <img src="@invite.SenderAvatarUrl" class="invite-avatar" alt="avatar" />
+                                        <span class="invite-username">@invite.SenderUsername</span>
+                                    </div>
+                                    <div class="invite-actions">
+                                        <button class="btn-accept" @onclick="() => HandleInviteResponse(invite.InviteID, true)">
+                                            Akceptuj
+                                        </button>
+                                        <button class="btn-decline" @onclick="() => HandleInviteResponse(invite.InviteID, false)">
+                                            Odrzuć
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        }
                     </div>
                 </div>
                 break;
@@ -123,9 +146,11 @@
 @code {
     [Parameter] public EventCallback<string> OnSearchRequested { get; set; }
     [Parameter] public EventCallback<Guid> OnContactSelected { get; set; }
-    [Parameter] public List<ContactDTO> InitialContacts { get; set; } = new();
     [Parameter] public EventCallback<Guid> OnContactInvited { get; set; }
+    [Parameter] public EventCallback<(Guid InviteId,bool Status)> OnInviteAction { get; set; }
+    [Parameter] public List<ContactDTO> InitialContacts { get; set; } = new();
     [Parameter] public List<UserDTO> UsersList { get; set; } = new();
+    [Parameter] public List<InviteDTO> InvitesList { get; set; } = new();
     [Parameter] public bool IsSearching { get; set; }
 
     private enum View { Contacts, Invites, AddContact }
@@ -134,9 +159,12 @@
     private Guid SelectedContactId;
     private string searchTerm = "";
     private string globalSearchQuery = "";
-    private int PendingInvitesCount = 2;
+    private int PendingInvitesCount => InvitesList.Count();
     private bool isPending = false;
-
+    protected override void OnParametersSet()
+    {
+        StateHasChanged();
+    }
     private IEnumerable<ContactDTO> FilteredContacts =>
         InitialContacts?.Where(c => string.IsNullOrWhiteSpace(searchTerm) ||
                                c.Username.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
@@ -159,7 +187,10 @@
 
         await OnSearchRequested.InvokeAsync(globalSearchQuery);
     }
-
+    private async Task HandleInviteResponse(Guid InviteId,bool Response)
+    {
+        await OnInviteAction.InvokeAsync((InviteId,Response));
+    }
     private async Task SendInvite(Guid targetUserId)
     {
         isPending = true;

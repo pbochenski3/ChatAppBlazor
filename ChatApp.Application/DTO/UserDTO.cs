@@ -10,6 +10,7 @@ namespace ChatApp.Application.DTO
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public bool IsOnline { get; set; }
-        public string AvatarUrl { get; set; }
+        public string? AvatarUrl { get; set; }
+        public string? Token { get; set; }
     }
 }

@@ -8,5 +8,6 @@ namespace ChatApp.Application.Interfaces.Service
     public interface IContactService
     {
         public Task<List<ContactDTO>> GetUserContactsAsync(Guid id);
+        Task AddContactAsync(Guid userId, Guid contactUserId);
     }
 }

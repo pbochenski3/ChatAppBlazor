@@ -1,4 +1,5 @@
-﻿using ChatApp.Application.Interfaces.Repository;
+﻿using ChatApp.Application.DTO;
+using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
 using ChatApp.Domain.Models;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,26 @@ namespace ChatApp.Infrastructure.Persistence
         {
             _logger.LogInformation("Saving changes to the database.");
             await _context.SaveChangesAsync();
+        }
+        public async Task<List<InviteDTO>> GetInvitesForUserAsync(Guid userId)
+        {
+            return await _context.Invites
+                .Where(i => i.ReceiverID == userId && i.Status == InviteStatus.Pending)
+                .Select(i => new InviteDTO
+                {
+                    InviteID = i.InviteID,
+                    SenderID = i.SenderID,
+                    ReceiverID = i.ReceiverID,
+                    SenderUsername = i.Sender.Username,
+                    ReceiverUsername = i.Receiver.Username,
+                    SenderAvatarUrl = i.Sender.AvatarUrl,
+                    Status = i.Status,
+                })
+                .ToListAsync();
+        }
+        public async Task<Invite> GetInviteForIdAsync(Guid InviteId)
+        {
+            return await _context.Invites.FirstOrDefaultAsync(i => i.InviteID == InviteId);
         }
     }
 }

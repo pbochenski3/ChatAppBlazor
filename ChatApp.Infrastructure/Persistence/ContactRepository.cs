@@ -26,5 +26,15 @@ namespace ChatApp.Infrastructure.Persistence
                 .Where(c => c.UserID == id)
                 .ToListAsync();
         }
+        public async Task AddContactToDb(Contact contact)
+        {
+            _logger.LogInformation("Adding a new contact to the database.");
+            await _context.Contacts.AddAsync(contact);
+        }
+         public async Task SaveChangesToDbAsync()
+        {
+            _logger.LogInformation("Saving changes to the database.");
+            await _context.SaveChangesAsync();
+        }
     }
 }

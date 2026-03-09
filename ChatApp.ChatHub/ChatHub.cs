@@ -26,12 +26,20 @@ namespace ChatApp.ChatHub
             _contactService = contactService;
             _inviteService = inviteService;
         }
+        public override Task OnConnectedAsync()
+        {
+            return base.OnConnectedAsync();
+        }
         public async Task SendInvite(Guid senderId, Guid receiverId)
         {
             try
             {
                 await _inviteService.SendInvite(senderId, receiverId);
                 await Clients.Caller.SendAsync("ReceiveInviteStatus", "Invite sent!");
+                var targetUser = Clients.User(receiverId.ToString());
+                await targetUser.SendAsync("ReceiveInviteStatus", "You have a new invite!");
+                await targetUser.SendAsync("InviteReload", true);
+                _logger.LogInformation($"SIGNAlR:{Context.UserIdentifier}");
             }
             catch(Exception ex)
             {
@@ -58,33 +66,31 @@ namespace ChatApp.ChatHub
         {
             await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", senderUsername, message);
         }
-        public async Task RegisterUser(UserDTO dto)
+  
+        public async Task InviteAction(Guid inviteId, bool status)
         {
             try
             {
-                await _userService.Register(dto);
-                await Clients.Caller.SendAsync("ReceiveRegistrationStatus", "User registered successfully.");
+                var senderId = await _inviteService.InviteAction(inviteId,status);
+                await Clients.Caller.SendAsync("ReceiveInviteStatus", status ? "Invite accepted!" : "Invite rejected.");
+                await Clients.Caller.SendAsync("ContactInviteReload", true);
+                var targetUser = Clients.Users(senderId.ToString());
+                await targetUser.SendAsync("ReceiveInviteStatus", status ? "Your invite was accepted!" : "Your invite was rejected!");
+                await targetUser.SendAsync("ContactReload", true);
+                _logger.LogInformation($"SIGNAlR:{Context.UserIdentifier}");
             }
             catch (Exception ex)
             {
-                await Clients.Caller.SendAsync("ReceiveRegistrationStatus", $"{ex.Message}");
+                await Clients.Caller.SendAsync("ReceiveInviteStatus", "An error occurred while processing the invite action.");
             }
+        }
+        public async Task<List<InviteDTO>> GetInvites(Guid userId)
+        {
+            return await _inviteService.GetInvites(userId);
         }
         public async Task<List<MessageDTO>> GetHistory(int count)
         { 
             return await _messageService.GetMessagesHistoryAsync(count);
-        }
-        public  async Task LoginUser(UserDTO dto)
-        {
-            try
-            {
-                var user = await _userService.Login(dto);
-                await Clients.Caller.SendAsync("ReceiveLoginStatus", "User logged in successfully.",user);
-            }
-            catch (Exception ex)
-            {
-                await Clients.Caller.SendAsync("ReceiveLoginStatus", $"{ex.Message}", null);
-            }
         }
     }
 }
