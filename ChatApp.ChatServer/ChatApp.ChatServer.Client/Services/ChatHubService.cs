@@ -1,6 +1,9 @@
 ﻿using ChatApp.Application.DTO;
+using ChatApp.ChatServer.Client.Services;
 using ChatApp.Domain.Models;
 using Microsoft.AspNetCore.SignalR.Client;
+using System.Net.Http.Json;
+using System.Net.NetworkInformation;
 public class ChatHubService : IAsyncDisposable
 {
     private readonly string _hubUrl;
@@ -8,32 +11,48 @@ public class ChatHubService : IAsyncDisposable
     public event Action<MessageDTO>? OnMessageReceived;
     public event Action<string>? RegisterStatusMessage;
     public event Action<string>? InviteStatusMessage;
+    public event Action<bool>? ContactInviteReload;
+    public event Action<bool>? InviteReload;
+    public event Action<bool>? ContactReload;
+    public event Action<bool>? InviteReceived;
     public event Action<string,UserDTO>? LoginStatusMessage;
+    private readonly AppStateService _appStateService;
+    private readonly string _baseHubUrl;
+    private readonly HttpClient _httpClient;
 
-    public ChatHubService(IConfiguration configuration)
+    public ChatHubService(IConfiguration configuration, AppStateService appStateService,HttpClient httpClient)
     {
-        _hubUrl = configuration["SignalR:HubUrl"];
-
-        HubConnection = new HubConnectionBuilder()
-            .WithUrl(_hubUrl)
-            .WithAutomaticReconnect()
-            .Build();
-
+        _appStateService = appStateService;
+        _baseHubUrl = configuration["SignalR:HubUrl"];
+        _httpClient = httpClient;
+        _httpClient = httpClient;
+    }
+    private void RegisterHandlers()
+    {
+        if (HubConnection == null) return;
         HubConnection.On<MessageDTO>("ReceiveMessage", (message) =>
         {
             OnMessageReceived?.Invoke(message);
         });
-        HubConnection.On<string>("ReceiveRegistrationStatus", (statusMessage) =>
-        {
-            RegisterStatusMessage?.Invoke(statusMessage);
-        });
-        HubConnection.On<string,UserDTO>("ReceiveLoginStatus", (loginStatusMessage,user) =>
-        {
-            LoginStatusMessage?.Invoke(loginStatusMessage,user);
-        });
         HubConnection.On<string>("ReceiveInviteStatus", (inviteStatusMessage) =>
         {
             InviteStatusMessage?.Invoke(inviteStatusMessage);
+        });
+        HubConnection.On<bool>("ContactInviteReload", (shouldReload) =>
+        {
+            ContactInviteReload?.Invoke(shouldReload);
+        });
+        HubConnection.On<bool>("InviteReload", (shouldReload) =>
+        {
+            InviteReload?.Invoke(shouldReload);
+        });
+        HubConnection.On<bool>("ContactReload", (shouldReload) =>
+        {
+            ContactReload?.Invoke(shouldReload);
+        });
+        HubConnection.On<bool>("InviteReceived", (shouldReload) =>
+        {
+            InviteReceived?.Invoke(shouldReload);
         });
     }
     public async Task SendMessageAsync(MessageDTO message)
@@ -50,25 +69,42 @@ public class ChatHubService : IAsyncDisposable
     }
     public async Task StartAsync()
     {
-        if (HubConnection.State == HubConnectionState.Disconnected)
-        {
-            await HubConnection.StartAsync();
-        }
+        if(HubConnection != null && HubConnection.State == HubConnectionState.Connected)
+            return;
+        HubConnection = new HubConnectionBuilder()
+                .WithUrl(_baseHubUrl, options =>
+                {
+                    options.AccessTokenProvider = () =>
+                    {
+                        var token = _appStateService.CurrentUser?.Token;
+                        return Task.FromResult(token);
+                    };
+                })
+                .WithAutomaticReconnect()
+                .Build();
+
+                RegisterHandlers();
+                await HubConnection.StartAsync();
+
     }
     public async Task LoginUserAsync(UserDTO dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password))
+        var response = await _httpClient.PostAsJsonAsync("api/user/login", dto);
+
+        if (response.IsSuccessStatusCode)
         {
-            throw new Exception("Username or password cannot be empty.");
-        }
-  
-        if (HubConnection is not null && HubConnection.State == HubConnectionState.Connected)
-        {
-            await HubConnection.InvokeAsync("LoginUser", dto);
+            var loggedInUser = await response.Content.ReadFromJsonAsync<UserDTO>();
+
+            _appStateService.CurrentUser = loggedInUser;
+
+            await StartAsync();
+
+            LoginStatusMessage?.Invoke("Success", loggedInUser);
         }
         else
         {
-            throw new InvalidOperationException("Connection Error");
+            var errorCOntent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Server: {response.StatusCode}: {errorCOntent}");
         }
     }
     public async Task RegisterUserAsync(UserDTO dto)
@@ -89,10 +125,10 @@ public class ChatHubService : IAsyncDisposable
         {
             throw new Exception("Password must be less than 128 characters.");
         }
-
-        if (HubConnection is not null && HubConnection.State == HubConnectionState.Connected)
+        var response = await _httpClient.PostAsJsonAsync("api/user/register", dto);
+        if (response.IsSuccessStatusCode)
         {
-            await HubConnection.InvokeAsync("RegisterUser", dto);
+            RegisterStatusMessage?.Invoke("User registered successfully.");
         }
         else
         {
@@ -102,6 +138,10 @@ public class ChatHubService : IAsyncDisposable
     public async Task<List<MessageDTO>> GetHistoryAsync(int count)
     {
         return await HubConnection.InvokeAsync<List<MessageDTO>>("GetHistory",count);
+    }
+    public Task<List<InviteDTO>> GetInvitesAsync(Guid userId)
+    {
+        return HubConnection.InvokeAsync<List<InviteDTO>>("GetInvites", userId);
     }
     public async Task<List<ContactDTO>> GetContactsAsync(Guid contactId)
     {
@@ -114,6 +154,10 @@ public class ChatHubService : IAsyncDisposable
     public async Task SendInviteAsync(Guid senderId, Guid receiverId)
     {
         await HubConnection.InvokeAsync("SendInvite", senderId, receiverId);
+    }
+    public async Task SendInviteActionAsync(Guid InviteId, bool Status)
+    {
+               await HubConnection.InvokeAsync("InviteAction", InviteId,Status);
     }
     public async ValueTask DisposeAsync()
     {

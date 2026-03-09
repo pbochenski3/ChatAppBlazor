@@ -33,13 +33,12 @@
         notification = AppState.Message;
         AppState.Message = null;
         ChatHubService.LoginStatusMessage += HandleLoginNotification;
-        await ChatHubService.StartAsync();
     }
     private UserDTO userDTO = new UserDTO();
     private void HandleLoginNotification(string message,UserDTO user)
     {
         notification = message;
-        if (message.Equals("User logged in successfully."))
+        if (message.Equals("Success"))
         {
             AppState.Message = "Logged in successfully!";
             AppState.CurrentUser = user;

@@ -41,7 +41,6 @@
     protected override async Task OnInitializedAsync()
     {
         ChatHubService.RegisterStatusMessage += HandleRegisterNotification;
-        await ChatHubService.StartAsync();
     }
     private UserDTO userDTO = new UserDTO();
 
