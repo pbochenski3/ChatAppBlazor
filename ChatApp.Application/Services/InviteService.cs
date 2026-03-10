@@ -41,7 +41,6 @@ namespace ChatApp.Application.Services
                 {
                     invite.Status = InviteStatus.Rejected;
                 }
-            await _inviteRepo.SaveChangesToDbAsync();
             return invite.SenderID;
         }
     }

@@ -11,21 +11,23 @@ public class ChatHubService : IAsyncDisposable
     public event Action<MessageDTO>? OnMessageReceived;
     public event Action<string>? RegisterStatusMessage;
     public event Action<string>? InviteStatusMessage;
-    public event Action<bool>? ContactInviteReload;
-    public event Action<bool>? InviteReload;
-    public event Action<bool>? ContactReload;
+    public event Func<bool,Task>? ContactInviteReload;
+    public event Func<bool,Task>? InviteReload;
+    public event Func<bool,Task>? ContactReload;
     public event Action<bool>? InviteReceived;
     public event Action<string,UserDTO>? LoginStatusMessage;
     private readonly AppStateService _appStateService;
     private readonly string _baseHubUrl;
     private readonly HttpClient _httpClient;
+    private readonly ILogger<ChatHubService> _logger;
 
-    public ChatHubService(IConfiguration configuration, AppStateService appStateService,HttpClient httpClient)
+    public ChatHubService(IConfiguration configuration, AppStateService appStateService,HttpClient httpClient, ILogger<ChatHubService> logger)
     {
         _appStateService = appStateService;
         _baseHubUrl = configuration["SignalR:HubUrl"];
         _httpClient = httpClient;
         _httpClient = httpClient;
+        _logger = logger;
     }
     private void RegisterHandlers()
     {
@@ -104,7 +106,7 @@ public class ChatHubService : IAsyncDisposable
         else
         {
             var errorCOntent = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Server: {response.StatusCode}: {errorCOntent}");
+            throw new Exception($"{errorCOntent}");
         }
     }
     public async Task RegisterUserAsync(UserDTO dto)
@@ -132,28 +134,42 @@ public class ChatHubService : IAsyncDisposable
         }
         else
         {
-            throw new InvalidOperationException("Connection Error");
+            var errorCOntent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"{errorCOntent}");
         }
     }
-    public async Task<List<MessageDTO>> GetHistoryAsync(int count)
+    public async Task<ChatDTO> GetChatInformation(Guid contactId)
     {
-        return await HubConnection.InvokeAsync<List<MessageDTO>>("GetHistory",count);
+        return await HubConnection.InvokeAsync<ChatDTO>("GetChat", contactId);
     }
-    public Task<List<InviteDTO>> GetInvitesAsync(Guid userId)
+
+    public async Task<List<MessageDTO>> GetPrivateHistoryAsync(Guid contactId,Guid chatId)
     {
-        return HubConnection.InvokeAsync<List<InviteDTO>>("GetInvites", userId);
+        try
+        {
+            return await HubConnection.InvokeAsync<List<MessageDTO>>("GetPrivateHistory", contactId, chatId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogInformation("Filed to load a chat messages");
+            return new List<MessageDTO>();
+        }
     }
-    public async Task<List<ContactDTO>> GetContactsAsync(Guid contactId)
+    public Task<List<InviteDTO>> GetInvitesAsync()
     {
-        return await HubConnection.InvokeAsync<List<ContactDTO>>("GetContacts",contactId);
+        return HubConnection.InvokeAsync<List<InviteDTO>>("GetInvites");
     }
-    public async Task<List<UserDTO>> GetUsersToInviteAsync(Guid currentUserId, string query)
+    public async Task<List<ContactDTO>> GetContactsAsync()
     {
-        return await HubConnection.InvokeAsync<List<UserDTO>>("GetUsersToInvite", currentUserId, query);
+        return await HubConnection.InvokeAsync<List<ContactDTO>>("GetContacts");
     }
-    public async Task SendInviteAsync(Guid senderId, Guid receiverId)
+    public async Task<List<UserDTO>> GetUsersToInviteAsync(string query)
     {
-        await HubConnection.InvokeAsync("SendInvite", senderId, receiverId);
+        return await HubConnection.InvokeAsync<List<UserDTO>>("GetUsersToInvite", query);
+    }
+    public async Task SendInviteAsync(Guid receiverId)
+    {
+        await HubConnection.InvokeAsync("SendInvite",receiverId);
     }
     public async Task SendInviteActionAsync(Guid InviteId, bool Status)
     {

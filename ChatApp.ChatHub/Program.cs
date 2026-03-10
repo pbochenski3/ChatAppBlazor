@@ -51,7 +51,8 @@ options.Events = new JwtBearerEvents
 };
 });
 builder.Services.AddSignalR();
-builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("ChatDatabase"));
+builder.Services.AddDbContextFactory<ChatDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ChatDatabase")));
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -74,6 +75,9 @@ builder.Services.AddScoped<IContactRepository, ContactRepository>();
 //Invites
 builder.Services.AddScoped<IInviteService, InviteService>();
 builder.Services.AddScoped<IInviteRepository, InviteRepository>();
+//Chat
+builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
 //SignalR - UserIdProvider
 builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));

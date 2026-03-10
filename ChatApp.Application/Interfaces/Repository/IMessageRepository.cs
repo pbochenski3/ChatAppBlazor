@@ -1,4 +1,5 @@
-﻿using ChatApp.Domain.Models;
+﻿using ChatApp.Application.DTO;
+using ChatApp.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,6 +10,6 @@ namespace ChatApp.Application.Interfaces.Repository
     {
         Task AddAsync(Message message);
         Task SaveChangesAsync();
-        Task<List<Message>> GetRecentMessagesAsync(int count);
+        Task<List<MessageDTO>> GetMessageHistoryAsync(Guid contactId, Guid id,Guid chatId);
     }
 }

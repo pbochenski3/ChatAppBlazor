@@ -10,31 +10,35 @@ namespace ChatApp.Infrastructure.Persistence
 {
     public class ContactRepository : IContactRepository
     {
-        private readonly ChatDbContext _context;
+        private readonly IDbContextFactory<ChatDbContext> _contextFactory;
         private readonly ILogger<MessageRepository> _logger;
 
-        public ContactRepository(ChatDbContext context, ILogger<MessageRepository> logger)
+        public ContactRepository(IDbContextFactory<ChatDbContext> contextFactory, ILogger<MessageRepository> logger)
         {
-            _context = context;
+            _contextFactory = contextFactory;
             _logger = logger;
         }
         public async Task<List<Contact>> GetAllContactAsync(Guid id)
         {
+            using var context = _contextFactory.CreateDbContext();
             _logger.LogInformation("Retrieving all user contact from the database.");
-            return await _context.Contacts
+            return await context.Contacts
                 .Include(c => c.ContactUser)
                 .Where(c => c.UserID == id)
                 .ToListAsync();
         }
         public async Task AddContactToDb(Contact contact)
         {
+            using var context = _contextFactory.CreateDbContext();
             _logger.LogInformation("Adding a new contact to the database.");
-            await _context.Contacts.AddAsync(contact);
+            await context.Contacts.AddAsync(contact);
+            await context.SaveChangesAsync();
         }
          public async Task SaveChangesToDbAsync()
         {
+            using var context = _contextFactory.CreateDbContext();
             _logger.LogInformation("Saving changes to the database.");
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
     }
 }

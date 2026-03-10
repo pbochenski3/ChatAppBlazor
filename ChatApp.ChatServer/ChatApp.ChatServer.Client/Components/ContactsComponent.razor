@@ -152,15 +152,17 @@
     [Parameter] public List<UserDTO> UsersList { get; set; } = new();
     [Parameter] public List<InviteDTO> InvitesList { get; set; } = new();
     [Parameter] public bool IsSearching { get; set; }
+    [Parameter] public bool isPending { get; set;  }
+
+
 
     private enum View { Contacts, Invites, AddContact }
     private View currentView = View.Contacts;
 
-    private Guid SelectedContactId;
     private string searchTerm = "";
     private string globalSearchQuery = "";
     private int PendingInvitesCount => InvitesList.Count();
-    private bool isPending = false;
+    protected Guid SelectedContactId;
     protected override void OnParametersSet()
     {
         StateHasChanged();
@@ -170,18 +172,17 @@
                                c.Username.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
         ?? Enumerable.Empty<ContactDTO>();
 
-    private async Task SelectContact(Guid id)
+    private async Task SelectContact(Guid contactId)
     {
-        SelectedContactId = id;
-        await OnContactSelected.InvokeAsync(id);
+        SelectedContactId = contactId;
+        await OnContactSelected.InvokeAsync(SelectedContactId);
     }
 
     private async Task OnGlobalSearchInput()
     {
-        if (string.IsNullOrWhiteSpace(globalSearchQuery))
+        if (string.IsNullOrWhiteSpace(globalSearchQuery) || globalSearchQuery.Length < 3)
         {
             UsersList?.Clear();
-            isPending = false;
             return;
         }
 
@@ -195,8 +196,6 @@
     {
         isPending = true;
         await OnContactInvited.InvokeAsync(targetUserId);
- 
         globalSearchQuery = "";
-        currentView = View.Contacts;
     }
 }

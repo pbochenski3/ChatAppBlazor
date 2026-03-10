@@ -1,6 +1,7 @@
 ﻿using ChatApp.Application.DTO;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace ChatApp.Application.Interfaces.Service
@@ -9,6 +10,6 @@ namespace ChatApp.Application.Interfaces.Service
     {
         Task SendChatMessageAsync(MessageDTO dto);
 
-        Task<List<MessageDTO>> GetMessagesHistoryAsync(int count);
+        Task<List<MessageDTO>> GetPrivateHistoryAsync(Guid contactId,Guid userId, Guid chatId);
     }
 }

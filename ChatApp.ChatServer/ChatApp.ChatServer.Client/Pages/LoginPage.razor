@@ -50,7 +50,9 @@
     }
     private async Task HandleLogin()
     {
+        notification = string.Empty;
         isProcessing = true;
+        StateHasChanged();
         try
         {
             await ChatHubService.LoginUserAsync(userDTO);
@@ -58,6 +60,9 @@
         catch (Exception ex)
         {
             notification = $"{ex.Message}";
+        }
+        finally
+        {
             isProcessing = false;
             InvokeAsync(StateHasChanged);
         }

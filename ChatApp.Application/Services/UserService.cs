@@ -49,7 +49,6 @@ namespace ChatApp.Application.Services
                     AvatarUrl = $"https://api.dicebear.com/7.x/avataaars/svg?seed={dto.Username}"
                 };
                 await _userRepo.RegisterAsync(user);
-                await _userRepo.SaveChangesToDbAsync();
             }
             else
             {

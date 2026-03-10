@@ -12,11 +12,13 @@ namespace ChatApp.Application.Services
     {
         private readonly IMessageRepository _messageRepo;
         private readonly IUserRepository _userRepo;
+        private readonly IChatService _chatService;
 
-        public MessageService(IMessageRepository messageRepo,IUserRepository userRepo)
+        public MessageService(IMessageRepository messageRepo,IUserRepository userRepo,IChatService chatService)
         {
             _messageRepo = messageRepo;
             _userRepo = userRepo;
+            _chatService = chatService;
         }
 
         public async Task SendChatMessageAsync(MessageDTO dto)
@@ -34,25 +36,16 @@ namespace ChatApp.Application.Services
             {
                 Content = dto.Content,
                 Sender = sender,
-                ChatID = Guid.Parse("018F10B5-A3D4-7B3F-8E12-3C4D5E6F7A8B")
+                ChatID = dto.ChatID,
 
             };
             await _messageRepo.AddAsync(message);
-            await _messageRepo.SaveChangesAsync();
         }
-        public async Task<List<MessageDTO>> GetMessagesHistoryAsync(int count)
+        public async Task<List<MessageDTO>> GetPrivateHistoryAsync(Guid contactId, Guid id,Guid chatId)
         {
-            var howMany = 15;
-            var rawMessage = await _messageRepo.GetRecentMessagesAsync(count);
-            return rawMessage.Select(m => new MessageDTO
-            {
-                MessageID = m.MessageID,
-                Content = m.Content,
-                SentAt = m.SentAt,
-                SenderID = m.Sender.UserID,
-                SenderUsername = m.Sender.Username,
-                ChatID = m.ChatID
-            }).ToList();
+            var rawMessage = await _messageRepo.GetMessageHistoryAsync(contactId,id,chatId);
+            return rawMessage;
+            
         }
     }
 }

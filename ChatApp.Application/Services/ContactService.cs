@@ -48,7 +48,6 @@ namespace ChatApp.Application.Services
             };
             await _contactRepo.AddContactToDb(contact1);
             await _contactRepo.AddContactToDb(contact2);
-            await _contactRepo.SaveChangesToDbAsync();
         }
     }
 }

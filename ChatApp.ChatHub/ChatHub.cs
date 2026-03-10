@@ -3,6 +3,7 @@ using ChatApp.Application.Interfaces.Service;
 using ChatApp.Application.Services;
 using ChatApp.Domain.Models;
 using Microsoft.AspNetCore.SignalR;
+using System.Security.Cryptography;
 
 namespace ChatApp.ChatHub
 {
@@ -12,12 +13,15 @@ namespace ChatApp.ChatHub
         private readonly IUserService _userService;
         private readonly IContactService _contactService;
         private readonly IInviteService _inviteService;
+        private readonly IChatService _chatService;
         private readonly ILogger<ChatHub> _logger;
+        protected Guid userId => Guid.TryParse(Context.UserIdentifier, out var parseId) ? parseId : Guid.Empty;
         public ChatHub(ILogger<ChatHub> logger,
             IMessageService messageService,
             IUserService userService,
             IContactService contactService,
-            IInviteService inviteService
+            IInviteService inviteService,
+            IChatService chatService
             )
         {
             _logger = logger;
@@ -25,16 +29,17 @@ namespace ChatApp.ChatHub
             _userService = userService;
             _contactService = contactService;
             _inviteService = inviteService;
+            _chatService = chatService;
         }
         public override Task OnConnectedAsync()
         {
             return base.OnConnectedAsync();
         }
-        public async Task SendInvite(Guid senderId, Guid receiverId)
+        public async Task SendInvite(Guid receiverId)
         {
             try
             {
-                await _inviteService.SendInvite(senderId, receiverId);
+                await _inviteService.SendInvite(userId, receiverId);
                 await Clients.Caller.SendAsync("ReceiveInviteStatus", "Invite sent!");
                 var targetUser = Clients.User(receiverId.ToString());
                 await targetUser.SendAsync("ReceiveInviteStatus", "You have a new invite!");
@@ -48,13 +53,13 @@ namespace ChatApp.ChatHub
 
         }
    
-        public async Task<List<UserDTO>> GetUsersToInvite(Guid currentUserId, string query)
+        public async Task<List<UserDTO>> GetUsersToInvite(string query)
         {
-            return await _userService.GetAllUsersToInvite(currentUserId, query);
+            return await _userService.GetAllUsersToInvite(userId, query);
         }
-        public async Task<List<ContactDTO>> GetContacts(Guid id)
+        public async Task<List<ContactDTO>> GetContacts()
         {
-            return await _contactService.GetUserContactsAsync(id);
+            return await _contactService.GetUserContactsAsync(userId);
         }
         public async Task SendMessage(MessageDTO dto)
         {
@@ -84,13 +89,17 @@ namespace ChatApp.ChatHub
                 await Clients.Caller.SendAsync("ReceiveInviteStatus", "An error occurred while processing the invite action.");
             }
         }
-        public async Task<List<InviteDTO>> GetInvites(Guid userId)
+        public async Task<List<InviteDTO>> GetInvites()
         {
             return await _inviteService.GetInvites(userId);
         }
-        public async Task<List<MessageDTO>> GetHistory(int count)
-        { 
-            return await _messageService.GetMessagesHistoryAsync(count);
+        public async Task<List<MessageDTO>> GetPrivateHistory(Guid contactId,Guid chatId)
+        {
+            return await _messageService.GetPrivateHistoryAsync(contactId,userId,chatId);
+        }
+        public async Task<ChatDTO> GetChat(Guid contactId)
+        {
+            return await _chatService.GetChatById(contactId,userId);
         }
     }
 }
