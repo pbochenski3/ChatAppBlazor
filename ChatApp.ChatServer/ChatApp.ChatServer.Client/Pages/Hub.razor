@@ -30,19 +30,22 @@
                 <div>@notification</div>
             </div>
         }
-        <div class="chat-container">
-            <ChatComponent Title="Czat" Messages="@receivedMessage" />
+        @if (AppState.CurrentChat != null)
+        {
+            <div class="chat-container">
+                <ChatComponent Title="Czat" Messages="@receivedMessage" />
 
-            <div class="message-input-area">
-                <EditForm Model="@messageModel" OnValidSubmit="HandleSubmit">
-                    <DataAnnotationsValidator />
-                    <div class="input-group">
-                        <InputText disabled="@lockChat" @bind-Value="messageModel.Content" class="form-control" placeholder="Napisz wiadomość..." />
-                        <button disabled="@lockChat" type="submit" class="btn-primary">Send</button>
-                    </div>
-                </EditForm>
+                <div class="message-input-area">
+                    <EditForm Model="@messageModel" OnValidSubmit="HandleSubmit">
+                        <DataAnnotationsValidator />
+                        <div class="input-group">
+                            <InputText disabled="@lockChat" @bind-Value="messageModel.Content" class="form-control" placeholder="Napisz wiadomość..." />
+                            <button disabled="@lockChat" type="submit" class="btn-primary">Send</button>
+                        </div>
+                    </EditForm>
+                </div>
             </div>
-        </div>
+        }
     </main>
 </div>
 @code {
