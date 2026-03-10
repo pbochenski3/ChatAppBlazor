@@ -35,7 +35,7 @@ namespace ChatApp.Application.Services
             var message = new Message
             {
                 Content = dto.Content,
-                Sender = sender,
+                SenderID = dto.SenderID,
                 ChatID = dto.ChatID,
 
             };
