@@ -25,7 +25,12 @@ namespace ChatApp.Application.Services
                 await CreateChat(contactId, currenUserId);
                 chat = await _chatRepo.GetChatById(contactId, currenUserId);
             }
-          return chat;
+            return new ChatDTO
+            {
+                ChatID = chat.ChatID,
+                CreatedAt = chat.CreatedAt,
+                ChatName = chat.ChatName
+            };
         }
         public async Task CreateChat(Guid contactId, Guid id)
         {

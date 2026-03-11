@@ -43,8 +43,16 @@ namespace ChatApp.Application.Services
         }
         public async Task<List<MessageDTO>> GetPrivateHistoryAsync(Guid contactId, Guid id,Guid chatId)
         {
-            var rawMessage = await _messageRepo.GetMessageHistoryAsync(contactId,id,chatId);
-            return rawMessage;
+            var rawMessage = await _messageRepo.GetMessageHistoryAsync(contactId, id, chatId);
+                 return rawMessage.Select(uc => new MessageDTO
+                 {
+                     MessageID = uc.MessageID,
+                     Content = uc.Content,
+                     SentAt = uc.SentAt,
+                     SenderID = uc.SenderID,
+                     SenderUsername = uc.Sender.Username,
+                     ChatID = chatId,
+                 }).ToList();
             
         }
     }

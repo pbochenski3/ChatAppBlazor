@@ -9,7 +9,7 @@ namespace ChatApp.Application.DTO
             public Guid ChatID { get; set; }
             public DateTime CreatedAt { get; set; }
             public string ChatName { get; set; }
-            public List<UserDTO> Participants { get; set; } = new();
+            public IEnumerable<UserDTO> Participants { get; set; } = new HashSet<UserDTO>();
             public string LastMessageContent { get; set; }
             public DateTime? LastMessageAt { get; set; }
         }

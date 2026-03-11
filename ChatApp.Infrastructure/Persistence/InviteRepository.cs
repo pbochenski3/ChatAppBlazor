@@ -37,22 +37,14 @@ namespace ChatApp.Infrastructure.Persistence
             _logger.LogInformation("Saving changes to the database.");
             await context.SaveChangesAsync();
         }
-        public async Task<List<InviteDTO>> GetInvitesForUserAsync(Guid userId)
+        public async Task<List<Invite>> GetInvitesForUserAsync(Guid userId)
         {
             using var context = _contextFactory.CreateDbContext();
-            return await context.Invites
-                .Where(i => i.ReceiverID == userId && i.Status == InviteStatus.Pending)
-                .Select(i => new InviteDTO
-                {
-                    InviteID = i.InviteID,
-                    SenderID = i.SenderID,
-                    ReceiverID = i.ReceiverID,
-                    SenderUsername = i.Sender.Username,
-                    ReceiverUsername = i.Receiver.Username,
-                    SenderAvatarUrl = i.Sender.AvatarUrl,
-                    Status = i.Status,
-                })
-                .ToListAsync();
+           return await context.Invites
+          .Include(i => i.Sender)  
+          .Include(i => i.Receiver) 
+          .Where(i => i.ReceiverID == userId && i.Status == InviteStatus.Pending)
+          .ToListAsync();
         }
         public async Task<Invite> GetInviteForIdAsync(Guid InviteId)
         {

@@ -25,7 +25,17 @@ namespace ChatApp.Application.Services
         }
         public async Task<List<InviteDTO>> GetInvites(Guid userId)
         {
-            return await _inviteRepo.GetInvitesForUserAsync(userId);
+            var invites = await _inviteRepo.GetInvitesForUserAsync(userId);
+            return  invites.Select(i => new InviteDTO
+            {
+                InviteID = i.InviteID,
+                SenderID = i.SenderID,
+                ReceiverID = i.ReceiverID,
+                SenderUsername = i.Sender.Username,
+                ReceiverUsername = i.Receiver.Username,
+                SenderAvatarUrl = i.Sender.AvatarUrl,
+                Status = i.Status,
+            }).ToList();
         }
         public async Task<Guid> InviteAction(Guid InviteId, bool status)
         {

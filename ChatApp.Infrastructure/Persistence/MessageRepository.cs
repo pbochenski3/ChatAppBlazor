@@ -32,24 +32,15 @@ public class MessageRepository : IMessageRepository
         _logger.LogInformation("Saving changes to the database.");
         await context.SaveChangesAsync();
     }
-    public async Task<List<MessageDTO>> GetMessageHistoryAsync(Guid contactId, Guid id,Guid chatId)
+    public async Task<List<Message>> GetMessageHistoryAsync(Guid contactId, Guid id, Guid chatId)
     {
         using var context = _contextFactory.CreateDbContext();
-        var messages = await context.Messages
-       .AsNoTracking()
-       .Where(uc => uc.ChatID == chatId && (uc.SenderID == id || uc.SenderID == contactId))
-       .OrderBy(uc => uc.SentAt)
-       .Select(uc => new MessageDTO
-      {
-          MessageID = uc.MessageID,
-          Content = uc.Content,
-          SentAt = uc.SentAt,
-          SenderID = uc.SenderID,
-          SenderUsername = uc.Sender.Username,
-          ChatID = chatId,
-      })
-      .ToListAsync();
 
-        return messages;
+        return await context.Messages
+            .AsNoTracking()
+            .Include(m => m.Sender) 
+            .Where(uc => uc.ChatID == chatId && (uc.SenderID == id || uc.SenderID == contactId))
+            .OrderBy(uc => uc.SentAt)
+            .ToListAsync(); 
     }
 }

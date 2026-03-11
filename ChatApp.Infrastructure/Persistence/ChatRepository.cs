@@ -16,20 +16,16 @@ public class ChatRepository : IChatRepository
         _contextFactory = contextFactory;
         _logger = logger;
     }
-    public async Task<ChatDTO?> GetChatById(Guid user1, Guid user2)
+    public async Task<Chat?> GetChatById(Guid user1, Guid user2)
     {
         using var context = _contextFactory.CreateDbContext();
         return await context.ChatUsers
-            .Include(uc => uc.Chat) 
-            .GroupBy(uc => uc.ChatID)
-            .Where(g => g.Count() == 2 && g.All(uc => uc.UserID == user1 || uc.UserID == user2))
-            .Select(g => new ChatDTO
-            {
-                ChatID = g.Key,
-                ChatName = g.First().Chat.ChatName,
-                CreatedAt = g.First().Chat.CreatedAt,
-            })
-            .FirstOrDefaultAsync();
+          .Include(uc => uc.Chat)
+          .Where(uc => uc.UserID == user1 || uc.UserID == user2)
+          .GroupBy(uc => uc.ChatID)
+          .Where(g => g.Count() == 2)
+          .Select(g => g.First().Chat) 
+          .FirstOrDefaultAsync();
     }
     public async Task AddChatAsync(Chat chat)
     {
