@@ -22,7 +22,7 @@
         />
        
     <main class="chat-content">
-        <TopBarComponent user="@user.Username" />
+        @* <TopBarComponent user="@user.Username" /> *@
 
         @if (!string.IsNullOrEmpty(notification))
         {
@@ -30,21 +30,15 @@
                 <div>@notification</div>
             </div>
         }
-        @if (AppState.CurrentChat != null)
+        @if (AppState.CurrentChat != null && AppState.CurrentContact != null)
         {
-            <div class="chat-container">
-                <ChatComponent Title="Czat" Messages="@receivedMessage" />
-
-                <div class="message-input-area">
-                    <EditForm Model="@messageModel" OnValidSubmit="HandleSubmit">
-                        <DataAnnotationsValidator />
-                        <div class="input-group">
-                            <InputText disabled="@lockChat" @bind-Value="messageModel.Content" class="form-control" placeholder="Napisz wiadomość..." />
-                            <button disabled="@lockChat" type="submit" class="btn-primary">Send</button>
-                        </div>
-                    </EditForm>
-                </div>
-            </div>
+        <ChatComponent
+            OnSendMessage="HandleSendMessage"
+            Messages="receivedMessage"
+            IsLocked="lockChat"
+            Contact="@AppState.CurrentContact"
+            Chat="@AppState.CurrentChat"
+        />
         }
     </main>
 </div>
@@ -52,16 +46,16 @@
     private Guid ActiveChatId;
     private string? notification = string.Empty;
     UserDTO user = new UserDTO();
-    private MessageDTO messageModel = new MessageDTO();
     private List<MessageDTO> receivedMessage = new List<MessageDTO>();
     private List<ContactDTO> receivedContact = new List<ContactDTO>();
     private List<InviteDTO> receivedInvites = new List<InviteDTO>();
     private List<UserDTO> foundUsers = new List<UserDTO>();
+    private MessageDTO messageModel = new MessageDTO();
     private bool isSearchingGlobal = false;
     private void OnInviteStatusReceived(string status) => _ = ShowNotification(status);
     private bool isPending;
     private bool lockChat = true;
-    private Guid chatId;
+    private Guid ChatId;
     protected override async Task OnInitializedAsync()
     {
         if(AppState.CurrentUser == null)
@@ -163,53 +157,54 @@
         InvokeAsync(StateHasChanged);
     }
 
-    private async Task HandleSubmit()
+    private async Task HandleSendMessage(string content)
     {
+        messageModel.Content = content;
         messageModel.SenderUsername = user.Username;
         messageModel.SenderID = user.UserID;
         messageModel.ChatID = AppState.CurrentChat.ChatID;
         try
         {
             await ChatHubService.SendMessageAsync(messageModel);
-            messageModel.Content = string.Empty;
         }
         catch(Exception ex)
         {
             _ = ShowNotification($"{ex.Message}");
         }
     }
-    private async Task<ChatDTO> HandleChatLoad(Guid contactId)
-    {
-        var chat = await ChatHubService.GetChatInformation(contactId);
-
-        if (chat != null)
-        {
-            chatId = chat.ChatID;
-        }
-
-        return chat;
-    }
     private async Task HandlePrivateChatLoad(Guid contactId)
     {
+        if (AppState.CurrentChat?.ChatID != null && AppState.CurrentChat.ChatID == ChatId && AppState.CurrentContact.ContactUserID == contactId)
+        {
+            return;
+        }
         _logger.LogInformation("HandlePrivateChatLoad");
-        if (AppState.CurrentChat == null || AppState.CurrentChat.ChatID != chatId)
+        try
         {
             lockChat = true;
-            var chat = await HandleChatLoad(contactId);
+            var chat = await ChatHubService.GetChatInformation(contactId);
             if (chat == null)
             {
                 _logger.LogError("Chat can`t load!");
                 lockChat = false;
                 return;
             }
-            _logger.LogInformation($"Working : {contactId}");
-            receivedMessage = await ChatHubService.GetPrivateHistoryAsync(contactId, chat.ChatID);
-            AppState.CurrentContact = contactId;
-            _logger.LogInformation("Chat loaded");
+            var history = await ChatHubService.GetPrivateHistoryAsync(contactId, chat.ChatID);
+            var currentContact = await ChatHubService.GetCurrentContact(contactId);
+            ChatId = chat.ChatID;
+            receivedMessage = history;
             AppState.CurrentChat = chat;
-            AppState.CurrentChat.ChatID = chatId;
-            await InvokeAsync(StateHasChanged);
+            AppState.CurrentContact = currentContact;
+
+        }
+        catch (Exception ec)
+        {
+            _logger.LogInformation("Error when trying to load chat");
+        }
+        finally
+        {
             lockChat = false;
+            await InvokeAsync(StateHasChanged);
         }
     }
 

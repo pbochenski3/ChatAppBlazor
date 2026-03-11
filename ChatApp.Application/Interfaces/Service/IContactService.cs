@@ -9,5 +9,6 @@ namespace ChatApp.Application.Interfaces.Service
     {
         public Task<List<ContactDTO>> GetUserContactsAsync(Guid id);
         Task AddContactAsync(Guid userId, Guid contactUserId);
+        Task<ContactDTO> GetContactById(Guid contactId, Guid userId);
     }
 }

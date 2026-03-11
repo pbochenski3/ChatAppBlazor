@@ -163,6 +163,10 @@ public class ChatHubService : IAsyncDisposable
     {
         return await HubConnection.InvokeAsync<List<ContactDTO>>("GetContacts");
     }
+    public async Task<ContactDTO> GetCurrentContact(Guid contactId)
+    {
+        return await HubConnection.InvokeAsync<ContactDTO>("GetCurrentContacts", contactId);
+    }
     public async Task<List<UserDTO>> GetUsersToInviteAsync(string query)
     {
         return await HubConnection.InvokeAsync<List<UserDTO>>("GetUsersToInvite", query);

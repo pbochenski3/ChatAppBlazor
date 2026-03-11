@@ -18,6 +18,14 @@ namespace ChatApp.Infrastructure.Persistence
             _contextFactory = contextFactory;
             _logger = logger;
         }
+        public async Task<Contact> GetContactAsync(Guid contactId, Guid userId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            _logger.LogInformation("Retreiving contact from database");
+            return await context.Contacts
+                .Include(c => c.ContactUser)
+                .FirstOrDefaultAsync(c => c.ContactUserID == contactId && c.UserID == userId);
+        }
         public async Task<List<Contact>> GetAllContactAsync(Guid id)
         {
             using var context = _contextFactory.CreateDbContext();

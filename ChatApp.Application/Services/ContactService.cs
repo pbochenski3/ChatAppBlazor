@@ -20,6 +20,21 @@ namespace ChatApp.Application.Services
             _userRepo = userRepo;
             _contactRepo = contactRepo;
         }
+        public async Task<ContactDTO> GetContactById(Guid contactId, Guid userId)
+        {
+            var contact = await _contactRepo.GetContactAsync(contactId, userId);
+            if (contact == null)
+            {
+                throw new Exception("Contact couldn`t load");
+            }
+            return new ContactDTO
+            {
+                ContactUserID = contact.ContactUserID,
+                Username = contact.ContactUser.Username,
+                AvatarUrl = contact.ContactUser.AvatarUrl,
+                IsOnline = contact.ContactUser.IsOnline,
+            };
+        }
         public async Task<List<ContactDTO>> GetUserContactsAsync(Guid id)
         {
             var contacts = await _contactRepo.GetAllContactAsync(id);

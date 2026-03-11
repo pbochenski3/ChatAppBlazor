@@ -1,30 +1,97 @@
 ﻿@inject IJSRuntime JSRuntime
 
-<div class="chat-container">
-    <h3 class="chat-title">@Title</h3>
+<div class="chat-main-wrapper">
+    <div class="top-bar">
+        <div class="user-profile">
+            <div class="avatar-wrapper">
+                <img src="@Contact.AvatarUrl"
+                     class="user-avatar"
+                     alt="Avatar" />
+                <div class="status-dot online"></div>
+            </div>
+
+            <div class="user-info-text">
+                <span class="user-name">@Contact.Username</span>
+                <span class="chat-separator">|</span>
+                <span class="chat-name">@Chat.ChatName</span>
+            </div>
+        </div>
+    </div>
+
     <div class="chat-box" id="chat-window">
         <div class="chat-messages">
-            @if (Messages != null)
+            @if (Messages != null && Messages.Any())
             {
                 @foreach (var msg in Messages)
                 {
                     <div class="message">
-                        <span class="message-user">[@msg.SentAt.ToString("HH:mm")]</span>
+                        <span class="message-time">[@msg.SentAt.ToString("HH:mm")]</span>
                         <span class="message-user">@msg.SenderUsername:</span>
-                        <span class="message-user">@msg.Content</span>
+                        <span class="message-content">@msg.Content</span>
                     </div>
                 }
             }
+            else
+            {
+                <div class="no-messages">Brak wiadomości. Przywitaj się!</div>
+            }
+        </div>
+    </div>
+
+    <div class="message-input-area">
+        <div class="input-group">
+            <input type="text"
+                   class="form-control"
+                   placeholder="Napisz wiadomość..."
+                   disabled="@IsLocked"
+                   @bind="_content"
+                   @bind:event="oninput"
+                   @onkeydown="HandleKeyDown" />
+
+            <button class="btn-primary"
+                    disabled="@(IsLocked || string.IsNullOrWhiteSpace(_content))"
+                    @onclick="HandleInternalSubmit">
+                Wyślij
+            </button>
         </div>
     </div>
 </div>
-@code {
-    [Parameter] public string Title { get; set; } = "TYTUŁ CZATU";
-    [Parameter] public List<MessageDTO> Messages { get; set; } = new();
 
+@code {
+    [Parameter] public ContactDTO Contact { get; set; }
+    [Parameter] public ChatDTO Chat { get; set; }
+    [Parameter] public List<MessageDTO> Messages { get; set; } = new();
+    [Parameter] public bool IsLocked { get; set; }
+
+    private string _content;
+    [Parameter] public EventCallback<string> OnSendMessage { get; set; }
+
+    private async Task HandleKeyDown(KeyboardEventArgs keyClick)
+    {
+        if(keyClick.Key == "Enter")
+        {
+            await HandleInternalSubmit();
+        }
+    }
+    private async Task HandleInternalSubmit()
+    {
+        if (!string.IsNullOrWhiteSpace(_content))
+        {
+            var messageToSend = _content;
+            _content = string.Empty;
+            await OnSendMessage.InvokeAsync(messageToSend);
+
+        }
+
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await JSRuntime.InvokeVoidAsync("scrollToBottom", "chat-window");
+    }
+
+    public class MessageModel
+    {
+        public string Content { get; set; } = string.Empty;
     }
 }

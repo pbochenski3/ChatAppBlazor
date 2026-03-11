@@ -61,6 +61,10 @@ namespace ChatApp.ChatHub
         {
             return await _contactService.GetUserContactsAsync(userId);
         }
+        public async Task<ContactDTO> GetCurrentContacts(Guid contactId)
+        {
+            return await _contactService.GetContactById(contactId,userId);
+        }
         public async Task SendMessage(MessageDTO dto)
         {
             dto.SentAt = DateTime.UtcNow;
