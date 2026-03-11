@@ -31,6 +31,13 @@ namespace ChatApp.Infrastructure.Persistence
             });
             await context.SaveChangesAsync();
         }
+        public async Task ChangeInviteStatus(Invite invite)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            context.Invites.Update(invite);
+            await context.SaveChangesAsync();
+            _logger.LogInformation($"Status changed to {invite.Status}");
+        }
         public async Task SaveChangesToDbAsync()
         {
             using var context = _contextFactory.CreateDbContext();

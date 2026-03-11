@@ -1,5 +1,9 @@
-﻿<aside class="sidebar">
+﻿@inject AppStateService AppState
+<aside class="sidebar">
     <div class="sidebar-header">
+        <div class="user-ifno">
+            <p>@AppState.CurrentUser.Username</p>
+        </div>
         <div class="nav-tabs">
             <button class="@(currentView == View.Contacts ? "active" : "")" @onclick="() => currentView = View.Contacts">
                 Kontakty

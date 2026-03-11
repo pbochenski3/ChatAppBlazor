@@ -46,7 +46,7 @@ namespace ChatApp.ChatHub
                 await targetUser.SendAsync("InviteReload", true);
                 _logger.LogInformation($"SIGNAlR:{Context.UserIdentifier}");
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 await Clients.Caller.SendAsync("ReceiveInviteStatus", "An error occurred while trying to send the invite.");
             }
@@ -80,15 +80,21 @@ namespace ChatApp.ChatHub
         {
             try
             {
-                var senderId = await _inviteService.InviteAction(inviteId,status);
+                var senderId = await _inviteService.InviteAction(inviteId,status,userId);
                 await Clients.Caller.SendAsync("ReceiveInviteStatus", status ? "Invite accepted!" : "Invite rejected.");
-                await Clients.Caller.SendAsync("ContactInviteReload", true);
                 var targetUser = Clients.Users(senderId.ToString());
-                await targetUser.SendAsync("ReceiveInviteStatus", status ? "Your invite was accepted!" : "Your invite was rejected!");
-                await targetUser.SendAsync("ContactReload", true);
-                _logger.LogInformation($"SIGNAlR:{Context.UserIdentifier}");
+                if (status)
+                {
+                    await Clients.Caller.SendAsync("ContactInviteReload", status);
+                    await targetUser.SendAsync("ReceiveInviteStatus", status ? "Your invite was accepted!" : "Your invite was rejected!");
+                    await targetUser.SendAsync("ContactInviteReload", status);
+                    return;
+
+                }
+                await Clients.Caller.SendAsync("InviteReload", true);
+                await targetUser.SendAsync("InvitetReload", true);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await Clients.Caller.SendAsync("ReceiveInviteStatus", "An error occurred while processing the invite action.");
             }

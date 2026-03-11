@@ -7,7 +7,7 @@ namespace ChatApp.Application.Interfaces.Service
 {
     public interface IInviteService
     {
-        Task<Guid> InviteAction(Guid InviteId, bool status);
+        Task<Guid> InviteAction(Guid InviteId, bool status,Guid userId);
         Task<List<InviteDTO>> GetInvites(Guid userId);
         Task SendInvite(Guid senderId, Guid receiverId);
     }

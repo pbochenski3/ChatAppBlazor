@@ -17,7 +17,7 @@ public class ChatHubService : IAsyncDisposable
     public event Action<bool>? InviteReceived;
     public event Action<string,UserDTO>? LoginStatusMessage;
     private readonly AppStateService _appStateService;
-    private readonly string _baseHubUrl;
+    private readonly string? _baseHubUrl;
     private readonly HttpClient _httpClient;
     private readonly ILogger<ChatHubService> _logger;
 
@@ -149,7 +149,7 @@ public class ChatHubService : IAsyncDisposable
         {
             return await HubConnection.InvokeAsync<List<MessageDTO>>("GetPrivateHistory", contactId, chatId);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _logger.LogInformation("Filed to load a chat messages");
             return new List<MessageDTO>();

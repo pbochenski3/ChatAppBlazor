@@ -11,5 +11,6 @@ namespace ChatApp.Application.Interfaces.Repository
         Task AddInviteToDB(Guid senderId, Guid receiverId);
         Task<List<Invite>> GetInvitesForUserAsync(Guid userId);
         Task<Invite> GetInviteForIdAsync(Guid InviteId);
+        Task ChangeInviteStatus(Invite invite);
     }
 }

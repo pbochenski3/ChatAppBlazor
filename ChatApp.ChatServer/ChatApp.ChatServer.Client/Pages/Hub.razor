@@ -9,7 +9,6 @@
 @inject ILogger<Hub> _logger
 <div class="main-layout">
     <ContactsComponent 
-        @key="receivedInvites.Count"
         OnSearchRequested="HandleGlobalSearch"
         OnContactInvited="HandleContactInvite"
         OnContactSelected="HandlePrivateChatLoad"
@@ -36,8 +35,6 @@
             OnSendMessage="HandleSendMessage"
             Messages="receivedMessage"
             IsLocked="lockChat"
-            Contact="@AppState.CurrentContact"
-            Chat="@AppState.CurrentChat"
         />
         }
     </main>
@@ -197,7 +194,7 @@
             AppState.CurrentContact = currentContact;
 
         }
-        catch (Exception ec)
+        catch (Exception)
         {
             _logger.LogInformation("Error when trying to load chat");
         }

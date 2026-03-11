@@ -20,7 +20,6 @@ namespace ChatApp.Application.Services
         public async Task SendInvite(Guid senderId, Guid receiverId)
         {
             await _inviteRepo.AddInviteToDB(senderId, receiverId);
-            await _inviteRepo.SaveChangesToDbAsync();
   
         }
         public async Task<List<InviteDTO>> GetInvites(Guid userId)
@@ -37,19 +36,26 @@ namespace ChatApp.Application.Services
                 Status = i.Status,
             }).ToList();
         }
-        public async Task<Guid> InviteAction(Guid InviteId, bool status)
+        public async Task<Guid> InviteAction(Guid InviteId, bool status,Guid userId)
         {
             var invite = await _inviteRepo.GetInviteForIdAsync(InviteId);
+            if (invite.ReceiverID != userId)
+            {
+                return invite.SenderID;
+            }
             if (invite != null && status)
             {
                 await _contactService.AddContactAsync(invite.SenderID, invite.ReceiverID);
                 invite.Status = InviteStatus.Accepted;
+                _inviteRepo.ChangeInviteStatus(invite);
+                
                
             }
             else
                 if (invite != null && !status)
                 {
                     invite.Status = InviteStatus.Rejected;
+                    _inviteRepo.ChangeInviteStatus(invite);
                 }
             return invite.SenderID;
         }

@@ -1,19 +1,20 @@
 ﻿@inject IJSRuntime JSRuntime
+@inject AppStateService AppState
 
 <div class="chat-main-wrapper">
     <div class="top-bar">
         <div class="user-profile">
             <div class="avatar-wrapper">
-                <img src="@Contact.AvatarUrl"
+                <img src="@AppState.CurrentContact.AvatarUrl"
                      class="user-avatar"
                      alt="Avatar" />
                 <div class="status-dot online"></div>
             </div>
 
             <div class="user-info-text">
-                <span class="user-name">@Contact.Username</span>
+                <span class="user-name">@AppState.CurrentContact.Username</span>
                 <span class="chat-separator">|</span>
-                <span class="chat-name">@Chat.ChatName</span>
+                <span class="chat-name">@AppState.CurrentChat.ChatName</span>
             </div>
         </div>
     </div>
@@ -58,12 +59,10 @@
 </div>
 
 @code {
-    [Parameter] public ContactDTO Contact { get; set; }
-    [Parameter] public ChatDTO Chat { get; set; }
     [Parameter] public List<MessageDTO> Messages { get; set; } = new();
     [Parameter] public bool IsLocked { get; set; }
 
-    private string _content;
+    private string _content = string.Empty;
     [Parameter] public EventCallback<string> OnSendMessage { get; set; }
 
     private async Task HandleKeyDown(KeyboardEventArgs keyClick)

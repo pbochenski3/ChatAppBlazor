@@ -10,9 +10,9 @@ namespace ChatApp.Application.DTO
         public Guid InviteID { get; set; } = Guid.CreateVersion7();
         public Guid ReceiverID { get; set; }
         public Guid SenderID { get; set; }
-        public string SenderUsername { get; set; }
-        public string ReceiverUsername { get; set; }
-        public string SenderAvatarUrl { get; set; }
+        public string SenderUsername { get; set; } = string.Empty;
+        public string ReceiverUsername { get; set; } = string.Empty;
+        public string SenderAvatarUrl { get; set; } = string.Empty;
         public InviteStatus Status { get; set; } 
     }
 }

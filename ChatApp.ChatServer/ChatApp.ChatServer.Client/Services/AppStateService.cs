@@ -10,7 +10,7 @@ namespace ChatApp.ChatServer.Client.Services
 
         public UserDTO? CurrentUser { get; set; }
         public ContactDTO? CurrentContact { get; set; }
-        public ChatDTO CurrentChat { get; set; }
+        public ChatDTO? CurrentChat { get; set; }
         public void Logout()
         {
             CurrentUser = null;
