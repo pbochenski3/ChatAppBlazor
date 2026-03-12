@@ -31,11 +31,21 @@ namespace ChatApp.Infrastructure.Migrations
                     b.Property<string>("ChatName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasPrecision(0)
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<DateTime>("DeletedAt")
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsGroup")
+                        .HasColumnType("bit");
 
                     b.HasKey("ChatID");
 
@@ -51,7 +61,15 @@ namespace ChatApp.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("AddedAt")
-                        .HasColumnType("datetime2");
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<DateTime>("DeletedAt")
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.HasKey("UserID", "ContactUserID");
 
@@ -67,7 +85,8 @@ namespace ChatApp.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)");
 
                     b.Property<Guid>("ReceiverID")
                         .HasColumnType("uniqueidentifier");
@@ -101,14 +120,21 @@ namespace ChatApp.Infrastructure.Migrations
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasMaxLength(1000)
-                        .HasPrecision(0)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("DeletedAt")
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<Guid>("SenderID")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("SentAt")
-                        .HasColumnType("datetime2");
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)");
 
                     b.HasKey("MessageID");
 
@@ -157,17 +183,28 @@ namespace ChatApp.Infrastructure.Migrations
                     b.Property<Guid>("ChatID")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("DeletedAt")
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)");
+
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsArchive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("JoinedAt")
-                        .HasColumnType("datetime2");
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)");
 
                     b.HasKey("UserID", "ChatID");
 
                     b.HasIndex("ChatID");
 
-                    b.ToTable("ChatUsers");
+                    b.ToTable("UserChat");
                 });
 
             modelBuilder.Entity("ChatApp.Domain.Models.Contact", b =>
@@ -181,7 +218,7 @@ namespace ChatApp.Infrastructure.Migrations
                     b.HasOne("ChatApp.Domain.Models.User", "User")
                         .WithMany("Contacts")
                         .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("ContactUser");
