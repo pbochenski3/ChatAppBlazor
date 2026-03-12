@@ -32,15 +32,21 @@ public class MessageRepository : IMessageRepository
         _logger.LogInformation("Saving changes to the database.");
         await context.SaveChangesAsync();
     }
+    public async Task<bool> IsDeleted(Guid chatId,Guid id)
+    {
+        using var context = _contextFactory.CreateDbContext();
+        return await context.UserChat.AnyAsync(ch => ch.ChatID == chatId && ch.UserID == id);
+    }
     public async Task<List<Message>> GetMessageHistoryAsync(Guid contactId, Guid id, Guid chatId)
     {
         using var context = _contextFactory.CreateDbContext();
-
         return await context.Messages
             .AsNoTracking()
-            .Include(m => m.Sender) 
-            .Where(uc => uc.ChatID == chatId && (uc.SenderID == id || uc.SenderID == contactId))
-            .OrderBy(uc => uc.SentAt)
-            .ToListAsync(); 
+            .Include(m => m.Sender)
+            .Where(m => m.ChatID == chatId && 
+            (m.SenderID == id ||
+             m.SenderID == contactId))
+            .OrderBy(m => m.SentAt)
+            .ToListAsync();
     }
 }

@@ -47,24 +47,31 @@ public class UserRepository : IUserRepository
     {
         using var context = _contextFactory.CreateDbContext();
         _logger.LogInformation("Retrieving all users who can be invited with query: {Query}", query);
+                var mutualContactIds = await context.Contacts
+            .IgnoreQueryFilters()
+            .Where(c => c.UserID == currentUserId && !c.IsDeleted)
+            .Where(c => context.Contacts 
+                .IgnoreQueryFilters()
+                .Any(rc => rc.UserID == c.ContactUserID &&
+                           rc.ContactUserID == currentUserId &&
+                           !rc.IsDeleted))
+            .Select(c => c.ContactUserID)
+            .ToListAsync();
 
-        var contactIds = context.Contacts
-        .Where(c => c.UserID == currentUserId)
-        .Select(c => c.ContactUserID);
-
-        var pendingInviteIds = context.Invites
+        var pendingInviteIds = await context.Invites
+        .IgnoreQueryFilters()
         .Where(i => i.Status == InviteStatus.Pending &&
                    (i.SenderID == currentUserId || i.ReceiverID == currentUserId))
-        .Select(i => i.SenderID == currentUserId ? i.ReceiverID : i.SenderID);
-
-        return await context.Users
-        .Where(u => u.UserID != currentUserId)
-        .Where(u => u.Username.Contains(query))
-        .Where(u => !contactIds.Contains(u.UserID))
-        .Where(u => !pendingInviteIds.Contains(u.UserID))
-        .OrderBy(u => u.Username)
+        .Select(i => i.SenderID == currentUserId ? i.ReceiverID : i.SenderID)
         .ToListAsync();
 
+        return await context.Users
+         .IgnoreQueryFilters()
+         .Where(u => u.UserID != currentUserId)
+         .Where(u => u.Username.Contains(query))
+         .Where(u => !mutualContactIds.Contains(u.UserID))
+         .Where(u => !pendingInviteIds.Contains(u.UserID))
+         .ToListAsync();
     }
     public async Task SaveChangesToDbAsync()
     {

@@ -15,7 +15,7 @@ namespace ChatApp.Infrastructure.Persistence
         public DbSet<User> Users { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Chat> Chats { get; set; }
-        public DbSet<UserChat> ChatUsers { get; set; }
+        public DbSet<UserChat> UserChat { get; set; }
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<Invite> Invites { get; set; }
         protected override void OnModelCreating(ModelBuilder mb)
@@ -24,15 +24,23 @@ namespace ChatApp.Infrastructure.Persistence
             {
                 entity.HasKey(c => new { c.UserID, c.ContactUserID });
 
+                entity.HasQueryFilter(c => !c.IsDeleted);
+
                 entity.HasOne(c => c.User)
                     .WithMany(u => u.Contacts)
                     .HasForeignKey(c => c.UserID)
-                    .OnDelete(DeleteBehavior.Cascade); 
+                    .OnDelete(DeleteBehavior.Restrict); 
 
                 entity.HasOne(c => c.ContactUser)
                     .WithMany() 
                     .HasForeignKey(c => c.ContactUserID)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                entity.Property(c => c.AddedAt)
+                    .HasPrecision(0);
+
+                entity.Property(c => c.DeletedAt)
+                    .HasPrecision(0);
             });
             mb.Entity<Invite>(entity =>
             {
@@ -41,6 +49,10 @@ namespace ChatApp.Infrastructure.Persistence
                 entity.Property(i => i.Status)
                     .HasConversion<string>() 
                     .HasMaxLength(20);
+
+                entity.Property(i => i.CreatedAt)
+                    .HasPrecision(0);
+
                 entity.HasOne(i => i.Sender)
                     .WithMany(u => u.SentInvites)
                     .HasForeignKey(i => i.SenderID)
@@ -68,19 +80,30 @@ namespace ChatApp.Infrastructure.Persistence
 
             mb.Entity<Message>(entity =>
             {
+                entity.HasQueryFilter(m => !m.IsDeleted);
+
                 entity.HasKey(m => m.MessageID);
                 entity.Property(m => m.Content).IsRequired()
-                .HasMaxLength(1000)
+                .HasMaxLength(1000);
+
+                entity.Property(m => m.SentAt)
+                .HasPrecision(0);
+                entity.Property(m => m.DeletedAt)
                 .HasPrecision(0);
 
             });
 
             mb.Entity<Chat>(entity =>
             {
+                entity.HasQueryFilter(c => !c.IsDeleted);
+
                 entity.HasKey(c => c.ChatID);
                 entity.Property(c => c.ChatName)
                 .IsRequired()
-                .HasMaxLength(100)
+                .HasMaxLength(100);
+                entity.Property(c => c.CreatedAt)
+                .HasPrecision(0);
+                entity.Property(c => c.DeletedAt)
                 .HasPrecision(0);
 
                 entity.HasMany(c => c.Messages)
@@ -90,15 +113,25 @@ namespace ChatApp.Infrastructure.Persistence
             });
             mb.Entity<UserChat>(entity =>
             {
-                entity.HasKey(cu => new { cu.UserID, cu.ChatID });
+                entity.HasQueryFilter(uc => !uc.IsDeleted);
 
-                entity.HasOne(cu => cu.User)
+                entity.HasKey(uc => new { uc.UserID, uc.ChatID });
+
+                entity.HasOne(uc => uc.User)
                 .WithMany(u => u.UserChats)
-                .HasForeignKey(cu => cu.UserID);
+                .HasForeignKey(uc => uc.UserID);
                 
-                entity.HasOne(cu => cu.Chat)
+                entity.HasOne(uc => uc.Chat)
                 .WithMany(c => c.UserChats)
-                .HasForeignKey(cu => cu.ChatID);
+                .HasForeignKey(uc => uc.ChatID);
+
+                entity.Property(uc => uc.JoinedAt)
+                .HasPrecision(0);
+
+                entity.Property(uc => uc.DeletedAt)
+                .HasPrecision(0);
+
+
             });
         }
     }

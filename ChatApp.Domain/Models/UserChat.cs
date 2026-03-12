@@ -15,7 +15,7 @@ namespace ChatApp.Domain.Models
         public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
         public bool IsAdmin { get; set; } = false;
         public bool IsDeleted { get; set; } = false;
-        public DateTime DeletedAt { get; set; }
+        public DateTime? DeletedAt { get; set; }
         public bool IsArchive { get; set; } = false;
     }
 }

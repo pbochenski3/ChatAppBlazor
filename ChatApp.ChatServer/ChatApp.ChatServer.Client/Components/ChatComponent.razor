@@ -1,7 +1,15 @@
 ﻿@inject IJSRuntime JSRuntime
 @inject AppStateService AppState
-
-<div class="chat-main-wrapper">
+<div class="chat-main-wrapper @(_isSettingsOpen ? "show-settings" : "")">
+    <div class="confirm-overlay @(_confirmWindow ? " show-window" : "" )">
+        <div class="confirm-window">
+            <p>Czy na pewno chcesz usunąć kontakt?</p>
+            <div class="confirm-actions">
+                <button class="btn-confirm-yes" @onclick="() => HandleDelete(true)">Tak</button>
+                <button class="btn-confirm-no" @onclick=" () => HandleDelete(false)">Nie</button>
+            </div>
+        </div>
+    </div>
     <div class="top-bar">
         <div class="user-profile">
             <div class="avatar-wrapper">
@@ -17,43 +25,63 @@
                 <span class="chat-name">@AppState.CurrentChat.ChatName</span>
             </div>
         </div>
+        <div class="contact-config" @onclick="ToggleSettings" style="cursor:pointer">⚙️</div>
     </div>
 
-    <div class="chat-box" id="chat-window">
-        <div class="chat-messages">
-            @if (Messages != null && Messages.Any())
-            {
-                @foreach (var msg in Messages)
-                {
-                    <div class="message">
-                        <span class="message-time">[@msg.SentAt.ToString("HH:mm")]</span>
-                        <span class="message-user">@msg.SenderUsername:</span>
-                        <span class="message-content">@msg.Content</span>
-                    </div>
-                }
-            }
-            else
-            {
-                <div class="no-messages">Brak wiadomości. Przywitaj się!</div>
-            }
+    <div class="chat-body-horizontal-container">
+
+        <div class="chat-interaction-area">
+            <div class="chat-box" id="chat-window">
+                <div class="chat-messages">
+                    @if (Messages != null && Messages.Any())
+                    {
+                        @foreach (var msg in Messages)
+                        {
+                            <div class="message">
+                                <span class="message-time">[@msg.SentAt.ToString("HH:mm")]</span>
+                                <span class="message-user">@msg.SenderUsername:</span>
+                                <span class="message-content">@msg.Content</span>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="no-messages">Brak wiadomości. Przywitaj się!</div>
+                    }
+                </div>
+            </div>
+
+            <div class="message-input-area@(!IsArchive ? " show-chat-input" : "")">
+                <div class="input-group">
+                    <input type="text"
+                           class="form-control"
+                           placeholder="Napisz wiadomość..."
+                           disabled="@IsLocked"
+                           @bind="_content"
+                           @bind:event="oninput"
+                           @onkeydown="HandleKeyDown" />
+
+                    <button class="btn-primary"
+                            disabled="@(IsLocked || string.IsNullOrWhiteSpace(_content))"
+                            @onclick="HandleInternalSubmit">
+                        Wyślij
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
+        <div class="contact-settings-panel">
+            <div class="sidebar-header">
+                <h3>Opcje kontaktu</h3>
+            </div>
+            <div class="settings-content">
+                <button class="btn-secondary">Zmień pseudonim</button>
+                <button class="btn-secondary-delete"
+                @onclick="@TriggerConfirmationWindow">Usuń kontakt</button>
 
-    <div class="message-input-area">
-        <div class="input-group">
-            <input type="text"
-                   class="form-control"
-                   placeholder="Napisz wiadomość..."
-                   disabled="@IsLocked"
-                   @bind="_content"
-                   @bind:event="oninput"
-                   @onkeydown="HandleKeyDown" />
-
-            <button class="btn-primary"
-                    disabled="@(IsLocked || string.IsNullOrWhiteSpace(_content))"
-                    @onclick="HandleInternalSubmit">
-                Wyślij
-            </button>
+                <div class="section-hint">
+                    Informacje o szyfrowaniu wiadomości są chronione end-to-end.
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -61,15 +89,36 @@
 @code {
     [Parameter] public List<MessageDTO> Messages { get; set; } = new();
     [Parameter] public bool IsLocked { get; set; }
+    [Parameter] public bool IsArchive { get; set; }
 
     private string _content = string.Empty;
+    private bool _isSettingsOpen = false;
+    private bool _confirmWindow = false;
+    private void TriggerConfirmationWindow()
+    {
+        _confirmWindow = !_confirmWindow;
+    }
+    private void ToggleSettings()
+    {
+        _isSettingsOpen = !_isSettingsOpen;
+    }
     [Parameter] public EventCallback<string> OnSendMessage { get; set; }
+    [Parameter] public EventCallback<Guid> OnDeleteContact { get; set; }
 
     private async Task HandleKeyDown(KeyboardEventArgs keyClick)
     {
         if(keyClick.Key == "Enter")
         {
             await HandleInternalSubmit();
+        }
+    }
+    private async Task HandleDelete(bool response)
+    {
+        if(response)
+        {
+            _confirmWindow = false;
+            var contactId = AppState.CurrentContact.ContactUserID;
+            await OnDeleteContact.InvokeAsync(contactId);
         }
     }
     private async Task HandleInternalSubmit()

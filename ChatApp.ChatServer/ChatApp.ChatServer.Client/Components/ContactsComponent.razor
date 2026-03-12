@@ -2,7 +2,7 @@
 <aside class="sidebar">
     <div class="sidebar-header">
         <div class="user-ifno">
-            <p>@AppState.CurrentUser.Username</p>
+            <p>@(AppState?.CurrentUser?.Username ?? String.Empty)</p>
         </div>
         <div class="nav-tabs">
             <button class="@(currentView == View.Contacts ? "active" : "")" @onclick="() => currentView = View.Contacts">
@@ -165,7 +165,7 @@
 
     private string searchTerm = "";
     private string globalSearchQuery = "";
-    private int PendingInvitesCount => InvitesList.Count();
+    private int PendingInvitesCount => InvitesList?.Count ?? 0;
     protected Guid SelectedContactId;
     protected override void OnParametersSet()
     {

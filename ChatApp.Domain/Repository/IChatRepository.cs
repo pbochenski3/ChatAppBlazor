@@ -10,6 +10,8 @@ namespace ChatApp.Application.Interfaces.Repository
     {
         Task AddChatAsync(Chat chat);
         Task SaveChangesToDbAsync();
-        Task<Chat?> GetChatById(Guid user1, Guid user2);
+        Task<Chat?> GetPrivateChat(Guid user1, Guid user2);
+        Task ArchivePrivateChatFromDb(Guid chatId, Guid userId, Guid contactId);
+        Task RestoreChat(Guid chatId);
     }
 }

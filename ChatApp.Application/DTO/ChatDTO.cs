@@ -12,5 +12,6 @@ namespace ChatApp.Application.DTO
             public IEnumerable<UserDTO> Participants { get; set; } = new HashSet<UserDTO>();
             public string LastMessageContent { get; set; } = string.Empty;
             public DateTime? LastMessageAt { get; set; }
-        }
+            public bool IsArchive { get; set; } = false;
+    }
 }

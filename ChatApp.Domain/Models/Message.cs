@@ -14,7 +14,7 @@ namespace ChatApp.Domain.Models
         public Guid SenderID { get; set; }
         public User Sender { get; set; } = null!;
         public bool IsDeleted { get; set; } = false;
-        public DateTime DeletedAt { get; set; }
+        public DateTime? DeletedAt { get; set; }
 
     }
 }

@@ -266,6 +266,14 @@ body, html {
     cursor: pointer;
     transition: all 0.2s;
 }
+.btn-secondary.btn-delete {
+    color: #ff4d4d;
+    border-color: #442222;
+}
+    .btn-secondary.btn-danger:hover {
+        background-color: rgba(255, 77, 77, 0.1);
+        border-color: #ff4d4d;
+    }
 
     .btn-secondary:hover {
         background-color: #333;
@@ -351,8 +359,117 @@ body, html {
 }
 
 /* =========================================
-   3. CZAT (Top Bar i Kontener wiadomości)
+   3. CZAT/Settings menu
    ========================================= */
+.chat-body-horizontal-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    width: 100%;
+}
+.chat-interaction-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease-in-out;
+    min-width: 0; 
+}
+/*settings*/
+.contact-settings-panel {
+    width: 0;
+    min-width: 0;
+    background-color: #1a1a1a;
+    border-left: 0 solid #333;
+    overflow: hidden;
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+}
+.show-settings .contact-settings-panel {
+    width: 300px; 
+    min-width: 300px;
+    border-left: 2px solid #333;
+}
+.show-settings .chat.chat-interaction-area {
+    background-color: #161616;
+}
+.settings-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+/*confirm window*/
+.confirm-overlay {
+display: none;
+}
+.confirm-overlay.show-window {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+
+.confirm-window {
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 24px;
+    width: 90%;
+    max-width: 350px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.2s ease-out;
+}
+
+    .confirm-window p {
+        margin: 0 0 20px 0;
+        font-size: 1.1rem;
+        color: #e0e0e0;
+    }
+
+.confirm-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.confirm-window button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+.btn-confirm-yes {
+    background-color: #dc3545;
+    color: white;
+}
+
+    .btn-confirm-yes:hover {
+        background-color: #c82333;
+    }
+
+.btn-confirm-no {
+    background-color: #444;
+    color: #e0e0e0;
+}
+
+    .btn-confirm-no:hover {
+        background-color: #555;
+    }
+
+/* chat*/
 .chat-content {
     flex: 1;
     display: flex;
@@ -370,6 +487,7 @@ body, html {
     align-items: center;
     padding: 0 1.5rem;
     color: #ffffff;
+    justify-content:space-between;
 }
 
 .user-profile {
@@ -410,12 +528,19 @@ body, html {
     align-items: baseline; 
     gap: 10px;
 }
-
+.contact-config {
+    display: flex;
+    align-items:flex-end
+}
 .user-name {
     font-size: 1.3rem;
     font-weight: 600;
     color: #ffffff;
     letter-spacing: 0.5px;
+}
+.contact-config {
+    cursor: pointer;
+    font-size: 1.2rem;
 }
 .chat-main-wrapper {
     display: flex;
@@ -496,8 +621,11 @@ body, html {
     color: #ffffff;
     word-wrap: break-word;
 }
-
 .message-input-area {
+    display: none;
+}
+.message-input-area.show-chat-input {
+    display: flex;
     margin: 15px; 
     padding: 10px;
     background-color: #1a1a1a;
@@ -565,6 +693,7 @@ body, html {
     align-items: center;
     animation: toast-lifecycle 5s ease-in-out forwards;
 }
+
 
 @keyframes toast-lifecycle {
     0% {

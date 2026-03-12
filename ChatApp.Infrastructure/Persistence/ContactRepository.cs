@@ -18,7 +18,7 @@ namespace ChatApp.Infrastructure.Persistence
             _contextFactory = contextFactory;
             _logger = logger;
         }
-        public async Task<Contact> GetContactAsync(Guid contactId, Guid userId)
+        public async Task<Contact?> GetContactAsync(Guid contactId, Guid userId)
         {
             using var context = _contextFactory.CreateDbContext();
             _logger.LogInformation("Retreiving contact from database");
@@ -32,8 +32,36 @@ namespace ChatApp.Infrastructure.Persistence
             _logger.LogInformation("Retrieving all user contact from the database.");
             return await context.Contacts
                 .Include(c => c.ContactUser)
-                .Where(c => c.UserID == id)
+                .Where(c => c.UserID == id && c.IsDeleted == false)
                 .ToListAsync();
+        }
+        public async Task<Contact?> CheckContact(Guid contact1, Guid contact2)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Contacts
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(c =>
+                c.UserID == contact1 &&
+                c.ContactUserID == contact2 &&
+                c.IsDeleted == true);
+
+        }
+        public async Task RestoreContacts(List<Contact> contactRestore)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            if (contactRestore == null || !contactRestore.Any()) return;
+
+            foreach (var contact in contactRestore)
+            {
+                await context.Contacts
+                    .IgnoreQueryFilters()
+                    .Where(c => c.UserID == contact.UserID && c.ContactUserID == contact.ContactUserID)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(c => c.IsDeleted, false)
+                        .SetProperty(c => c.DeletedAt, (DateTime?)null));
+            }
+
         }
         public async Task AddContactToDb(Contact contact)
         {
@@ -42,11 +70,19 @@ namespace ChatApp.Infrastructure.Persistence
             await context.Contacts.AddAsync(contact);
             await context.SaveChangesAsync();
         }
-         public async Task SaveChangesToDbAsync()
+        public async Task DeleteContactFromDb(Guid contactId, Guid userId)
         {
             using var context = _contextFactory.CreateDbContext();
-            _logger.LogInformation("Saving changes to the database.");
+
+            await context.Contacts
+                .IgnoreQueryFilters()
+                .Where(c => c.UserID == userId && c.ContactUserID == contactId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(c => c.IsDeleted, true)
+                    .SetProperty(c => c.DeletedAt, DateTime.UtcNow));
+
             await context.SaveChangesAsync();
         }
+
     }
 }

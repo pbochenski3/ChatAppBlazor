@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 
 namespace ChatApp.Domain.Models
@@ -14,6 +15,6 @@ namespace ChatApp.Domain.Models
         public bool IsDeleted { get; set; } = false;
 
         public bool IsGroup { get; set; }
-        public DateTime DeletedAt { get; set; }
+        public DateTime? DeletedAt { get; set; }
     }
 }

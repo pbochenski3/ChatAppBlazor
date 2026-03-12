@@ -1,4 +1,5 @@
 ﻿using ChatApp.Application.DTO;
+using ChatApp.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,7 +8,7 @@ namespace ChatApp.Application.Interfaces.Service
 {
     public interface IChatService
     {
-        Task<ChatDTO> GetChatById(Guid contactId, Guid currenUserId);
-        Task CreateChat(Guid contactId, Guid id);
+        Task<ChatDTO> GetPrivateChatById(Guid contactId, Guid currenUserId);
+        Task<Chat> CreateChat(List<User> users,string ChatName,bool isGroup);
     }
 }

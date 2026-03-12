@@ -6,15 +6,12 @@ using System.Net.Http.Json;
 using System.Net.NetworkInformation;
 public class ChatHubService : IAsyncDisposable
 {
-    private readonly string _hubUrl;
     public HubConnection HubConnection { get; private set; }
     public event Action<MessageDTO>? OnMessageReceived;
     public event Action<string>? RegisterStatusMessage;
     public event Action<string>? InviteStatusMessage;
-    public event Func<bool,Task>? ContactInviteReload;
-    public event Func<bool,Task>? InviteReload;
-    public event Func<bool,Task>? ContactReload;
-    public event Action<bool>? InviteReceived;
+    public event Action<string>? OnContactDelete;
+    public event Action<ReloadTarget>? OnAppReload;
     public event Action<string,UserDTO>? LoginStatusMessage;
     private readonly AppStateService _appStateService;
     private readonly string? _baseHubUrl;
@@ -29,34 +26,17 @@ public class ChatHubService : IAsyncDisposable
         _httpClient = httpClient;
         _logger = logger;
     }
-    private void RegisterHandlers()
-    {
-        if (HubConnection == null) return;
-        HubConnection.On<MessageDTO>("ReceiveMessage", (message) =>
+        private void RegisterHandlers()
         {
-            OnMessageReceived?.Invoke(message);
-        });
-        HubConnection.On<string>("ReceiveInviteStatus", (inviteStatusMessage) =>
-        {
-            InviteStatusMessage?.Invoke(inviteStatusMessage);
-        });
-        HubConnection.On<bool>("ContactInviteReload", (shouldReload) =>
-        {
-            ContactInviteReload?.Invoke(shouldReload);
-        });
-        HubConnection.On<bool>("InviteReload", (shouldReload) =>
-        {
-            InviteReload?.Invoke(shouldReload);
-        });
-        HubConnection.On<bool>("ContactReload", (shouldReload) =>
-        {
-            ContactReload?.Invoke(shouldReload);
-        });
-        HubConnection.On<bool>("InviteReceived", (shouldReload) =>
-        {
-            InviteReceived?.Invoke(shouldReload);
-        });
-    }
+            if (HubConnection == null) return;
+            HubConnection.On<MessageDTO>("ReceiveMessage", (message) => OnMessageReceived?.Invoke(message));
+            HubConnection.On<string>("ReceiveStatus", (inviteStatusMessage) => InviteStatusMessage?.Invoke(inviteStatusMessage));
+            HubConnection.On<bool>("ContactReload", (b) => OnAppReload?.Invoke(ReloadTarget.Contact));
+            HubConnection.On<bool>("InviteReload", (b) => OnAppReload?.Invoke(ReloadTarget.Invite));
+            HubConnection.On<bool>("ContactInviteReload", (b) => OnAppReload?.Invoke(ReloadTarget.Global));
+            HubConnection.On<bool>("ChatReload", (b) => OnAppReload?.Invoke(ReloadTarget.Chat));
+
+        }
     public async Task SendMessageAsync(MessageDTO message)
     {
         if(message == null || string.IsNullOrWhiteSpace(message.Content))
@@ -143,7 +123,7 @@ public class ChatHubService : IAsyncDisposable
         return await HubConnection.InvokeAsync<ChatDTO>("GetChat", contactId);
     }
 
-    public async Task<List<MessageDTO>> GetPrivateHistoryAsync(Guid contactId,Guid chatId)
+    public async Task<List<MessageDTO>> GetPrivateHistory(Guid contactId,Guid chatId)
     {
         try
         {
@@ -157,7 +137,8 @@ public class ChatHubService : IAsyncDisposable
     }
     public Task<List<InviteDTO>> GetInvitesAsync()
     {
-        return HubConnection.InvokeAsync<List<InviteDTO>>("GetInvites");
+
+            return HubConnection.InvokeAsync<List<InviteDTO>>("GetInvites");
     }
     public async Task<List<ContactDTO>> GetContactsAsync()
     {
@@ -178,6 +159,10 @@ public class ChatHubService : IAsyncDisposable
     public async Task SendInviteActionAsync(Guid InviteId, bool Status)
     {
                await HubConnection.InvokeAsync("InviteAction", InviteId,Status);
+    }
+    public async Task DeleteContactAsync(Guid contactId,Guid chatId)
+    {
+        await HubConnection.InvokeAsync("DeleteContact", contactId,chatId);
     }
     public async ValueTask DisposeAsync()
     {
