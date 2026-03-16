@@ -1,4 +1,5 @@
 ﻿using ChatApp.Application.DTO;
+using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
 using ChatApp.Domain.Models;
@@ -12,18 +13,21 @@ namespace ChatApp.Application.Services
     {
         private readonly IChatRepository _chatRepo;
         private readonly IUserRepository _userRepo;
-            public ChatService(IChatRepository chatRepo,IUserRepository userRepo)
+        private readonly IContactRepository _contactRepo;
+        public ChatService(IChatRepository chatRepo, IUserRepository userRepo, IContactRepository contactRepo)
         {
             _chatRepo = chatRepo;
             _userRepo = userRepo;
+            _contactRepo = contactRepo;
         }
-        public async Task<ChatDTO> GetPrivateChatById(Guid contactId, Guid currenUserId)
+        public async Task<ChatDTO> GetPrivateChatById(Guid Id, Guid currenUserId)
         {
-            var chat = await _chatRepo.GetPrivateChat(contactId, currenUserId);
+            var chat = await _chatRepo.GetPrivateChatC(Id, currenUserId);
+      
 
             if (chat == null)
             {
-                var user1 = await _userRepo.GetByIdAsync(contactId);
+                var user1 = await _userRepo.GetByIdAsync(Id);
                 var user2 = await _userRepo.GetByIdAsync(currenUserId);
 
                 if (user1 == null || user2 == null) throw new Exception("User not found");
@@ -32,27 +36,29 @@ namespace ChatApp.Application.Services
                 chat = await CreateChat(users, $"{user1.Username} && {user2.Username} Chat", false);
             }
             else
-            { 
-                var myChatStatus = chat.UserChats.FirstOrDefault(uc => uc.UserID == currenUserId);
+            {
+                var myUserChat = chat.UserChats.FirstOrDefault(uc => uc.UserID == currenUserId);
 
-                if (myChatStatus != null && (myChatStatus.IsDeleted || myChatStatus.IsArchive))
+                var otherUserInChat = chat.UserChats.FirstOrDefault(uc => uc.UserID != currenUserId);
+
+                if (otherUserInChat != null)
                 {
-                    await _chatRepo.RestoreChat(chat.ChatID);
+                    var deletedContactRecord = await _contactRepo.CheckContact(currenUserId, otherUserInChat.UserID);
 
-                    foreach (var uc in chat.UserChats)
+                    if (myUserChat != null && myUserChat.IsArchive && deletedContactRecord == null)
                     {
-                        uc.IsDeleted = false;
-                        uc.DeletedAt = null;
-                        uc.IsArchive = false;
+                        await _chatRepo.RestoreChat(chat.ChatID);
+                        myUserChat.IsArchive = false;
+                        myUserChat.ArchivedAt = null;
                     }
                 }
             }
-
             return new ChatDTO
             {
                 ChatID = chat.ChatID,
                 CreatedAt = chat.CreatedAt,
                 ChatName = chat.ChatName,
+          
                 IsArchive = chat.UserChats.FirstOrDefault(uc => uc.UserID == currenUserId)?.IsArchive ?? false
             };
         }
@@ -80,6 +86,29 @@ namespace ChatApp.Application.Services
             }
             await _chatRepo.AddChatAsync(newChat);
             return newChat;
+        }
+        public async Task<bool> GetChatStatus(Guid ChatId, Guid ContactId)
+        {
+            return await _chatRepo.GetChatStatusById(ChatId, ContactId);
+        }
+        public async Task<List<ChatDTO>> GetChatList (Guid UserId)
+        {
+            var ChatList =  await _chatRepo.GetChatListFromDb(UserId);
+            if(!ChatList.Any())
+            {
+                return new List<ChatDTO>();
+            }
+            return ChatList.Select(chat =>
+            {
+                return new ChatDTO
+                {
+                    ChatID = chat.ChatID,
+                    IsArchive = chat.IsArchive,
+                    ChatName = chat.Chat.ChatName,
+                    IsGroup = chat.Chat.IsGroup,
+                };
+            })
+                .ToList();
         }
 
     }

@@ -47,7 +47,7 @@ namespace ChatApp.Application.Services
             {
                 await _contactService.AddContactAsync(invite.SenderID, invite.ReceiverID);
                 invite.Status = InviteStatus.Accepted;
-                _inviteRepo.ChangeInviteStatus(invite);
+                await _inviteRepo.ChangeInviteStatus(invite);
                 
                
             }
@@ -55,7 +55,7 @@ namespace ChatApp.Application.Services
                 if (invite != null && !status)
                 {
                     invite.Status = InviteStatus.Rejected;
-                    _inviteRepo.ChangeInviteStatus(invite);
+                    await _inviteRepo.ChangeInviteStatus(invite);
                 }
             return invite.SenderID;
         }

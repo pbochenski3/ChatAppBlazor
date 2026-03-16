@@ -114,7 +114,6 @@ namespace ChatApp.Infrastructure.Persistence
             mb.Entity<UserChat>(entity =>
             {
                 entity.HasQueryFilter(uc => !uc.IsDeleted);
-
                 entity.HasKey(uc => new { uc.UserID, uc.ChatID });
 
                 entity.HasOne(uc => uc.User)
@@ -128,6 +127,8 @@ namespace ChatApp.Infrastructure.Persistence
                 entity.Property(uc => uc.JoinedAt)
                 .HasPrecision(0);
 
+                entity.Property(uc => uc.ArchivedAt)
+                .HasPrecision(0);
                 entity.Property(uc => uc.DeletedAt)
                 .HasPrecision(0);
 

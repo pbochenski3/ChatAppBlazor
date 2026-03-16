@@ -28,7 +28,7 @@ namespace ChatApp.Application.Services
             var contact = await _contactRepo.GetContactAsync(contactId, userId);
             if (contact == null)
             {
-                throw new Exception("Contact couldn`t load");
+                return new ContactDTO();
             }
             return new ContactDTO
             {
@@ -105,7 +105,7 @@ namespace ChatApp.Application.Services
         public async Task DeleteContactAsync(Guid contactId,Guid userId,Guid chatId)
         {
             await _contactRepo.DeleteContactFromDb(contactId, userId);
-            await _chattRepo.ArchivePrivateChatFromDb(chatId,userId,contactId);
+            await _chattRepo.ArchivePrivateChat(chatId,userId,contactId);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using ChatApp.Application.DTO;
+using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Service;
 using ChatApp.Application.Services;
 using ChatApp.Domain.Models;
@@ -44,7 +45,6 @@ namespace ChatApp.ChatHub
                 var targetUser = Clients.User(receiverId.ToString());
                 await targetUser.SendAsync("ReceiveInviteStatus", "You have a new invite!");
                 await targetUser.SendAsync("InviteReload", true);
-                _logger.LogInformation($"SIGNAlR:{Context.UserIdentifier}");
             }
             catch(Exception)
             {
@@ -75,12 +75,12 @@ namespace ChatApp.ChatHub
         {
                 await _contactService.DeleteContactAsync(contactId, userId, chatId);
                 await Clients.Caller.SendAsync("ReceiveStatus", "Kontakt został usunięty!");
-                await Clients.Caller.SendAsync("ReceiveStatus", true);
-                await Clients.Caller.SendAsync("ContactReload", true);
-            var target = Clients.Users(contactId.ToString());
+                await Clients.Caller.SendAsync("ContactInviteReload", true);
+                await Clients.Caller.SendAsync("ChatReload", true);
+                var target = Clients.Users(contactId.ToString());
                 await target.SendAsync("ReceiveStatus", "Ktoś usunął cie z kontaktów!");
-                await target.SendAsync("ChatReload", true);
                 await target.SendAsync("ContactInviteReload", true);
+                await target.SendAsync("ChatReload", true);
         }
 
         public async Task InviteAction(Guid inviteId, bool status)
@@ -114,13 +114,21 @@ namespace ChatApp.ChatHub
         {
             return await _inviteService.GetInvites(userId);
         }
-        public async Task<List<MessageDTO>> GetPrivateHistory(Guid contactId,Guid chatId)
+        public async Task<List<MessageDTO>> GetPrivateHistory(Guid Id,Guid chatId)
         {
-            return await _messageService.GetPrivateHistoryAsync(contactId,userId,chatId);
+            return await _messageService.GetPrivateHistoryAsync(Id,userId,chatId);
         }
-        public async Task<ChatDTO> GetChat(Guid contactId)
+        public async Task<ChatDTO> GetChat(Guid Id)
         {
-            return await _chatService.GetPrivateChatById(contactId,userId);
+            return await _chatService.GetPrivateChatById(Id,userId);
+        }
+        public async Task<bool> GetChatStatus(Guid ChatId, Guid ContactId)
+        {
+            return await _chatService.GetChatStatus(ChatId, ContactId);
+        }
+        public async Task<List<ChatDTO>> GetChatList()
+        {
+            return await _chatService.GetChatList(userId);
         }
     }
 }

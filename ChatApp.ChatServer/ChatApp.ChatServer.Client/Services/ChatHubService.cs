@@ -1,4 +1,5 @@
 ﻿using ChatApp.Application.DTO;
+using ChatApp.Application.Interfaces;
 using ChatApp.ChatServer.Client.Services;
 using ChatApp.Domain.Models;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -11,6 +12,7 @@ public class ChatHubService : IAsyncDisposable
     public event Action<string>? RegisterStatusMessage;
     public event Action<string>? InviteStatusMessage;
     public event Action<string>? OnContactDelete;
+    public event Func<Guid,Task?> OnChatLoad;
     public event Action<ReloadTarget>? OnAppReload;
     public event Action<string,UserDTO>? LoginStatusMessage;
     private readonly AppStateService _appStateService;
@@ -31,10 +33,10 @@ public class ChatHubService : IAsyncDisposable
             if (HubConnection == null) return;
             HubConnection.On<MessageDTO>("ReceiveMessage", (message) => OnMessageReceived?.Invoke(message));
             HubConnection.On<string>("ReceiveStatus", (inviteStatusMessage) => InviteStatusMessage?.Invoke(inviteStatusMessage));
-            HubConnection.On<bool>("ContactReload", (b) => OnAppReload?.Invoke(ReloadTarget.Contact));
+            HubConnection.On<bool>("ContactReload", (b) => OnAppReload?.Invoke(ReloadTarget.Sidebar));
             HubConnection.On<bool>("InviteReload", (b) => OnAppReload?.Invoke(ReloadTarget.Invite));
             HubConnection.On<bool>("ContactInviteReload", (b) => OnAppReload?.Invoke(ReloadTarget.Global));
-            HubConnection.On<bool>("ChatReload", (b) => OnAppReload?.Invoke(ReloadTarget.Chat));
+            HubConnection.On<Guid>("ChatReload", (id) => OnChatLoad?.Invoke(id)); 
 
         }
     public async Task SendMessageAsync(MessageDTO message)
@@ -156,6 +158,10 @@ public class ChatHubService : IAsyncDisposable
     {
         await HubConnection.InvokeAsync("SendInvite",receiverId);
     }
+    public async Task<bool> GetChatStatus(Guid chatId,Guid ContactId)
+    {
+        return await HubConnection.InvokeAsync<bool>("GetChatStatus", chatId, ContactId);
+    }
     public async Task SendInviteActionAsync(Guid InviteId, bool Status)
     {
                await HubConnection.InvokeAsync("InviteAction", InviteId,Status);
@@ -163,6 +169,10 @@ public class ChatHubService : IAsyncDisposable
     public async Task DeleteContactAsync(Guid contactId,Guid chatId)
     {
         await HubConnection.InvokeAsync("DeleteContact", contactId,chatId);
+    }
+    public async Task<List<ChatDTO>> GetChatList()
+    {
+        return await HubConnection.InvokeAsync<List<ChatDTO>>("GetChatList");
     }
     public async ValueTask DisposeAsync()
     {

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ChatDbContext))]
-    [Migration("20260312073553_UserChatNewFlag")]
-    partial class UserChatNewFlag
+    [Migration("20260316072117_fix")]
+    partial class fix
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,7 +40,7 @@ namespace ChatApp.Infrastructure.Migrations
                         .HasPrecision(0)
                         .HasColumnType("datetime2(0)");
 
-                    b.Property<DateTime>("DeletedAt")
+                    b.Property<DateTime?>("DeletedAt")
                         .HasPrecision(0)
                         .HasColumnType("datetime2(0)");
 
@@ -67,7 +67,7 @@ namespace ChatApp.Infrastructure.Migrations
                         .HasPrecision(0)
                         .HasColumnType("datetime2(0)");
 
-                    b.Property<DateTime>("DeletedAt")
+                    b.Property<DateTime?>("DeletedAt")
                         .HasPrecision(0)
                         .HasColumnType("datetime2(0)");
 
@@ -125,7 +125,7 @@ namespace ChatApp.Infrastructure.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<DateTime>("DeletedAt")
+                    b.Property<DateTime?>("DeletedAt")
                         .HasPrecision(0)
                         .HasColumnType("datetime2(0)");
 
@@ -186,7 +186,11 @@ namespace ChatApp.Infrastructure.Migrations
                     b.Property<Guid>("ChatID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("DeletedAt")
+                    b.Property<DateTime?>("ArchivedAt")
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<DateTime?>("DeletedAt")
                         .HasPrecision(0)
                         .HasColumnType("datetime2(0)");
 

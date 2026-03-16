@@ -1,8 +1,11 @@
-﻿using ChatApp.Application.DTO;
+﻿
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Client;
+using System.Net.NetworkInformation;
+using System.Reflection.Metadata.Ecma335;
 
 namespace ChatApp.Infrastructure.Persistence;
 
@@ -23,21 +26,22 @@ public class ChatRepository : IChatRepository
             .IgnoreQueryFilters()
             .Where(uc => uc.ChatID == chatId)
             .ExecuteUpdateAsync(setters => setters
-                .SetProperty(uc => uc.IsDeleted, false)
-                .SetProperty(uc => uc.DeletedAt, (DateTime?)null)
+                .SetProperty(uc => uc.ArchivedAt, (DateTime?)null)
                 .SetProperty(uc => uc.IsArchive, false));
 
     }
-    public async Task<Chat?> GetPrivateChat(Guid user1, Guid user2)
+    public async Task<Chat?> GetPrivateChatC(Guid identifier, Guid user2)
     {
         using var context = _contextFactory.CreateDbContext();
         return await context.Chats
-            .IgnoreQueryFilters()
-            .Include(c => c.UserChats)
-            .Where(c => !c.IsGroup) 
-            .Where(c => c.UserChats.Any(uc => uc.UserID == user1))
-            .Where(c => c.UserChats.Any(uc => uc.UserID == user2))
-            .FirstOrDefaultAsync();
+        .IgnoreQueryFilters()
+        .Include(c => c.UserChats)
+        .Where(c => !c.IsGroup)
+        .Where(c =>
+            c.ChatID == identifier ||
+            (c.UserChats.Any(uc => uc.UserID == identifier) && c.UserChats.Any(uc => uc.UserID == user2))
+        )
+        .FirstOrDefaultAsync();
     }
     public async Task AddChatAsync(Chat chat)
     {
@@ -46,30 +50,41 @@ public class ChatRepository : IChatRepository
         _logger.LogInformation("Adding a new chat to the database:");
         await context.SaveChangesAsync();
     }
-    public async Task ArchivePrivateChatFromDb(Guid chatId,Guid userId, Guid contactId)
+    public async Task ArchivePrivateChat(Guid chatId,Guid userId, Guid contactId)
     {
         using var context = _contextFactory.CreateDbContext();
-        var userExistsInChat = await context.UserChat
-       .AnyAsync(uc => uc.ChatID == chatId && uc.UserID == userId);
-
-        if (userExistsInChat)
-        {
-            await context.UserChat
-             .Where(uc => uc.ChatID == chatId && uc.UserID == userId)
-             .ExecuteUpdateAsync(s => s
-                 .SetProperty(uc => uc.IsDeleted, true)
-                 .SetProperty(uc => uc.DeletedAt, DateTime.UtcNow));
-
-            await context.UserChat
-            .Where(uc => uc.ChatID == chatId && uc.UserID == contactId)
+        var affected = await context.UserChat
+            .IgnoreQueryFilters()
+            .Where(uc => uc.ChatID == chatId && uc.UserID == userId || uc.UserID == contactId)
             .ExecuteUpdateAsync(s => s
-                .SetProperty(uc => uc.IsArchive, true));
-            await context.SaveChangesAsync();
-        }
+                .SetProperty(uc => uc.IsArchive, true)
+                .SetProperty(uc => uc.ArchivedAt, DateTime.UtcNow));
+
+        _logger.LogInformation("ArchivePrivateChat: set IsArchive=true for chat {ChatId}, user {UserId}. Rows affected: {Count}", chatId, userId, affected);
+    }
+    public async Task<bool> GetChatStatusById(Guid ChatId,Guid ContactId)
+    {
+        using var context = _contextFactory.CreateDbContext();
+        var chat = await context.UserChat
+            .Where(uc => uc.IsArchive)
+            .Where(uc => uc.ChatID == ChatId)
+            .Where(uc => uc.UserID == ContactId)
+            .FirstOrDefaultAsync();
+        return chat?.IsArchive ?? false;
     }
     public async Task DeletePrivateChat(Guid chatId)
     {
 
+    }
+    public async Task<List<UserChat>> GetChatListFromDb(Guid UserId)
+    {
+        using var context = _contextFactory.CreateDbContext();
+        return await context.UserChat
+         .AsNoTracking()
+         .Include(uc => uc.Chat)
+         .Where(uc => uc.UserID == UserId)
+         .Where(uc => uc.Chat.IsGroup == true || (uc.Chat.IsGroup == false && uc.IsArchive))
+         .ToListAsync();
     }
     public async Task SaveChangesToDbAsync()
     {

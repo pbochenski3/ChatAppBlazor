@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ChatDbContext))]
-    [Migration("20260312090928_Fix#1")]
-    partial class Fix1
+    [Migration("20260316070516_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -186,7 +186,7 @@ namespace ChatApp.Infrastructure.Migrations
                     b.Property<Guid>("ChatID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime?>("DeletedAt")
+                    b.Property<DateTime?>("ArchivedAt")
                         .HasPrecision(0)
                         .HasColumnType("datetime2(0)");
 
@@ -194,9 +194,6 @@ namespace ChatApp.Infrastructure.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsArchive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("JoinedAt")

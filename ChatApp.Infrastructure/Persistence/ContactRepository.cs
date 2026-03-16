@@ -80,6 +80,12 @@ namespace ChatApp.Infrastructure.Persistence
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(c => c.IsDeleted, true)
                     .SetProperty(c => c.DeletedAt, DateTime.UtcNow));
+            await context.Contacts
+                .IgnoreQueryFilters()
+                .Where(c => c.UserID == contactId && c.ContactUserID == userId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(c => c.IsDeleted, true)
+                    .SetProperty(c => c.DeletedAt, DateTime.UtcNow));
 
             await context.SaveChangesAsync();
         }

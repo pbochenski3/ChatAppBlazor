@@ -374,6 +374,21 @@ body, html {
     transition: all 0.3s ease-in-out;
     min-width: 0; 
 }
+.archived-status {
+    display: flex !important;
+    background-color: #251b0a !important;
+    border: 1px solid #4d3d00 !important;
+    justify-content: center;
+    align-items: center;
+    min-height: 60px;
+}
+
+.archived-message {
+    color: #ffc107; 
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-align: center;
+}
 /*settings*/
 .contact-settings-panel {
     width: 0;

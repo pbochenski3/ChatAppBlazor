@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ChatApp.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,7 +20,7 @@ namespace ChatApp.Infrastructure.Migrations
                     ChatName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     IsGroup = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false)
+                    DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -51,7 +51,7 @@ namespace ChatApp.Infrastructure.Migrations
                     ContactUserID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AddedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false)
+                    DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -107,7 +107,7 @@ namespace ChatApp.Infrastructure.Migrations
                     ChatID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SenderID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false)
+                    DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -134,8 +134,8 @@ namespace ChatApp.Infrastructure.Migrations
                     ChatID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     JoinedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false),
                     IsAdmin = table.Column<bool>(type: "bit", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false)
+                    IsArchive = table.Column<bool>(type: "bit", nullable: false),
+                    ArchivedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true)
                 },
                 constraints: table =>
                 {

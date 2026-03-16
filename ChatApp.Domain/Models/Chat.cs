@@ -14,7 +14,7 @@ namespace ChatApp.Domain.Models
         public ICollection<Message> Messages { get; set; } = new HashSet<Message>();
         public bool IsDeleted { get; set; } = false;
 
-        public bool IsGroup { get; set; }
+        public bool IsGroup { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
     }
 }

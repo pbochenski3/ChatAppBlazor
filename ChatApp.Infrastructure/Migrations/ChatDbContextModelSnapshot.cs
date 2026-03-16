@@ -183,6 +183,10 @@ namespace ChatApp.Infrastructure.Migrations
                     b.Property<Guid>("ChatID")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime?>("ArchivedAt")
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)");
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasPrecision(0)
                         .HasColumnType("datetime2(0)");

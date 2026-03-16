@@ -68,7 +68,7 @@
         {
             notification = $"{ex.Message}";
             isProcessing = false;
-            InvokeAsync(StateHasChanged);
+            await InvokeAsync(StateHasChanged);
         }
     }
     public void Dispose()

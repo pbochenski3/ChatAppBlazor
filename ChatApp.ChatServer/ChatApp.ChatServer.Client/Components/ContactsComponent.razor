@@ -1,4 +1,5 @@
-﻿@inject AppStateService AppState
+﻿@using ChatApp.Application.Interfaces
+@inject AppStateService AppState
 <aside class="sidebar">
     <div class="sidebar-header">
         <div class="user-ifno">
@@ -29,23 +30,23 @@
         {
             case View.Contacts:
                 <div class="contacts-list">
-                    @if (InitialContacts == null || !FilteredContacts.Any())
+                    @if (SidebarItem == null || !FilteredSidebar.Any())
                     {
                         <p class="section-hint">Nie znaleziono kontaktów.</p>
                     }
                     else
                     {
-                        @foreach (var contact in FilteredContacts)
+                        @foreach (var chat in FilteredSidebar)
                         {
-                            <div class="contact-item @(SelectedContactId == contact.ContactUserID ? "active" : "")"
-                                 @onclick="async () => await SelectContact(contact.ContactUserID)">
+                            <div class="contact-item @(SelectedContactId == chat.Id ? "active" : "")"
+                                 @onclick="async () => await SelectContact(chat.Id)">
                                 <div class="contact-avatar-container">
-                                    <img src="@contact.AvatarUrl" class="contact-img" alt="avatar" />
-                                    <div class="status-indicator @(contact.IsOnline ? "online" : "offline")"></div>
+                                    <img src="@chat.AvatarUrl" class="contact-img" alt="avatar" />
+                                    <div class="status-indicator @(chat.IsOnline ? "online" : "offline")"></div>
                                 </div>
                                 <div class="contact-info">
-                                    <p class="contact-name">@contact.Username</p>
-                                    <p class="contact-status">@(contact.IsOnline ? "Online" : "Offline")</p>
+                                    <p class="contact-name">@chat.DisplayName</p>
+                                    <p class="contact-status">@(chat.IsOnline ? "Online" : "Offline")</p>
                                 </div>
                             </div>
                         }
@@ -152,9 +153,9 @@
     [Parameter] public EventCallback<Guid> OnContactSelected { get; set; }
     [Parameter] public EventCallback<Guid> OnContactInvited { get; set; }
     [Parameter] public EventCallback<(Guid InviteId,bool Status)> OnInviteAction { get; set; }
-    [Parameter] public List<ContactDTO> InitialContacts { get; set; } = new();
-    [Parameter] public List<UserDTO> UsersList { get; set; } = new();
-    [Parameter] public List<InviteDTO> InvitesList { get; set; } = new();
+    [Parameter] public List<ISidebarItem> SidebarItem { get; set; } = new List<ISidebarItem>();
+    [Parameter] public List<UserDTO> UsersList { get; set; } = new List<UserDTO>();
+    [Parameter] public List<InviteDTO> InvitesList { get; set; } = new List<InviteDTO>();
     [Parameter] public bool IsSearching { get; set; }
     [Parameter] public bool isPending { get; set;  }
 
@@ -171,15 +172,16 @@
     {
         StateHasChanged();
     }
-    private IEnumerable<ContactDTO> FilteredContacts =>
-        InitialContacts?.Where(c => string.IsNullOrWhiteSpace(searchTerm) ||
-                               c.Username.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-        ?? Enumerable.Empty<ContactDTO>();
+    private IEnumerable<ISidebarItem> FilteredSidebar =>
+        SidebarItem?.Where(c => string.IsNullOrWhiteSpace(searchTerm) ||
+                               c.DisplayName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+        ?? Enumerable.Empty<ISidebarItem>();
+
 
     private async Task SelectContact(Guid contactId)
     {
         SelectedContactId = contactId;
-        await OnContactSelected.InvokeAsync(SelectedContactId);
+        await OnContactSelected.InvokeAsync(contactId);
     }
 
     private async Task OnGlobalSearchInput()

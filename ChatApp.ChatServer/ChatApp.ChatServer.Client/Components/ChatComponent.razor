@@ -1,7 +1,8 @@
 ﻿@inject IJSRuntime JSRuntime
 @inject AppStateService AppState
+
 <div class="chat-main-wrapper @(_isSettingsOpen ? "show-settings" : "")">
-    <div class="confirm-overlay @(_confirmWindow ? " show-window" : "" )">
+    <div class="confirm-overlay @(_confirmWindow ? " show-window" : "")">
         <div class="confirm-window">
             <p>Czy na pewno chcesz usunąć kontakt?</p>
             <div class="confirm-actions">
@@ -10,6 +11,7 @@
             </div>
         </div>
     </div>
+
     <div class="top-bar">
         <div class="user-profile">
             <div class="avatar-wrapper">
@@ -29,7 +31,6 @@
     </div>
 
     <div class="chat-body-horizontal-container">
-
         <div class="chat-interaction-area">
             <div class="chat-box" id="chat-window">
                 <div class="chat-messages">
@@ -51,32 +52,43 @@
                 </div>
             </div>
 
-            <div class="message-input-area@(!IsArchive ? " show-chat-input" : "")">
-                <div class="input-group">
-                    <input type="text"
-                           class="form-control"
-                           placeholder="Napisz wiadomość..."
-                           disabled="@IsLocked"
-                           @bind="_content"
-                           @bind:event="oninput"
-                           @onkeydown="HandleKeyDown" />
+            @if (!IsArchive)
+            {
+                <div class="message-input-area show-chat-input">
+                    <div class="input-group">
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Napisz wiadomość..."
+                               disabled="@IsLocked"
+                               @bind="_content"
+                               @bind:event="oninput"
+                               @onkeydown="HandleKeyDown" />
 
-                    <button class="btn-primary"
-                            disabled="@(IsLocked || string.IsNullOrWhiteSpace(_content))"
-                            @onclick="HandleInternalSubmit">
-                        Wyślij
-                    </button>
+                        <button class="btn-primary"
+                                disabled="@(IsLocked || string.IsNullOrWhiteSpace(_content))"
+                                @onclick="HandleInternalSubmit">
+                            Wyślij
+                        </button>
+                    </div>
                 </div>
-            </div>
+            }
+            else
+            {
+                <div class="message-input-area show-chat-input archived-status">
+                    <div class="archived-message">
+                        🔒 Czat jest zarchiwizowany. Możliwość pisania została zablokowana.
+                    </div>
+                </div>
+            }
         </div>
+
         <div class="contact-settings-panel">
             <div class="sidebar-header">
                 <h3>Opcje kontaktu</h3>
             </div>
             <div class="settings-content">
                 <button class="btn-secondary">Zmień pseudonim</button>
-                <button class="btn-secondary-delete"
-                @onclick="@TriggerConfirmationWindow">Usuń kontakt</button>
+                <button class="btn-secondary-delete" @onclick="@TriggerConfirmationWindow">Usuń kontakt</button>
 
                 <div class="section-hint">
                     Informacje o szyfrowaniu wiadomości są chronione end-to-end.
@@ -94,52 +106,48 @@
     private string _content = string.Empty;
     private bool _isSettingsOpen = false;
     private bool _confirmWindow = false;
-    private void TriggerConfirmationWindow()
-    {
-        _confirmWindow = !_confirmWindow;
-    }
-    private void ToggleSettings()
-    {
-        _isSettingsOpen = !_isSettingsOpen;
-    }
+
+    private void TriggerConfirmationWindow() => _confirmWindow = !_confirmWindow;
+    private void ToggleSettings() => _isSettingsOpen = !_isSettingsOpen;
+
     [Parameter] public EventCallback<string> OnSendMessage { get; set; }
     [Parameter] public EventCallback<Guid> OnDeleteContact { get; set; }
 
     private async Task HandleKeyDown(KeyboardEventArgs keyClick)
     {
-        if(keyClick.Key == "Enter")
+        if (keyClick.Key == "Enter")
         {
             await HandleInternalSubmit();
         }
     }
+
     private async Task HandleDelete(bool response)
     {
-        if(response)
+        if (response)
         {
             _confirmWindow = false;
+            _isSettingsOpen = false; 
             var contactId = AppState.CurrentContact.ContactUserID;
             await OnDeleteContact.InvokeAsync(contactId);
         }
+        else
+        {
+            _confirmWindow = false;
+        }
     }
+
     private async Task HandleInternalSubmit()
     {
-        if (!string.IsNullOrWhiteSpace(_content))
+        if (!string.IsNullOrWhiteSpace(_content) && !IsArchive)
         {
             var messageToSend = _content;
             _content = string.Empty;
             await OnSendMessage.InvokeAsync(messageToSend);
-
         }
-
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await JSRuntime.InvokeVoidAsync("scrollToBottom", "chat-window");
-    }
-
-    public class MessageModel
-    {
-        public string Content { get; set; } = string.Empty;
     }
 }

@@ -1,6 +1,5 @@
-﻿using ChatApp.Application.DTO;
+﻿
 using ChatApp.Application.Interfaces.Repository;
-using ChatApp.Application.Interfaces.Service;
 using ChatApp.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
