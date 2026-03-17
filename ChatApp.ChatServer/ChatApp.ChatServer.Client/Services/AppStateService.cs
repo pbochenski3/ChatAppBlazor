@@ -8,9 +8,9 @@ namespace ChatApp.ChatServer.Client.Services
     {
         public string? Message { get; set; }
 
-        public UserDTO? CurrentUser { get; set; }
-        public ContactDTO? CurrentContact { get; set; }
-        public ChatDTO? CurrentChat { get; set; }
+        public UserDTO? CurrentUser { get; set; } = null;
+        public ContactDTO? CurrentContact { get; set; } = null;
+        public ChatDTO? CurrentChat { get; set; } = null;
         public void Logout()
         {
             CurrentUser = null;

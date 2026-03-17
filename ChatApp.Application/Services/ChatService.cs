@@ -27,8 +27,12 @@ namespace ChatApp.Application.Services
 
             if (chat == null)
             {
-                var user1 = await _userRepo.GetByIdAsync(Id);
-                var user2 = await _userRepo.GetByIdAsync(currenUserId);
+                var user1Task =  _userRepo.GetByIdAsync(Id);
+                var user2Task =  _userRepo.GetByIdAsync(currenUserId);
+
+                await Task.WhenAll(user1Task, user2Task);
+                var user1 = user1Task.Result;
+                var user2 = user2Task.Result;
 
                 if (user1 == null || user2 == null) throw new Exception("User not found");
 

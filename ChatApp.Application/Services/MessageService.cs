@@ -43,9 +43,7 @@ namespace ChatApp.Application.Services
         }
         public async Task<List<MessageDTO>> GetPrivateHistoryAsync(Guid contactId, Guid id,Guid chatId)
         {
-            var isDeleted = await _messageRepo.IsDeleted(chatId, id);
-            if (isDeleted)
-            {
+
                 var rawMessage = await _messageRepo.GetMessageHistoryAsync(contactId, id, chatId);
                 return rawMessage.Select(uc => new MessageDTO
                 {
@@ -57,8 +55,6 @@ namespace ChatApp.Application.Services
                     ChatID = chatId,
                 }).ToList();
             }
-            return new List<MessageDTO>();
             
         }
     }
-}

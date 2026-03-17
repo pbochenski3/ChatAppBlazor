@@ -41,14 +41,12 @@ namespace ChatApp.Application.Services
         public async Task<List<ContactDTO>> GetUserContactsAsync(Guid id)
         {
             var contacts = await _contactRepo.GetAllContactAsync(id);
+            var result = new List<ContactDTO>();
 
             if (contacts == null || !contacts.Any())
             {
-                return new List<ContactDTO>();
+                return result;
             }
-
-            var result = new List<ContactDTO>();
-
             foreach (var c in contacts.Where(c => c.ContactUser != null))
             {
                 var dto = new ContactDTO
@@ -58,11 +56,8 @@ namespace ChatApp.Application.Services
                     AvatarUrl = c.ContactUser.AvatarUrl,
                     IsOnline = c.ContactUser.IsOnline,
                 };
-
-
                 result.Add(dto);
             }
-
             return result;
         }
     

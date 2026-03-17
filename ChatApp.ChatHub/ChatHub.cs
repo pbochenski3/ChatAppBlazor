@@ -73,41 +73,72 @@ namespace ChatApp.ChatHub
         }
         public async Task DeleteContact(Guid contactId, Guid chatId)
         {
-                await _contactService.DeleteContactAsync(contactId, userId, chatId);
-                await Clients.Caller.SendAsync("ReceiveStatus", "Kontakt został usunięty!");
-                await Clients.Caller.SendAsync("ContactInviteReload", true);
-                await Clients.Caller.SendAsync("ChatReload", true);
+            try
+            {
+                IEnumerable<Task> tasks;
                 var target = Clients.Users(contactId.ToString());
-                await target.SendAsync("ReceiveStatus", "Ktoś usunął cie z kontaktów!");
-                await target.SendAsync("ContactInviteReload", true);
-                await target.SendAsync("ChatReload", true);
+                await _contactService.DeleteContactAsync(contactId, userId, chatId);
+                var UserChat = Clients.Caller.SendAsync("ChatReload", contactId);
+                var TargetChat = target.SendAsync("ChatReload", userId);
+                await Task.WhenAll(UserChat,TargetChat);
+                tasks = [
+                   Clients.Caller.SendAsync("ReceiveStatus", "Kontakt został usunięty!"),
+                   target.SendAsync("ReceiveStatus", "Ktoś usunął cie z kontaktów!"),
+                   Clients.Caller.SendAsync("ContactInviteReload", true),
+                   target.SendAsync("ContactInviteReload", true),
+
+                ];
+                await Task.WhenAll(tasks);
+            }
+            catch
+            {
+                await Clients.Caller.SendAsync("ReceiveStatus", "An error occurred while processing the delete action.");
+            }
+
         }
+
 
         public async Task InviteAction(Guid inviteId, bool status)
         {
             try
             {
                 var senderId = await _inviteService.InviteAction(inviteId, status, userId);
+                var targetUser = Clients.User(senderId.ToString());
+  
+                await Task.WhenAll(
+                    Clients.Caller.SendAsync("InviteReload", true),
+                    targetUser.SendAsync("InviteReload", true)
+                    );
+                await Task.WhenAll(
+                    Clients.Caller.SendAsync("ChatReload", senderId),
+                    targetUser.SendAsync("ChatReload", userId)
+                    );
+                var statusMsgCaller = status ? "Invite accepted!" : "Invite rejected.";
+                var statusMsgTarget = status ? "Your invite was accepted!" : "Your invite was rejected!";
 
-                await Clients.Caller.SendAsync("ReceiveStatus", status ? "Invite accepted!" : "Invite rejected.");
-
-                var targetUser = Clients.Users(senderId.ToString());
-                await Clients.Caller.SendAsync("InviteReload", true);
-                await targetUser.SendAsync("InviteReload", true);
                 if (status)
                 {
-                    await Clients.Caller.SendAsync("ContactInviteReload", true);
-                    await targetUser.SendAsync("ReceiveStatus", "Your invite was accepted!");
-                    await targetUser.SendAsync("ContactInviteReload", true);
+                    await Task.WhenAll(
+                    Clients.Caller.SendAsync("SideBarReload", true),
+                    targetUser.SendAsync("SideBarReload", true)
+                    ); 
+                    await Task.WhenAll(
+                        Clients.Caller.SendAsync("ReceiveStatus", statusMsgCaller, senderId),
+                        targetUser.SendAsync("ReceiveStatus", statusMsgTarget, userId)
+                    );
                 }
                 else
                 {
-                    await targetUser.SendAsync("ReceiveStatus", "Your invite was rejected!");
+                    await Task.WhenAll(
+                        Clients.Caller.SendAsync("ReceiveStatus", statusMsgCaller, senderId),
+                        targetUser.SendAsync("ReceiveStatus", statusMsgTarget, userId)
+                    );
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                await Clients.Caller.SendAsync("ReceiveStatus", "An error occurred while processing the invite action.");
+                _logger.LogError(ex, "Error in InviteAction");
+                await Clients.Caller.SendAsync("ReceiveStatus", "An error occurred.");
             }
         }
         public async Task<List<InviteDTO>> GetInvites()
@@ -121,6 +152,10 @@ namespace ChatApp.ChatHub
         public async Task<ChatDTO> GetChat(Guid Id)
         {
             return await _chatService.GetPrivateChatById(Id,userId);
+        }
+        public async Task ChatRestore(Guid ContactId)
+        {
+            await _chatService.GetPrivateChatById(userId,ContactId);
         }
         public async Task<bool> GetChatStatus(Guid ChatId, Guid ContactId)
         {

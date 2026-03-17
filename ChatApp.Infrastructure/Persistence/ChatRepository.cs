@@ -34,14 +34,17 @@ public class ChatRepository : IChatRepository
     {
         using var context = _contextFactory.CreateDbContext();
         return await context.Chats
-        .IgnoreQueryFilters()
-        .Include(c => c.UserChats)
-        .Where(c => !c.IsGroup)
-        .Where(c =>
+           .AsNoTracking()
+           .IgnoreQueryFilters()
+           .Include(c => c.UserChats)
+           .Where(c => !c.IsGroup)
+           .Where(c =>
             c.ChatID == identifier ||
-            (c.UserChats.Any(uc => uc.UserID == identifier) && c.UserChats.Any(uc => uc.UserID == user2))
-        )
-        .FirstOrDefaultAsync();
+            (c.UserChats.Count == 2 &&
+             c.UserChats.Any(uc => uc.UserID == identifier) &&
+             c.UserChats.Any(uc => uc.UserID == user2))
+       )
+           .FirstOrDefaultAsync();
     }
     public async Task AddChatAsync(Chat chat)
     {
@@ -55,7 +58,7 @@ public class ChatRepository : IChatRepository
         using var context = _contextFactory.CreateDbContext();
         var affected = await context.UserChat
             .IgnoreQueryFilters()
-            .Where(uc => uc.ChatID == chatId && uc.UserID == userId || uc.UserID == contactId)
+           .Where(uc => uc.ChatID == chatId && (uc.UserID == userId || uc.UserID == contactId))
             .ExecuteUpdateAsync(s => s
                 .SetProperty(uc => uc.IsArchive, true)
                 .SetProperty(uc => uc.ArchivedAt, DateTime.UtcNow));

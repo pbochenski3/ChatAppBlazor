@@ -10,6 +10,5 @@ namespace ChatApp.Application.Interfaces.Repository
         Task AddAsync(Message message);
         Task SaveChangesAsync();
         Task<List<Message>> GetMessageHistoryAsync(Guid contactId, Guid id, Guid chatId);
-        Task<bool> IsDeleted(Guid chatId, Guid id);
     }
 }
