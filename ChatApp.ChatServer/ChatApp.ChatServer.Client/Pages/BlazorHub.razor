@@ -169,7 +169,7 @@
 
             isPending = false;
 
-        
+
             MixedSidebarItems = receivedContact
                 .Cast<ISidebarItem>()
                 .Concat(receivedChats.Cast<ISidebarItem>())
@@ -218,8 +218,11 @@
     }
     private void HandleReceiveMessage(MessageDTO dto)
     {
-        receivedMessage.Add(dto);
-        InvokeAsync(StateHasChanged);
+        if (AppState.CurrentChat != null && dto.ChatID == AppState.CurrentChat.ChatID)
+        {
+            receivedMessage.Add(dto);
+            InvokeAsync(StateHasChanged);
+        }
     }
     private async Task HandleSendMessage(string content)
     {
