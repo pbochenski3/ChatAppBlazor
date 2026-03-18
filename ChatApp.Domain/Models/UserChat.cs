@@ -18,5 +18,10 @@ namespace ChatApp.Domain.Models
         public DateTime? ArchivedAt { get; set; }
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
+        public Guid? LastReadMessageID { get; set; }
+        public DateTime LastReadAt { get; set; } 
+        public Guid? LastMessageID { get; set; }
+        public DateTime LastMessageAt { get; set; }
+
     }
 }

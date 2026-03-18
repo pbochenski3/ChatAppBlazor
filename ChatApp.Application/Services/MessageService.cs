@@ -5,6 +5,8 @@ using ChatApp.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Extensions.Logging;
+using ChatApp.Domain.Repository;
 
 namespace ChatApp.Application.Services
 {
@@ -13,14 +15,19 @@ namespace ChatApp.Application.Services
         private readonly IMessageRepository _messageRepo;
         private readonly IUserRepository _userRepo;
         private readonly IChatService _chatService;
+        private readonly IUserChatRepository _userChatRepository;
 
-        public MessageService(IMessageRepository messageRepo,IUserRepository userRepo,IChatService chatService)
+        public MessageService(IMessageRepository messageRepo,
+            IUserRepository userRepo,
+            IChatService chatService,
+            IUserChatRepository userChatRepository
+            )
         {
             _messageRepo = messageRepo;
             _userRepo = userRepo;
             _chatService = chatService;
+            _userChatRepository = userChatRepository;
         }
-
         public async Task SendChatMessageAsync(MessageDTO dto)
         {
             var sender = await _userRepo.GetByIdAsync(dto.SenderID);
@@ -37,10 +44,13 @@ namespace ChatApp.Application.Services
                 Content = dto.Content,
                 SenderID = dto.SenderID,
                 ChatID = dto.ChatID,
-
+                MessageID = dto.MessageID,
+                SentAt = dto.SentAt,
             };
             await _messageRepo.AddAsync(message);
+           
         }
+           
         public async Task<List<MessageDTO>> GetPrivateHistoryAsync(Guid contactId, Guid id,Guid chatId)
         {
 

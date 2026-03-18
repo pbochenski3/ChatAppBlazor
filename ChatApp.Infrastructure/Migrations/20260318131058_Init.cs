@@ -19,6 +19,7 @@ namespace ChatApp.Infrastructure.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false),
                     ChatName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    AvatarUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsGroup = table.Column<bool>(type: "bit", nullable: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true)
                 },
@@ -135,7 +136,13 @@ namespace ChatApp.Infrastructure.Migrations
                     JoinedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false),
                     IsAdmin = table.Column<bool>(type: "bit", nullable: false),
                     IsArchive = table.Column<bool>(type: "bit", nullable: false),
-                    ArchivedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true)
+                    ArchivedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
+                    LastReadMessageID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastReadAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false),
+                    LastMessageID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastMessageAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -170,19 +177,24 @@ namespace ChatApp.Infrastructure.Migrations
                 column: "SenderID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Messages_ChatID",
-                table: "Messages",
-                column: "ChatID");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Messages_SenderID",
                 table: "Messages",
                 column: "SenderID");
 
             migrationBuilder.CreateIndex(
+                name: "Messages_UnreadCounter",
+                table: "Messages",
+                columns: new[] { "ChatID", "MessageID", "SenderID" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserChat_ChatID",
                 table: "UserChat",
                 column: "ChatID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserChat_UserID",
+                table: "UserChat",
+                column: "UserID");
         }
 
         /// <inheritdoc />

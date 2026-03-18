@@ -13,7 +13,7 @@ namespace ChatApp.Domain.Models
         public ICollection<UserChat> UserChats { get; set; } = new HashSet<UserChat>();
         public ICollection<Message> Messages { get; set; } = new HashSet<Message>();
         public bool IsDeleted { get; set; } = false;
-
+        public string AvatarUrl { get; set; } = string.Empty;
         public bool IsGroup { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
     }

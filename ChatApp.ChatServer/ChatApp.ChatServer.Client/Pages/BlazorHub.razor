@@ -1,5 +1,5 @@
 ﻿@page "/hub"
-@using ChatApp.Application.Interfaces
+@using ChatApp.Application
 @using Microsoft.AspNetCore.SignalR.Client
 @using ChatApp.ChatServer.Client.Components
 @inject IConfiguration Configuration
@@ -52,7 +52,7 @@
     private List<InviteDTO> receivedInvites = new List<InviteDTO>();
     private List<ChatDTO> receivedChats = new List<ChatDTO>();
     private List<UserDTO> foundUsers = new List<UserDTO>();
-    private List<ISidebarItem> MixedSidebarItems = new List<ISidebarItem>();
+    private List<SidebarDTO> MixedSidebarItems = new List<SidebarDTO>();
     private MessageDTO messageModel = new MessageDTO();
     private bool isSearchingGlobal = false;
     private bool isPending;
@@ -61,6 +61,7 @@
     private bool firstLoading = true;
     bool isLoading = true;
     private Guid ChatId;
+    private int counter;
     protected override async Task OnInitializedAsync()
     {
         if (AppState.CurrentUser == null)
@@ -159,34 +160,19 @@
     {
         try
         {
-            var contactsTask = ChatHubService.GetContactsAsync();
-            var chatsTask = ChatHubService.GetChatList();
-
-            await Task.WhenAll(contactsTask, chatsTask);
-
-            receivedContact = await contactsTask;
-            receivedChats = await chatsTask;
-
-            isPending = false;
-
-
-            MixedSidebarItems = receivedContact
-                .Cast<ISidebarItem>()
-                .Concat(receivedChats.Cast<ISidebarItem>())
-                .ToList();
-
+            MixedSidebarItems = await ChatHubService.LoadSidebarItems();
             _logger.LogInformation($"Sidebar reloaded. Items count: {MixedSidebarItems.Count}");
+            isPending = false;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Błąd podczas odświeżania Sidebaru");
+            _logger.LogError($"Błąd podczas odświeżania Sidebaru {ex}");
         }
         finally
         {
             await InvokeAsync(StateHasChanged);
         }
     }
-
     private async Task HandleContactInvite(Guid contactId)
     {
         await ChatHubService.SendInviteAsync(contactId);
@@ -216,55 +202,71 @@
             _ = ShowNotification($"{ex.Message}");
         }
     }
-    private void HandleReceiveMessage(MessageDTO dto)
+    private async Task HandleReceiveMessage(MessageDTO dto)
     {
-        if (AppState.CurrentChat != null && dto.ChatID == AppState.CurrentChat.ChatID)
+        bool isMessageForCurrentChat = AppState.CurrentChat != null && dto.ChatID == AppState.CurrentChat.ChatID;
+        if (isMessageForCurrentChat)
         {
             receivedMessage.Add(dto);
-            InvokeAsync(StateHasChanged);
+            await InvokeAsync(StateHasChanged);
+
+            if (dto.SenderID != user.UserID)
+            {
+                try
+                {
+                    await ChatHubService.MarkMessageAsReaded(dto.ChatID, dto.MessageID);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to mark message as read for ChatId: {ChatId}, MessageId: {MessageId}", dto.ChatID, dto.MessageID);
+                }
+            }
+        }
+        else
+        {
+            if (dto.SenderID != user.UserID)
+            {
+                await HandleCounterUpdate(dto.ChatID);
+            }
+        }
+    }
+    private async Task HandleCounterUpdate(Guid chatId)
+    {
+        _logger.LogInformation($"Próba aktualizacji licznika dla ChatID: {chatId}");
+        var index = MixedSidebarItems.FindIndex(sb => sb.Id == chatId);
+        if(index != -1)
+        {
+            var updatedCounter = MixedSidebarItems[index] with 
+            { Counter = MixedSidebarItems[index].Counter + 1 };
+            MixedSidebarItems[index] = updatedCounter;
+            await InvokeAsync(StateHasChanged);
         }
     }
     private async Task HandleSendMessage(string content)
     {
+
         messageModel.Content = content;
         messageModel.SenderUsername = user.Username;
-        messageModel.SenderID = user.UserID;
         messageModel.ChatID = AppState.CurrentChat.ChatID;
+        messageModel.SenderID = user.UserID;
+        messageModel.SentAt = DateTime.UtcNow;
+        messageModel.MessageID = Guid.CreateVersion7();
+
+        _logger.LogInformation("Sending message: MessageID={MessageID}, ChatID={ChatID}, SenderID={SenderID}",
+            messageModel.MessageID, messageModel.ChatID, messageModel.SenderID);
+
         try
         {
             await ChatHubService.SendMessageAsync(messageModel);
+            _logger.LogInformation("Message sent: MessageID={MessageID}", messageModel.MessageID);
         }
         catch(Exception ex)
         {
+            _logger.LogError(ex, "Failed to send message: MessageID={MessageID}", messageModel.MessageID);
             _ = ShowNotification($"{ex.Message}");
         }
     }
-    // private async Task HandleDateLoad(Guid SideBarElementId,bool load)
-    // {
-    //     if (load)
-    //     {
-    //         var chatTask = ChatHubService.GetChatInformation(SideBarElementId);
-    //         var contactTask = ChatHubService.GetCurrentContact(SideBarElementId);
-    //         await Task.WhenAll(chatTask, contactTask);
-    //         var chat = await chatTask;
-    //         var contact = await contactTask;
-    //         if (chat == null && contact == null)
-    //         {
-    //             _logger.LogError("Chat or Contact could not be loaded for ID: {Id}", SideBarElementId);
-    //             return;
-    //         }
 
-    //         var history = await ChatHubService.GetPrivateHistory(SideBarElementId, chat.ChatID);
-    //         AppState.CurrentChat = chat;
-    //         AppState.CurrentContact = contact;
-    //         receivedMessage = new List<MessageDTO>();
-    //         receivedMessage = history;
-    //         isArchive = chat.IsArchive;
-    //         lockChat = chat.IsArchive;
-    //         firstLoading = false;
-    //     }
-
-    // }
     private async Task HandlePrivateChatLoad(Guid SideBarElementId)
     {
         // if (SideBarElementId != null && (AppState.CurrentChat.ChatID == SideBarElementId || AppState.CurrentContact.ContactUserID == SideBarElementId))
@@ -273,8 +275,11 @@
         //     return;
         // }
         _logger.LogInformation($"Loading chat for contact: {SideBarElementId}");
-
-        try
+        if(AppState.CurrentChat != null)
+        {
+        
+        }
+            try
         {
             receivedMessage = new List<MessageDTO>();
             var chatTask = ChatHubService.GetChatInformation(SideBarElementId);

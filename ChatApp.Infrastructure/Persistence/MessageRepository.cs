@@ -21,7 +21,7 @@ public class MessageRepository : IMessageRepository
     public async Task AddAsync(Message message)
     {
         using var context = _contextFactory.CreateDbContext();
-        _logger.LogInformation("Adding a new message to the database:");
+        _logger.LogInformation("Adding a new message to the database: {MessageID}", message.MessageID);
         await context.Messages.AddAsync(message);
         await context.SaveChangesAsync();
     }

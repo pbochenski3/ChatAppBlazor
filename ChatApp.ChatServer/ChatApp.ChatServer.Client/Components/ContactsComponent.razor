@@ -46,6 +46,7 @@
                                 </div>
                                 <div class="contact-info">
                                     <p class="contact-name">@chat.DisplayName</p>
+                                    <p class="contact-name">@chat.Counter</p>
                                     <p class="contact-status">@(chat.IsOnline ? "Online" : "Offline")</p>
                                 </div>
                             </div>
@@ -111,6 +112,7 @@
                                     <div class="user-search-info">
                                         <img src="@user.AvatarUrl" class="user-avatar" />
                                         <span class="search-username">@user.Username</span>
+    
                                     </div>
                                     <button disabled="@isPending" class="btn-add-action" @onclick="() => SendInvite(user.UserID)">
                                         Dodaj
@@ -153,7 +155,7 @@
     [Parameter] public EventCallback<Guid> OnContactSelected { get; set; }
     [Parameter] public EventCallback<Guid> OnContactInvited { get; set; }
     [Parameter] public EventCallback<(Guid InviteId,bool Status)> OnInviteAction { get; set; }
-    [Parameter] public List<ISidebarItem> SidebarItem { get; set; } = new List<ISidebarItem>();
+    [Parameter] public List<SidebarDTO> SidebarItem { get; set; } = new List<SidebarDTO>();
     [Parameter] public List<UserDTO> UsersList { get; set; } = new List<UserDTO>();
     [Parameter] public List<InviteDTO> InvitesList { get; set; } = new List<InviteDTO>();
     [Parameter] public bool IsSearching { get; set; }
@@ -172,10 +174,10 @@
     {
         StateHasChanged();
     }
-    private IEnumerable<ISidebarItem> FilteredSidebar =>
+    private IEnumerable<SidebarDTO> FilteredSidebar =>
         SidebarItem?.Where(c => string.IsNullOrWhiteSpace(searchTerm) ||
                                c.DisplayName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-        ?? Enumerable.Empty<ISidebarItem>();
+        ?? Enumerable.Empty<SidebarDTO>();
 
 
     private async Task SelectContact(Guid contactId)

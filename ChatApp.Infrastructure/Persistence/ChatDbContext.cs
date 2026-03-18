@@ -82,6 +82,9 @@ namespace ChatApp.Infrastructure.Persistence
             {
                 entity.HasQueryFilter(m => !m.IsDeleted);
 
+                entity.HasIndex(m => new{ m.ChatID, m.MessageID, m.SenderID})
+                .HasDatabaseName("Messages_UnreadCounter");
+
                 entity.HasKey(m => m.MessageID);
                 entity.Property(m => m.Content).IsRequired()
                 .HasMaxLength(1000);
@@ -114,6 +117,8 @@ namespace ChatApp.Infrastructure.Persistence
             mb.Entity<UserChat>(entity =>
             {
                 entity.HasQueryFilter(uc => !uc.IsDeleted);
+                entity.HasIndex(uc => uc.UserID);
+
                 entity.HasKey(uc => new { uc.UserID, uc.ChatID });
 
                 entity.HasOne(uc => uc.User)
@@ -130,6 +135,10 @@ namespace ChatApp.Infrastructure.Persistence
                 entity.Property(uc => uc.ArchivedAt)
                 .HasPrecision(0);
                 entity.Property(uc => uc.DeletedAt)
+                .HasPrecision(0);
+                entity.Property(uc => uc.LastMessageAt)
+                .HasPrecision(0);
+                entity.Property(uc => uc.LastReadAt)
                 .HasPrecision(0);
 
 

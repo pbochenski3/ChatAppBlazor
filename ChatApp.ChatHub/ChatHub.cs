@@ -5,6 +5,7 @@ using ChatApp.Application.Services;
 using ChatApp.Domain.Models;
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Cryptography;
+using System.Xml;
 
 namespace ChatApp.ChatHub
 {
@@ -15,6 +16,8 @@ namespace ChatApp.ChatHub
         private readonly IContactService _contactService;
         private readonly IInviteService _inviteService;
         private readonly IChatService _chatService;
+        private readonly IUserChatService _userChatService;
+        private readonly ISidebarService _sidebarService;
         private readonly ILogger<ChatHub> _logger;
         protected Guid userId => Guid.TryParse(Context.UserIdentifier, out var parseId) ? parseId : Guid.Empty;
         public ChatHub(ILogger<ChatHub> logger,
@@ -22,7 +25,9 @@ namespace ChatApp.ChatHub
             IUserService userService,
             IContactService contactService,
             IInviteService inviteService,
-            IChatService chatService
+            IChatService chatService,
+            IUserChatService userChatService,
+            ISidebarService sidebarService
             )
         {
             _logger = logger;
@@ -31,10 +36,25 @@ namespace ChatApp.ChatHub
             _contactService = contactService;
             _inviteService = inviteService;
             _chatService = chatService;
+            _userChatService = userChatService;
+            _sidebarService = sidebarService;
         }
         public override Task OnConnectedAsync()
         {
             return base.OnConnectedAsync();
+        }
+        public async Task MarkMessage(Guid chatId, Guid messageId)
+        {
+            await _userChatService.MarkChatAsReadAsync(userId, chatId, messageId);
+        }
+        public async Task<List<CounterBadge>> FetchAllUnreadCount()
+        {
+            return await _userChatService.GetAllUnreadCounterAsync(userId);
+        }
+
+        public async Task<int> FetchUnreadCount(Guid chatId)
+        {
+            return await _userChatService.GetUnreadCounterAsync(userId,chatId);
         }
         public async Task SendInvite(Guid receiverId)
         {
@@ -67,8 +87,9 @@ namespace ChatApp.ChatHub
         }
         public async Task SendMessage(MessageDTO dto)
         {
-            dto.SentAt = DateTime.UtcNow;
+            dto.SenderID = userId;
             await _messageService.SendChatMessageAsync(dto);
+            await _userChatService.SaveLastMessageAsync(dto.ChatID, dto.MessageID);
             await Clients.All.SendAsync("ReceiveMessage", dto);
         }
         public async Task DeleteContact(Guid contactId, Guid chatId)
@@ -164,6 +185,10 @@ namespace ChatApp.ChatHub
         public async Task<List<ChatDTO>> GetChatList()
         {
             return await _chatService.GetChatList(userId);
+        }
+        public async Task<List<SidebarDTO>> GetSidebarList()
+        {
+            return await _sidebarService.GetSidebarItems(userId);
         }
     }
 }

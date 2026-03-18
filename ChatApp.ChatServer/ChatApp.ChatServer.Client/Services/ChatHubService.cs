@@ -8,7 +8,7 @@ using System.Net.NetworkInformation;
 public class ChatHubService : IAsyncDisposable
 {
     public HubConnection HubConnection { get; private set; }
-    public event Action<MessageDTO>? OnMessageReceived;
+    public event Func<MessageDTO,Task>? OnMessageReceived;
     public event Action<string>? RegisterStatusMessage;
     public event Action<string>? OnContactDelete;
     public event Func<string,Guid,Task> InviteStatusMessage;
@@ -31,8 +31,14 @@ public class ChatHubService : IAsyncDisposable
         private void RegisterHandlers()
         {
             if (HubConnection == null) return;
-            HubConnection.On<MessageDTO>("ReceiveMessage", (message) => OnMessageReceived?.Invoke(message));
-            HubConnection.On<string,Guid>("ReceiveStatus", async (status,contactId) =>
+        HubConnection.On<MessageDTO>("ReceiveMessage", async (message) =>
+        {
+            if (OnMessageReceived != null)
+            {
+                await OnMessageReceived.Invoke(message);
+            }
+        });
+        HubConnection.On<string,Guid>("ReceiveStatus", async (status,contactId) =>
             {
                 var handler = InviteStatusMessage;
                 if (handler != null) await handler.Invoke(status,contactId);
@@ -51,6 +57,18 @@ public class ChatHubService : IAsyncDisposable
     {
         var handler = OnAppReload;
         if (handler != null) await handler.Invoke(target);
+    }
+    public async Task<List<CounterBadge>> LoadAllUnreadCounters()
+    {
+        return await HubConnection.InvokeAsync<List<CounterBadge>>("FetchAllUnreadCount");
+    }
+    public async Task MarkMessageAsReaded(Guid chatId, Guid messageId)
+    {
+        await HubConnection.InvokeAsync("MarkMessage", chatId, messageId);
+    }
+    public async Task<int> GetUnreadMessagesCounter(Guid chatId)
+    {
+        return await HubConnection.InvokeAsync<int>("FetchUnreadCount", chatId);
     }
     public async Task SendMessageAsync(MessageDTO message)
     {
@@ -194,6 +212,10 @@ public class ChatHubService : IAsyncDisposable
     public async Task<List<ChatDTO>> GetChatList()
     {
         return await HubConnection.InvokeAsync<List<ChatDTO>>("GetChatList");
+    }
+    public async Task<List<SidebarDTO>> LoadSidebarItems()
+    {
+        return await HubConnection.InvokeAsync<List<SidebarDTO>>("GetSidebarList");
     }
     public async ValueTask DisposeAsync()
     {

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ChatDbContext))]
-    [Migration("20260316072117_fix")]
-    partial class fix
+    [Migration("20260318131058_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -30,6 +30,10 @@ namespace ChatApp.Infrastructure.Migrations
                     b.Property<Guid>("ChatID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AvatarUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ChatName")
                         .IsRequired()
@@ -141,9 +145,10 @@ namespace ChatApp.Infrastructure.Migrations
 
                     b.HasKey("MessageID");
 
-                    b.HasIndex("ChatID");
-
                     b.HasIndex("SenderID");
+
+                    b.HasIndex("ChatID", "MessageID", "SenderID")
+                        .HasDatabaseName("Messages_UnreadCounter");
 
                     b.ToTable("Messages");
                 });
@@ -207,9 +212,25 @@ namespace ChatApp.Infrastructure.Migrations
                         .HasPrecision(0)
                         .HasColumnType("datetime2(0)");
 
+                    b.Property<DateTime>("LastMessageAt")
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<Guid?>("LastMessageID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("LastReadAt")
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<Guid?>("LastReadMessageID")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("UserID", "ChatID");
 
                     b.HasIndex("ChatID");
+
+                    b.HasIndex("UserID");
 
                     b.ToTable("UserChat");
                 });
