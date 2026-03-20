@@ -11,8 +11,9 @@ namespace ChatApp.Application.Interfaces.Repository
         Task AddContactToDb(Contact contact);
         Task<Contact> GetContactAsync(Guid contactId, Guid userId);
         Task DeleteContactFromDb(Guid contactId, Guid userId);
-        Task<Contact?> CheckContact(Guid contact1, Guid contact2);
-        Task RestoreContacts(List<Contact> contactRestore);
+        Task<bool> CheckDeletedContact(Guid contact1, Guid contact2);
+        Task RestoreContacts(Guid userId, Guid contactUserId);
+        Task<bool> CheckIfContact(Guid userId, Guid contactId,CancellationToken token);
 
     }
 }

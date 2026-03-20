@@ -16,7 +16,7 @@
         OnContactInvited="HandleContactInvite"
         OnContactSelected="HandlePrivateChatLoad"
         OnInviteAction="@(args => HandleContactStatus(args.InviteId, args.Status))"
-        SidebarItem="MixedSidebarItems"
+        SidebarItem="SidebarItems"
         UsersList="foundUsers"
         InvitesList="receivedInvites"
         IsSearching="isSearchingGlobal"
@@ -30,7 +30,7 @@
                 <div>@notification</div>
             </div>
         }
-        @if (AppState.CurrentChat != null && AppState.CurrentContact != null)
+        @if (AppState.CurrentChat != null)
         {
    
         <ChatComponent
@@ -45,6 +45,7 @@
 </div>
 }
 @code {
+    private CancellationTokenSource? _chatLoadingCts;
     private string? notification = string.Empty;
     UserDTO user = new UserDTO();
     private List<MessageDTO> receivedMessage = new List<MessageDTO>();
@@ -52,16 +53,15 @@
     private List<InviteDTO> receivedInvites = new List<InviteDTO>();
     private List<ChatDTO> receivedChats = new List<ChatDTO>();
     private List<UserDTO> foundUsers = new List<UserDTO>();
-    private List<SidebarDTO> MixedSidebarItems = new List<SidebarDTO>();
-    private MessageDTO messageModel = new MessageDTO();
+    private List<UserChatDTO> SidebarItems = new List<UserChatDTO>();
     private bool isSearchingGlobal = false;
     private bool isPending;
     private bool lockChat = true;
     private bool isArchive = false;
-    private bool firstLoading = true;
     bool isLoading = true;
     private Guid ChatId;
     private int counter;
+    private bool isChatLoaded;
     protected override async Task OnInitializedAsync()
     {
         if (AppState.CurrentUser == null)
@@ -96,7 +96,8 @@
     }
     private async Task OnInviteStatusReceived(string status,Guid contactId)
     {
-        var chatTask = ChatHubService.GetChatInformation(contactId);
+        CancellationToken token = default;
+        var chatTask = ChatHubService.GetChatInformation(contactId, token);
         var notifyTask = ShowNotification(status);
         await Task.WhenAll(chatTask, notifyTask);
     }
@@ -160,8 +161,8 @@
     {
         try
         {
-            MixedSidebarItems = await ChatHubService.LoadSidebarItems();
-            _logger.LogInformation($"Sidebar reloaded. Items count: {MixedSidebarItems.Count}");
+            SidebarItems = await ChatHubService.LoadSidebarItems();
+            _logger.LogInformation($"Sidebar reloaded. Items count: {SidebarItems.Count}");
             isPending = false;
         }
         catch (Exception ex)
@@ -179,11 +180,11 @@
         foundUsers.RemoveAll(u => u.UserID == contactId);
         isSearchingGlobal = false;
     }
-    private async Task HandleContactDelete(Guid contactId)
+    private async Task HandleContactDelete()
     {
         try
         {
-            await ChatHubService.DeleteContactAsync(contactId,AppState.CurrentChat.ChatID);
+            await ChatHubService.DeleteContactAsync(AppState.CurrentChat.ChatID);
 
         }
         catch (Exception ex)
@@ -226,91 +227,122 @@
         {
             if (dto.SenderID != user.UserID)
             {
-                await HandleCounterUpdate(dto.ChatID);
+                await HandleCounterUpdate(dto.ChatID,false);
             }
         }
     }
-    private async Task HandleCounterUpdate(Guid chatId)
+    private async Task HandleCounterUpdate(Guid chatId, bool clean)
     {
-        _logger.LogInformation($"Próba aktualizacji licznika dla ChatID: {chatId}");
-        var index = MixedSidebarItems.FindIndex(sb => sb.Id == chatId);
-        if(index != -1)
+        var index = SidebarItems.FindIndex(sb => sb.ChatID == chatId);
+
+        if (index != -1)
         {
-            var updatedCounter = MixedSidebarItems[index] with 
-            { Counter = MixedSidebarItems[index].Counter + 1 };
-            MixedSidebarItems[index] = updatedCounter;
+            if (clean)
+            {
+                SidebarItems[index].counter = 0;
+                _logger.LogInformation($"Licznik wyzerowany dla: {chatId}");
+            }
+            else
+            {
+                var updatedItem = SidebarItems[index];
+                updatedItem.counter += 1;
+
+                SidebarItems.RemoveAt(index);
+                SidebarItems.Insert(0, updatedItem);
+
+                _logger.LogInformation($"Licznik zwiększony dla: {chatId}. Aktualnie: {updatedItem.counter}");
+            }
             await InvokeAsync(StateHasChanged);
         }
     }
     private async Task HandleSendMessage(string content)
     {
+        if (string.IsNullOrWhiteSpace(content)) return;
 
-        messageModel.Content = content;
-        messageModel.SenderUsername = user.Username;
-        messageModel.ChatID = AppState.CurrentChat.ChatID;
-        messageModel.SenderID = user.UserID;
-        messageModel.SentAt = DateTime.UtcNow;
-        messageModel.MessageID = Guid.CreateVersion7();
-
-        _logger.LogInformation("Sending message: MessageID={MessageID}, ChatID={ChatID}, SenderID={SenderID}",
-            messageModel.MessageID, messageModel.ChatID, messageModel.SenderID);
+        var newMessage = new MessageDTO
+        {
+            Content = content,
+            SenderUsername = user.Username,
+            ChatID = AppState.CurrentChat.ChatID,
+            SenderID = user.UserID, 
+            SentAt = DateTime.UtcNow,
+            MessageID = Guid.CreateVersion7()
+        };
 
         try
         {
-            await ChatHubService.SendMessageAsync(messageModel);
-            _logger.LogInformation("Message sent: MessageID={MessageID}", messageModel.MessageID);
-        }
-        catch(Exception ex)
-        {
-            _logger.LogError(ex, "Failed to send message: MessageID={MessageID}", messageModel.MessageID);
-            _ = ShowNotification($"{ex.Message}");
-        }
-    }
+            receivedMessage.Add(newMessage);
+            await InvokeAsync(StateHasChanged);
 
-    private async Task HandlePrivateChatLoad(Guid SideBarElementId)
-    {
-        // if (SideBarElementId != null && (AppState.CurrentChat.ChatID == SideBarElementId || AppState.CurrentContact.ContactUserID == SideBarElementId))
-        // {
-        //     _logger.LogInformation($"[ANTI-SPAM] User: {AppState.CurrentUser.Username}, With ID: {AppState.CurrentUser.Username} tried to load already loaded chat!");
-        //     return;
-        // }
-        _logger.LogInformation($"Loading chat for contact: {SideBarElementId}");
-        if(AppState.CurrentChat != null)
-        {
-        
-        }
-            try
-        {
-            receivedMessage = new List<MessageDTO>();
-            var chatTask = ChatHubService.GetChatInformation(SideBarElementId);
-            var contactTask = ChatHubService.GetCurrentContact(SideBarElementId);
-            await Task.WhenAll(chatTask, contactTask);
-            var chat = await chatTask;
-            var contact = await contactTask;
-            if (chat == null && contact == null)
-            {
-                _logger.LogError("Chat or Contact could not be loaded for ID: {Id}", SideBarElementId);
-                return;
-            }
-
-            var history = await ChatHubService.GetPrivateHistory(SideBarElementId, chat.ChatID);
-            AppState.CurrentChat = chat;
-            AppState.CurrentContact = contact;
-            receivedMessage = history;
-            isArchive = chat.IsArchive;
-            lockChat = chat.IsArchive;
-            firstLoading = false;
-            _logger.LogInformation("Chat archive status: {IsArchive}", isArchive);
-
+            await ChatHubService.SendMessageAsync(newMessage);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error when trying to load chat");
+            _logger.LogError(ex, "Błąd wysyłki");
+            receivedMessage.Remove(newMessage);
+            _ = ShowNotification("Nie udało się wysłać wiadomości.");
+        }
+    }
+    private async Task HandlePrivateChatLoad(Guid chatId)
+    {
+        _chatLoadingCts?.Cancel();
+        _chatLoadingCts = new CancellationTokenSource();
+        var token = _chatLoadingCts.Token;
+
+        try
+        {
+            bool isSameChat = AppState.CurrentChat?.ChatID == chatId;
+
+            if (!isSameChat)
+            {
+                isChatLoaded = false;
+                receivedMessage = new List<MessageDTO>();
+                _logger.LogInformation("Switching to chat: {Id}", chatId);
+            }
+            var chatInformation = await ChatHubService.GetChatInformation(chatId,token);
+            token.ThrowIfCancellationRequested();
+
+
+            if (chatInformation == null)
+            {
+                _logger.LogError("Chat could not be loaded for ID: {Id}", chatId);
+                return;
+            }
+
+            if (!isSameChat || receivedMessage.Count == 0)
+            {
+                receivedMessage = await ChatHubService.GetPrivateHistory(chatInformation.ChatID,token);
+                if (token.IsCancellationRequested) return;
+            }
+
+            AppState.CurrentChat = chatInformation;
+            isArchive = chatInformation.IsArchive;
+            lockChat = chatInformation.IsArchive;
+
+            if (!chatInformation.IsArchive)
+            {
+                await ChatHubService.MarkChatMessagesAsReaded(chatInformation.ChatID,token);
+                if(token.IsCancellationRequested) return;
+                await HandleCounterUpdate(chatInformation.ChatID, true);
+            }
+
+            isChatLoaded = true;
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Chat loading cancelled for {Id}", chatId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error when trying to load chat {Id}", chatId);
             _ = ShowNotification("Błąd podczas ładowania czatu.");
         }
         finally
         {
-            await InvokeAsync(StateHasChanged);
+            if (!_chatLoadingCts.IsCancellationRequested)
+            {
+                await InvokeAsync(StateHasChanged);
+            }
         }
     }
     public async ValueTask DisposeAsync()

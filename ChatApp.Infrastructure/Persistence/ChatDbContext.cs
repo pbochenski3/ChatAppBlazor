@@ -81,7 +81,7 @@ namespace ChatApp.Infrastructure.Persistence
             mb.Entity<Message>(entity =>
             {
                 entity.HasQueryFilter(m => !m.IsDeleted);
-
+                entity.HasIndex(m => new { m.ChatID, m.SentAt });
                 entity.HasIndex(m => new{ m.ChatID, m.MessageID, m.SenderID})
                 .HasDatabaseName("Messages_UnreadCounter");
 
@@ -117,6 +117,7 @@ namespace ChatApp.Infrastructure.Persistence
             mb.Entity<UserChat>(entity =>
             {
                 entity.HasQueryFilter(uc => !uc.IsDeleted);
+                entity.HasIndex(uc => new { uc.UserID, uc.LastMessageAt });
                 entity.HasIndex(uc => uc.UserID);
 
                 entity.HasKey(uc => new { uc.UserID, uc.ChatID });

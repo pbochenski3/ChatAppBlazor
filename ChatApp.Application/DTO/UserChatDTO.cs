@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ChatApp.Application.DTO
 {
-    internal class UserChatDTO
+    public class UserChatDTO
     {
         public Guid UserID { get; set; }
         public string Username { get; set; } = string.Empty;
@@ -20,5 +20,6 @@ namespace ChatApp.Application.DTO
         public DateTime LastReadAt { get; set; }
         public Guid? LastMessageID { get; private set; }
         public DateTime LastMessageAt { get; set; }
+        public int counter { get; set; }
     }
 }

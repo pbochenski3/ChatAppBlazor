@@ -10,6 +10,12 @@ namespace ChatApp.Domain.Repository
         Task SaveLastReadMessage(Guid userId, Guid chatId, Guid messageId);
         Task SaveLastSendedChatMessage(Guid chatId, Guid messageId);
         Task<int> CountUnreadMessagesAsync(Guid userId, Guid chatId);
-        Task<List<CounterBadge>> CountAllUnreadMessagesAsync(Guid userId);
+        Task<List<(Guid ChatId, int Count)>> CountAllUnreadMessagesAsync(Guid userId);
+        Task SaveChatAsReaded(Guid userId, Guid chatId,CancellationToken token);
+        Task<Guid> FetchReceiverUser(Guid chatId, Guid userId, CancellationToken token);
+        Task<UserChat?> FetchChatAsync(Guid chatId, Guid userId, CancellationToken token);
+        Task<List<UserChat>?> FetchAllChatsAsync(Guid userId);
+        Task<bool> CheckIfChatExisted(Guid chatId);
+        Task RestoreChat(Guid chatId);
     }
 }

@@ -45,12 +45,16 @@ namespace ChatApp.ChatHub
         }
         public async Task MarkMessage(Guid chatId, Guid messageId)
         {
-            await _userChatService.MarkChatAsReadAsync(userId, chatId, messageId);
+            await _userChatService.MarkMessageAsReadAsync(userId, chatId, messageId);
         }
-        public async Task<List<CounterBadge>> FetchAllUnreadCount()
+        public async Task MarkChatMessage(Guid chatId)
         {
-            return await _userChatService.GetAllUnreadCounterAsync(userId);
+            await _userChatService.MarkChatMessagesAsReadAsync(userId, chatId,Context.ConnectionAborted);
         }
+        //public async Task<List<CounterBadge>> FetchAllUnreadCount()
+        //{
+        //    return await _userChatService.GetAllUnreadCounterAsync(userId);
+        //}
 
         public async Task<int> FetchUnreadCount(Guid chatId)
         {
@@ -72,7 +76,6 @@ namespace ChatApp.ChatHub
             }
 
         }
-   
         public async Task<List<UserDTO>> GetUsersToInvite(string query)
         {
             return await _userService.GetAllUsersToInvite(userId, query);
@@ -87,20 +90,27 @@ namespace ChatApp.ChatHub
         }
         public async Task SendMessage(MessageDTO dto)
         {
-            dto.SenderID = userId;
+            var receiverId = await _userChatService.GetReceiverUser(dto.ChatID, userId, Context.ConnectionAborted);
+            await _userChatService.SaveLastSendedChatMessageAsync(dto.ChatID, dto.MessageID);
             await _messageService.SendChatMessageAsync(dto);
-            await _userChatService.SaveLastMessageAsync(dto.ChatID, dto.MessageID);
-            await Clients.All.SendAsync("ReceiveMessage", dto);
+            var targerUser = Clients.User(receiverId.ToString());
+            await targerUser.SendAsync("ReceiveMessage", dto);
         }
-        public async Task DeleteContact(Guid contactId, Guid chatId)
+        public async Task DeleteContact(Guid chatId)
         {
             try
             {
+                CancellationToken token = default;
+                var contactId = await _userChatService.GetReceiverUser(chatId, userId, token);
+                if(contactId == Guid.Empty)
+                {
+                    throw new Exception();
+                }
                 IEnumerable<Task> tasks;
                 var target = Clients.Users(contactId.ToString());
                 await _contactService.DeleteContactAsync(contactId, userId, chatId);
-                var UserChat = Clients.Caller.SendAsync("ChatReload", contactId);
-                var TargetChat = target.SendAsync("ChatReload", userId);
+                var UserChat = Clients.Caller.SendAsync("ChatReload", chatId);
+                var TargetChat = target.SendAsync("ChatReload", chatId);
                 await Task.WhenAll(UserChat,TargetChat);
                 tasks = [
                    Clients.Caller.SendAsync("ReceiveStatus", "Kontakt został usunięty!"),
@@ -117,8 +127,6 @@ namespace ChatApp.ChatHub
             }
 
         }
-
-
         public async Task InviteAction(Guid inviteId, bool status)
         {
             try
@@ -130,20 +138,20 @@ namespace ChatApp.ChatHub
                     Clients.Caller.SendAsync("InviteReload", true),
                     targetUser.SendAsync("InviteReload", true)
                     );
-                await Task.WhenAll(
-                    Clients.Caller.SendAsync("ChatReload", senderId),
-                    targetUser.SendAsync("ChatReload", userId)
-                    );
                 var statusMsgCaller = status ? "Invite accepted!" : "Invite rejected.";
                 var statusMsgTarget = status ? "Your invite was accepted!" : "Your invite was rejected!";
 
                 if (status)
                 {
+                    await _userChatService.CreatePrivateChat(userId, senderId);
+                    var chatId = await _userChatService.GetChatId(userId, senderId, Context.ConnectionAborted);
                     await Task.WhenAll(
                     Clients.Caller.SendAsync("SideBarReload", true),
                     targetUser.SendAsync("SideBarReload", true)
                     ); 
                     await Task.WhenAll(
+                        Clients.Caller.SendAsync("ChatReload", chatId),
+                        targetUser.SendAsync("ChatReload", chatId),
                         Clients.Caller.SendAsync("ReceiveStatus", statusMsgCaller, senderId),
                         targetUser.SendAsync("ReceiveStatus", statusMsgTarget, userId)
                     );
@@ -166,27 +174,28 @@ namespace ChatApp.ChatHub
         {
             return await _inviteService.GetInvites(userId);
         }
-        public async Task<List<MessageDTO>> GetPrivateHistory(Guid Id,Guid chatId)
+        public async Task<List<MessageDTO>> GetPrivateHistory(Guid chatId)
         {
-            return await _messageService.GetPrivateHistoryAsync(Id,userId,chatId);
+            return await _messageService.GetPrivateHistoryAsync(userId,chatId,Context.ConnectionAborted);
         }
-        public async Task<ChatDTO> GetChat(Guid Id)
+        public async Task<UserChatDTO> GetChat(Guid chatId)
         {
-            return await _chatService.GetPrivateChatById(Id,userId);
+            return await _userChatService.GetChatAsync(chatId, userId, Context.ConnectionAborted);
         }
-        public async Task ChatRestore(Guid ContactId)
-        {
-            await _chatService.GetPrivateChatById(userId,ContactId);
-        }
+        //public async Task ChatRestore(Guid ContactId)
+        //{
+        //    await _chatService.GetPrivateChatById(userId,ContactId);
+        //}
         public async Task<bool> GetChatStatus(Guid ChatId, Guid ContactId)
         {
             return await _chatService.GetChatStatus(ChatId, ContactId);
         }
-        public async Task<List<ChatDTO>> GetChatList()
+        public async Task<List<UserChatDTO>> GetChatList()
         {
-            return await _chatService.GetChatList(userId);
+
+            return await _userChatService.GetChatList(userId);
         }
-        public async Task<List<SidebarDTO>> GetSidebarList()
+        public async Task<List<UserChatDTO>> GetSidebarList()
         {
             return await _sidebarService.GetSidebarItems(userId);
         }

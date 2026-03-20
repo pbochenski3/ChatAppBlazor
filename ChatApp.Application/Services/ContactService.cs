@@ -78,25 +78,21 @@ namespace ChatApp.Application.Services
         }
         public async Task AddContactAsync(Guid userId, Guid contactUserId)
         {
-            var contact1 = await _contactRepo.CheckContact(userId,contactUserId);
-            var contact2 = await _contactRepo.CheckContact(contactUserId,userId);
-            if(contact1 == null && contact2 == null )
+            if(userId == Guid.Empty || contactUserId == Guid.Empty)
+            {
+                throw new ArgumentException("[AddContactAsync] userId || contactUserId is empty");
+            }
+            var isDeleted = await _contactRepo.CheckDeletedContact(userId,contactUserId);
+       
+            if(!isDeleted )
             {
                 await CreateContact(userId,contactUserId);
             }
             else
-            { 
-            var toRestore = new List<Contact>();
-
-            if (contact1 != null && contact1.IsDeleted) toRestore.Add(contact1);
-            if (contact2 != null && contact2.IsDeleted) toRestore.Add(contact2);
-
-            if (toRestore.Any())
             {
-                await _contactRepo.RestoreContacts(toRestore);
+                await _contactRepo.RestoreContacts(userId,contactUserId);
             }
         }
-}
         public async Task DeleteContactAsync(Guid contactId,Guid userId,Guid chatId)
         {
             await _contactRepo.DeleteContactFromDb(contactId, userId);

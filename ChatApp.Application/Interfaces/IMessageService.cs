@@ -9,7 +9,6 @@ namespace ChatApp.Application.Interfaces.Service
     public interface IMessageService
     {
         Task SendChatMessageAsync(MessageDTO dto);
-
-        Task<List<MessageDTO>> GetPrivateHistoryAsync(Guid contactId,Guid userId, Guid chatId);
+        Task<List<MessageDTO>> GetPrivateHistoryAsync(Guid userId, Guid chatId,CancellationToken token);
     }
 }

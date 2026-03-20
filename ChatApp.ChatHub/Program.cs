@@ -89,7 +89,10 @@ builder.Services.AddScoped<IUserChatService, UserChatService>();
 builder.Services.AddScoped<IUserChatRepository, UserChatRepository>();
 //Sidebar
 builder.Services.AddScoped<ISidebarService, SidebarService>();
-
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true;
+});
 
 builder.Services.AddControllers();
 var app = builder.Build();

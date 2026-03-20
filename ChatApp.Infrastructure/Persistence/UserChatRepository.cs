@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 
 namespace ChatApp.Infrastructure.Persistence
@@ -17,6 +18,43 @@ namespace ChatApp.Infrastructure.Persistence
         {
             _contextFactory = contextFactory;
             _logger = logger;
+        }
+        public async Task SaveChatAsReaded(Guid userId, Guid chatId,CancellationToken token)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            await context.UserChat
+                .Where(uc => uc.ChatID == chatId && uc.UserID == userId)
+                .ExecuteUpdateAsync(s => s
+                .SetProperty(uc => uc.LastReadMessageID, uc => uc.LastMessageID)
+                .SetProperty(uc => uc.LastReadAt, DateTime.UtcNow),
+                token);
+        }
+        public async Task<bool> CheckIfChatExisted(Guid chatId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return await context.UserChat.AnyAsync(c => c.ChatID == chatId);
+        }
+        public async Task RestoreChat(Guid chatId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            await context.UserChat
+                .IgnoreQueryFilters()
+                .Where(uc => uc.ChatID == chatId)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(uc => uc.ArchivedAt, (DateTime?)null)
+                    .SetProperty(uc => uc.IsArchive, false));
+
+        }
+        public async Task<Guid> FetchReceiverUser(Guid chatId, Guid userId,CancellationToken token)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var receiverId = await context.UserChat
+                .AsNoTracking()
+                .Where(uc => uc.ChatID == chatId && uc.UserID != userId)
+                .Select(uc => uc.UserID) 
+                .FirstOrDefaultAsync(token);
+            return receiverId;
         }
         public async Task SaveLastSendedChatMessage(Guid chatId, Guid messageId)
         {
@@ -39,7 +77,7 @@ namespace ChatApp.Infrastructure.Persistence
                 .SetProperty(uc => uc.LastReadAt, DateTime.UtcNow)
                 );
         }
-        public async Task<int> CountUnreadMessagesAsync(Guid userId,Guid chatId)
+        public async Task<int> CountUnreadMessagesAsync(Guid userId, Guid chatId)
         {
             using var context = _contextFactory.CreateDbContext();
             return await context.UserChat
@@ -47,23 +85,46 @@ namespace ChatApp.Infrastructure.Persistence
                  .Select(uc => uc.Chat.Messages
                      .Count(m => m.SentAt > uc.LastReadAt
                               && m.SenderID != userId
-                              && !m.IsDeleted)) 
+                              && !m.IsDeleted))
                  .FirstOrDefaultAsync();
         }
-        public async Task<List<CounterBadge>> CountAllUnreadMessagesAsync(Guid userId)
+        public async Task<UserChat?> FetchChatAsync(Guid chatId, Guid userId,CancellationToken token)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return await context.UserChat
+               .AsNoTracking()
+               .IgnoreQueryFilters()
+               .Where(c => c.ChatID == chatId && c.UserID == userId)
+               .FirstOrDefaultAsync(token);
+        }
+        public async Task<List<UserChat>?> FetchAllChatsAsync(Guid userId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return await context.UserChat
+                .AsNoTracking()
+                .Include(uc => uc.Chat)
+                .Where(uc => uc.UserID == userId)
+                .ToListAsync();
+        }
+        public async Task<List<(Guid ChatId, int Count)>> CountAllUnreadMessagesAsync(Guid userId)
         {
             using var context = _contextFactory.CreateDbContext();
 
-            return await context.UserChat
+
+            var rawData = await context.UserChat
                 .Where(uc => uc.UserID == userId)
-                .Select(uc => new CounterBadge(
-                    uc.ChatID,
-                    uc.Chat.Messages.Count(m =>
+                .Select(uc => new
+                {
+                    Id = uc.ChatID,
+                    UnreadCount = uc.Chat.Messages.Count(m =>
                         m.SentAt > uc.LastReadAt &&
                         m.SenderID != userId &&
                         !m.IsDeleted)
-                ))
+                })
                 .ToListAsync();
+            return rawData
+                .Select(x => (x.Id, x.UnreadCount))
+                .ToList();
         }
     }
 }

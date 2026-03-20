@@ -51,11 +51,13 @@ namespace ChatApp.Application.Services
            
         }
            
-        public async Task<List<MessageDTO>> GetPrivateHistoryAsync(Guid contactId, Guid id,Guid chatId)
+        public async Task<List<MessageDTO>> GetPrivateHistoryAsync(Guid userId,Guid chatId,CancellationToken token)
         {
 
-                var rawMessage = await _messageRepo.GetMessageHistoryAsync(contactId, id, chatId);
-                return rawMessage.Select(uc => new MessageDTO
+            var rawMessage = await _messageRepo.GetMessageHistoryAsync(userId,chatId,token);
+            if(!rawMessage.Any()) { return new List<MessageDTO>(); };
+            if (token.IsCancellationRequested) return new List<MessageDTO>();
+            return rawMessage.Select(uc => new MessageDTO
                 {
                     MessageID = uc.MessageID,
                     Content = uc.Content,

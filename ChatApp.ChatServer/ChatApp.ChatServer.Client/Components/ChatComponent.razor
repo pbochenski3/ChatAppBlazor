@@ -15,16 +15,14 @@
     <div class="top-bar">
         <div class="user-profile">
             <div class="avatar-wrapper">
-                <img src="@AppState.CurrentContact.AvatarUrl"
+                <img src="@AppState."
                      class="user-avatar"
                      alt="Avatar" />
                 <div class="status-dot online"></div>
             </div>
 
             <div class="user-info-text">
-                <span class="user-name">@AppState.CurrentContact.Username</span>
-                <span class="chat-separator">|</span>
-                <span class="chat-name">@AppState.CurrentChat.ChatName</span>
+                <span class="user-name">@AppState.CurrentChat.ChatName</span>
             </div>
         </div>
         <div class="contact-config" @onclick="ToggleSettings" style="cursor:pointer">⚙️</div>
@@ -127,8 +125,7 @@
         {
             _confirmWindow = false;
             _isSettingsOpen = false; 
-            var contactId = AppState.CurrentContact.ContactUserID;
-            await OnDeleteContact.InvokeAsync(contactId);
+            await OnDeleteContact.InvokeAsync();
         }
         else
         {

@@ -32,7 +32,7 @@ public class MessageRepository : IMessageRepository
         _logger.LogInformation("Saving changes to the database.");
         await context.SaveChangesAsync();
     }
-    public async Task<List<Message>> GetMessageHistoryAsync(Guid contactId, Guid id, Guid chatId)
+    public async Task<List<Message>> GetMessageHistoryAsync(Guid userId, Guid chatId,CancellationToken token)
     {
         using var context = _contextFactory.CreateDbContext();
         return await context.Messages
@@ -41,6 +41,6 @@ public class MessageRepository : IMessageRepository
             .Include(m => m.Sender)
             .Where(m => m.ChatID == chatId)
             .OrderBy(m => m.SentAt)
-            .ToListAsync();
+            .ToListAsync(token);
     }
 }

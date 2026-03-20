@@ -1,5 +1,4 @@
 ﻿using ChatApp.Application.DTO;
-using ChatApp.Application.Mappers;
 using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Service;
 using ChatApp.Domain.Models;
@@ -21,24 +20,34 @@ namespace ChatApp.Application.Services
             _chatService = chatService;
             _userChatService = userChatService;
         }
-        public async Task<List<SidebarDTO>> GetSidebarItems(Guid id)
+        public async Task<List<UserChatDTO>> GetSidebarItems(Guid userId)
         {
-            var contactsTask = _contactService.GetUserContactsAsync(id);
-            var chatsTask = _chatService.GetChatList(id);
-            var counterTask =  _userChatService.GetAllUnreadCounterAsync(id);
-            await Task.WhenAll(counterTask, contactsTask, chatsTask);
-            var counterBadge = await counterTask ?? new List<CounterBadge>();
-            var contacts = await contactsTask ?? new List<ContactDTO>();
-            var chats = await chatsTask ?? new List<ChatDTO>();
-            var counterDict = counterBadge.ToDictionary(c => c.Id, c => c.Counter);
-            var chatItems = chats.Select(ch =>
-            ch.MapToSidebar(counterDict.GetValueOrDefault(ch.ChatID, 0))).ToList();
-            var contactItems = contacts.Select(c =>
-            c.MapToSidebar(counterDict.GetValueOrDefault(c.ContactUserID, 0))).ToList();
-            return chatItems
-                .Concat(contactItems)
-                .OrderByDescending(c => c.Counter > 0)
-                .ToList();
+            try
+            {
+                var chatsTask = _userChatService.GetChatList(userId);
+                var counterTask = _userChatService.GetAllUnreadCounterAsync(userId);
+
+                await Task.WhenAll(counterTask,chatsTask);
+
+                var counter = await counterTask ?? new List<(Guid ChatId, int Count)>();
+                var chats = await chatsTask ?? new List<UserChatDTO>();
+                var counterDict = counter.ToDictionary(t => t.ChatId, t => t.Count);
+                var sidebarItems = chats.Select(c => new UserChatDTO
+                {
+                    ChatID = c.ChatID,
+                    UserID = userId,
+                    ChatName = c.ChatName,
+                    IsArchive = c.IsArchive,
+                    counter = counterDict.GetValueOrDefault(c.ChatID,0),
+                }).ToList();
+                return sidebarItems;
+
+      
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }

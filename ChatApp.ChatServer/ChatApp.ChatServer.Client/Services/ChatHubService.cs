@@ -58,13 +58,17 @@ public class ChatHubService : IAsyncDisposable
         var handler = OnAppReload;
         if (handler != null) await handler.Invoke(target);
     }
-    public async Task<List<CounterBadge>> LoadAllUnreadCounters()
-    {
-        return await HubConnection.InvokeAsync<List<CounterBadge>>("FetchAllUnreadCount");
-    }
+    //public async Task<List<CounterBadge>> LoadAllUnreadCounters()
+    //{
+    //    return await HubConnection.InvokeAsync<List<CounterBadge>>("FetchAllUnreadCount");
+    //}
     public async Task MarkMessageAsReaded(Guid chatId, Guid messageId)
     {
         await HubConnection.InvokeAsync("MarkMessage", chatId, messageId);
+    }
+    public async Task MarkChatMessagesAsReaded(Guid chatId,CancellationToken token)
+    {
+        await HubConnection.InvokeAsync("MarkChatMessage", chatId,token);
     }
     public async Task<int> GetUnreadMessagesCounter(Guid chatId)
     {
@@ -156,19 +160,19 @@ public class ChatHubService : IAsyncDisposable
             throw new Exception($"{errorCOntent}");
         }
     }
-    public async Task<ChatDTO> GetChatInformation(Guid contactId)
+    public async Task<UserChatDTO> GetChatInformation(Guid contactId,CancellationToken token)
     {
-        return await HubConnection.InvokeAsync<ChatDTO>("GetChat", contactId);
+        return await HubConnection.InvokeAsync<UserChatDTO>("GetChat", contactId, token);
     }
     public async Task ChatRestore(Guid contactId)
     {
          await HubConnection.InvokeAsync("ChatRestore");
     }
-    public async Task<List<MessageDTO>> GetPrivateHistory(Guid contactId,Guid chatId)
+    public async Task<List<MessageDTO>> GetPrivateHistory(Guid chatId, CancellationToken token)
     {
         try
         {
-            return await HubConnection.InvokeAsync<List<MessageDTO>>("GetPrivateHistory", contactId, chatId);
+            return await HubConnection.InvokeAsync<List<MessageDTO>>("GetPrivateHistory", chatId, token);
         }
         catch (Exception)
         {
@@ -205,17 +209,17 @@ public class ChatHubService : IAsyncDisposable
     {
                await HubConnection.InvokeAsync("InviteAction", InviteId,Status);
     }
-    public async Task DeleteContactAsync(Guid contactId,Guid chatId)
+    public async Task DeleteContactAsync(Guid chatId)
     {
-        await HubConnection.InvokeAsync("DeleteContact", contactId,chatId);
+        await HubConnection.InvokeAsync("DeleteContact",chatId);
     }
     public async Task<List<ChatDTO>> GetChatList()
     {
         return await HubConnection.InvokeAsync<List<ChatDTO>>("GetChatList");
     }
-    public async Task<List<SidebarDTO>> LoadSidebarItems()
+    public async Task<List<UserChatDTO>> LoadSidebarItems()
     {
-        return await HubConnection.InvokeAsync<List<SidebarDTO>>("GetSidebarList");
+        return await HubConnection.InvokeAsync<List<UserChatDTO>>("GetSidebarList");
     }
     public async ValueTask DisposeAsync()
     {

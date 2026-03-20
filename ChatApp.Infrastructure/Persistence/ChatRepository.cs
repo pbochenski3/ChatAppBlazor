@@ -14,37 +14,21 @@ public class ChatRepository : IChatRepository
     private readonly IDbContextFactory<ChatDbContext> _contextFactory;
     private readonly ILogger<MessageRepository> _logger;
 
+    
     public ChatRepository(IDbContextFactory<ChatDbContext> contextFactory, ILogger<MessageRepository> logger)
     {
         _contextFactory = contextFactory;
         _logger = logger;
     }
-    public async Task RestoreChat(Guid chatId)
-    {
-        using var context = _contextFactory.CreateDbContext();
-        await context.UserChat
-            .IgnoreQueryFilters()
-            .Where(uc => uc.ChatID == chatId)
-            .ExecuteUpdateAsync(setters => setters
-                .SetProperty(uc => uc.ArchivedAt, (DateTime?)null)
-                .SetProperty(uc => uc.IsArchive, false));
-
-    }
-    public async Task<Chat?> GetPrivateChatC(Guid identifier, Guid user2)
+    public async Task<Guid> GetChatIdAsync(Guid user1, Guid user2,CancellationToken token = default)
     {
         using var context = _contextFactory.CreateDbContext();
         return await context.Chats
-           .AsNoTracking()
-           .IgnoreQueryFilters()
-           .Include(c => c.UserChats)
-           .Where(c => !c.IsGroup)
-           .Where(c =>
-            c.ChatID == identifier ||
-            (c.UserChats.Count == 2 &&
-             c.UserChats.Any(uc => uc.UserID == identifier) &&
-             c.UserChats.Any(uc => uc.UserID == user2))
-       )
-           .FirstOrDefaultAsync();
+        .Where(c => !c.IsGroup &&
+                    c.UserChats.Any(uc => uc.UserID == user1) &&
+                    c.UserChats.Any(uc => uc.UserID == user2))
+        .Select(c => c.ChatID) 
+        .FirstOrDefaultAsync(token);
     }
     public async Task AddChatAsync(Chat chat)
     {
@@ -74,25 +58,5 @@ public class ChatRepository : IChatRepository
             .Where(uc => uc.UserID == ContactId)
             .FirstOrDefaultAsync();
         return chat?.IsArchive ?? false;
-    }
-    public async Task DeletePrivateChat(Guid chatId)
-    {
-
-    }
-    public async Task<List<UserChat>> GetChatListFromDb(Guid UserId)
-    {
-        using var context = _contextFactory.CreateDbContext();
-        return await context.UserChat
-         .AsNoTracking()
-         .Include(uc => uc.Chat)
-         .Where(uc => uc.UserID == UserId)
-         .Where(uc => uc.Chat.IsGroup == true || (uc.Chat.IsGroup == false && uc.IsArchive))
-         .ToListAsync();
-    }
-    public async Task SaveChangesToDbAsync()
-    {
-        using var context = _contextFactory.CreateDbContext();
-        _logger.LogInformation("Saving changes to the database.");
-        await context.SaveChangesAsync();
     }
 }

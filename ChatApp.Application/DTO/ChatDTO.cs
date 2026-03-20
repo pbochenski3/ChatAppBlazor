@@ -7,7 +7,7 @@ namespace ChatApp.Application.DTO
         public class ChatDTO 
         {
             public Guid ChatID { get; set; }
-            public string? GroupAvatar { get; set; }
+            public string? Avatar { get; set; }
             public DateTime CreatedAt { get; set; }
             public string ChatName { get; set; } = string.Empty;
             public string AvatarUrl { get; set; } = string.Empty;

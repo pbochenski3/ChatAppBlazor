@@ -133,6 +133,7 @@ namespace ChatApp.Infrastructure.Migrations
                 {
                     UserID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ChatID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ChatName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     JoinedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false),
                     IsAdmin = table.Column<bool>(type: "bit", nullable: false),
                     IsArchive = table.Column<bool>(type: "bit", nullable: false),
@@ -177,6 +178,11 @@ namespace ChatApp.Infrastructure.Migrations
                 column: "SenderID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Messages_ChatID_SentAt",
+                table: "Messages",
+                columns: new[] { "ChatID", "SentAt" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Messages_SenderID",
                 table: "Messages",
                 column: "SenderID");
@@ -195,6 +201,11 @@ namespace ChatApp.Infrastructure.Migrations
                 name: "IX_UserChat_UserID",
                 table: "UserChat",
                 column: "UserID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserChat_UserID_LastMessageAt",
+                table: "UserChat",
+                columns: new[] { "UserID", "LastMessageAt" });
         }
 
         /// <inheritdoc />

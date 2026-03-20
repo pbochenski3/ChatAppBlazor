@@ -3,7 +3,7 @@
 <aside class="sidebar">
     <div class="sidebar-header">
         <div class="user-ifno">
-            <p>@(AppState?.CurrentUser?.Username ?? String.Empty)</p>
+            <p class="user-profile">Witaj,@(AppState?.CurrentUser?.Username ?? String.Empty)</p>
         </div>
         <div class="nav-tabs">
             <button class="@(currentView == View.Contacts ? "active" : "")" @onclick="() => currentView = View.Contacts">
@@ -38,16 +38,19 @@
                     {
                         @foreach (var chat in FilteredSidebar)
                         {
-                            <div class="contact-item @(SelectedContactId == chat.Id ? "active" : "")"
-                                 @onclick="async () => await SelectContact(chat.Id)">
+                            <div class="contact-item @(SelectedContactId == chat.ChatID ? "active" : "")"
+                                 @onclick="async () => await SelectContact(chat.ChatID)">
                                 <div class="contact-avatar-container">
-                                    <img src="@chat.AvatarUrl" class="contact-img" alt="avatar" />
-                                    <div class="status-indicator @(chat.IsOnline ? "online" : "offline")"></div>
+                                    <img src="@chat." class="contact-img" alt="avatar" />
+                                    @* <div class="status-indicator @(chat.IsOnline ? "online" : "offline")"></div> *@
                                 </div>
                                 <div class="contact-info">
-                                    <p class="contact-name">@chat.DisplayName</p>
-                                    <p class="contact-name">@chat.Counter</p>
-                                    <p class="contact-status">@(chat.IsOnline ? "Online" : "Offline")</p>
+                                    <p class="contact-name">@chat.ChatName</p>
+                                    @if(chat.counter > 0)
+                                    {
+                                        <p class="contact-name">@chat.counter nowe wiadomości!</p>
+                                    }
+                                    @* <p class="contact-status">@(chat. ? "Online" : "Offline")</p> *@
                                 </div>
                             </div>
                         }
@@ -155,7 +158,7 @@
     [Parameter] public EventCallback<Guid> OnContactSelected { get; set; }
     [Parameter] public EventCallback<Guid> OnContactInvited { get; set; }
     [Parameter] public EventCallback<(Guid InviteId,bool Status)> OnInviteAction { get; set; }
-    [Parameter] public List<SidebarDTO> SidebarItem { get; set; } = new List<SidebarDTO>();
+    [Parameter] public List<UserChatDTO> SidebarItem { get; set; } = new List<UserChatDTO>();
     [Parameter] public List<UserDTO> UsersList { get; set; } = new List<UserDTO>();
     [Parameter] public List<InviteDTO> InvitesList { get; set; } = new List<InviteDTO>();
     [Parameter] public bool IsSearching { get; set; }
@@ -174,10 +177,10 @@
     {
         StateHasChanged();
     }
-    private IEnumerable<SidebarDTO> FilteredSidebar =>
+    private IEnumerable<UserChatDTO> FilteredSidebar =>
         SidebarItem?.Where(c => string.IsNullOrWhiteSpace(searchTerm) ||
-                               c.DisplayName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-        ?? Enumerable.Empty<SidebarDTO>();
+                               c.Username.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+        ?? Enumerable.Empty<UserChatDTO>();
 
 
     private async Task SelectContact(Guid contactId)

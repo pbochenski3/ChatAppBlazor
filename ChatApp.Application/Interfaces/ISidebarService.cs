@@ -7,6 +7,6 @@ namespace ChatApp.Application.Interfaces
 {
     public interface ISidebarService
     {
-        Task<List<SidebarDTO>> GetSidebarItems(Guid id);
+        Task<List<UserChatDTO>> GetSidebarItems(Guid userId);
     }
 }

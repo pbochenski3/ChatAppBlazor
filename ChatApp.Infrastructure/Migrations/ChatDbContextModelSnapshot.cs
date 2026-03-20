@@ -144,6 +144,8 @@ namespace ChatApp.Infrastructure.Migrations
 
                     b.HasIndex("SenderID");
 
+                    b.HasIndex("ChatID", "SentAt");
+
                     b.HasIndex("ChatID", "MessageID", "SenderID")
                         .HasDatabaseName("Messages_UnreadCounter");
 
@@ -192,6 +194,10 @@ namespace ChatApp.Infrastructure.Migrations
                         .HasPrecision(0)
                         .HasColumnType("datetime2(0)");
 
+                    b.Property<string>("ChatName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasPrecision(0)
                         .HasColumnType("datetime2(0)");
@@ -228,6 +234,8 @@ namespace ChatApp.Infrastructure.Migrations
                     b.HasIndex("ChatID");
 
                     b.HasIndex("UserID");
+
+                    b.HasIndex("UserID", "LastMessageAt");
 
                     b.ToTable("UserChat");
                 });

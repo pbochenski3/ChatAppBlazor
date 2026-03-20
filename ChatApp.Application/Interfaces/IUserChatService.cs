@@ -8,10 +8,15 @@ namespace ChatApp.Application.Interfaces
 {
     public interface IUserChatService
     {
-        Task MarkChatAsReadAsync(Guid userId, Guid chatId, Guid messageId);
-        Task SaveLastSendedChatMessage(Guid chatId, Guid messageId);
+        Task MarkMessageAsReadAsync(Guid userId, Guid chatId, Guid messageId);
+        Task MarkChatMessagesAsReadAsync(Guid userId, Guid chatId, CancellationToken token);
         Task<int> GetUnreadCounterAsync(Guid userId, Guid chatId);
-        Task<List<CounterBadge>> GetAllUnreadCounterAsync(Guid userId);
-        Task SaveLastMessageAsync(Guid chatId, Guid messageId);
+        Task SaveLastSendedChatMessageAsync(Guid chatId, Guid messageId);
+        Task<Guid> GetReceiverUser(Guid chatId, Guid userId, CancellationToken token);
+        Task<UserChatDTO> GetChatAsync(Guid chatId, Guid userId,CancellationToken token);
+        Task<List<(Guid ChatId, int Count)>> GetAllUnreadCounterAsync(Guid userId);
+        Task<List<UserChatDTO>> GetChatList(Guid userId);
+        Task CreatePrivateChat(Guid user1, Guid user2);
+        Task<Guid> GetChatId(Guid userId, Guid contactUserId, CancellationToken token);
     }
 }
