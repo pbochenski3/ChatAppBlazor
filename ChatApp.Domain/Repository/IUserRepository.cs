@@ -14,5 +14,6 @@ namespace ChatApp.Application.Interfaces.Repository
         Task<User?> GetByIdAsync(Guid id);
         Task<List<User>> GetAllUsersToInviteAsync(Guid currentUserId, string query);
         Task SetStatus(Guid id, bool status);
+        Task<HashSet<User>> GetMultipleUserByIdAsync(HashSet<Guid> ids);
     }
 }

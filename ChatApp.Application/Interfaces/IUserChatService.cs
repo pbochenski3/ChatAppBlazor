@@ -18,5 +18,9 @@ namespace ChatApp.Application.Interfaces
         Task<List<UserChatDTO>> GetChatList(Guid userId);
         Task CreatePrivateChat(Guid user1, Guid user2);
         Task<Guid> GetChatId(Guid userId, Guid contactUserId, CancellationToken token);
+        Task CreateGroupChat(Guid chatId, HashSet<Guid> UsersToAdd);
+        Task<HashSet<Guid>> GetListOfUsersInChatAsync(Guid chatId);
+        Task<bool> GetGroupChatByIdAsync(Guid chatId);
+        Task AddUserGroupToDb(Guid chatId, HashSet<Guid> usersToAdd);
     }
 }

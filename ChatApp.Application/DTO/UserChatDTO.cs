@@ -14,6 +14,7 @@ namespace ChatApp.Application.DTO
         public bool IsAdmin { get; set; }
         public bool IsArchive { get; set; } = false;
         public DateTime? ArchivedAt { get; set; }
+        public bool IsGroup { get; set; } = false;
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
         public Guid? LastReadMessageID { get; set; }

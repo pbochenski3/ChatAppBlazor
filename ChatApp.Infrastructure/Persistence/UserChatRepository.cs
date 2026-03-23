@@ -1,6 +1,7 @@
 ﻿using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace ChatApp.Infrastructure.Persistence
             _contextFactory = contextFactory;
             _logger = logger;
         }
+ 
         public async Task SaveChatAsReaded(Guid userId, Guid chatId,CancellationToken token)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -93,6 +95,7 @@ namespace ChatApp.Infrastructure.Persistence
             using var context = _contextFactory.CreateDbContext();
             return await context.UserChat
                .AsNoTracking()
+               .Include(ch => ch.Chat)
                .IgnoreQueryFilters()
                .Where(c => c.ChatID == chatId && c.UserID == userId)
                .FirstOrDefaultAsync(token);
@@ -105,6 +108,15 @@ namespace ChatApp.Infrastructure.Persistence
                 .Include(uc => uc.Chat)
                 .Where(uc => uc.UserID == userId)
                 .ToListAsync();
+        }
+        public async Task<HashSet<Guid>> FetchUsersInChatAsync(Guid chatId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return await context.UserChat
+                .AsNoTracking()
+                .Where(uc => uc.ChatID == chatId)
+                .Select(uc => uc.UserID)
+                .ToHashSetAsync();
         }
         public async Task<List<(Guid ChatId, int Count)>> CountAllUnreadMessagesAsync(Guid userId)
         {

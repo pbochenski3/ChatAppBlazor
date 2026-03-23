@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Logging;
 using System.Net.NetworkInformation;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ChatApp.Infrastructure.Persistence;
 
@@ -42,6 +41,13 @@ public class UserRepository : IUserRepository
     {
         using var context = _contextFactory.CreateDbContext();
         return await context.Users.FirstOrDefaultAsync(u => u.UserID == id);
+    }
+    public async Task<HashSet<User>> GetMultipleUserByIdAsync(HashSet<Guid> ids)
+    {
+        using var context = _contextFactory.CreateDbContext();
+        return await context.Users
+            .Where(u => ids.Contains(u.UserID))
+            .ToHashSetAsync();
     }
     public async Task<List<User>> GetAllUsersToInviteAsync(Guid currentUserId, string query)
     {

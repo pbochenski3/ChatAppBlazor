@@ -576,21 +576,16 @@ body, html {
     gap: 14px;
 }
 
-/* --- Confirm overlay --- */
 .confirm-overlay {
-    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(6px);
 }
-
-    .confirm-overlay.show-window {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.75);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        backdrop-filter: blur(6px);
-    }
 
 .confirm-window {
     background: var(--surface);

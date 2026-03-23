@@ -9,7 +9,7 @@ namespace ChatApp.ChatServer.Client.Services
         public string? Message { get; set; }
 
         public UserDTO? CurrentUser { get; set; } = null;
-        public ContactDTO? CurrentContact { get; set; } = null;
+        public HashSet<Guid> CurrentUsers { get; set; }
         public UserChatDTO? CurrentChat { get; set; } = null;
         public void Logout()
         {

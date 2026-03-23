@@ -9,5 +9,7 @@ namespace ChatApp.Application.Interfaces.Service
     public interface IChatService
     {
         Task<bool> GetChatStatus(Guid ChatId, Guid ContactId);
+        Task<bool> GetGroupChatByIdAsync(Guid chatId, Guid userId);
+        Task<ChatDTO> GetChatById(Guid chatId);
     }
 }

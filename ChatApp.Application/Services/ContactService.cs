@@ -47,7 +47,7 @@ namespace ChatApp.Application.Services
             {
                 return result;
             }
-            foreach (var c in contacts.Where(c => c.ContactUser != null))
+            foreach (var c in contacts)
             {
                 var dto = new ContactDTO
                 {

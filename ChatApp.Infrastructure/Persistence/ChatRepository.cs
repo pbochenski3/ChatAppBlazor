@@ -20,6 +20,55 @@ public class ChatRepository : IChatRepository
         _contextFactory = contextFactory;
         _logger = logger;
     }
+    public async Task<bool> CheckIfGroupExist(Guid chatId, Guid userId)
+    {
+        using var context = _contextFactory.CreateDbContext();
+        return await context.Chats
+        .AnyAsync(ch => ch.ChatID == chatId
+                     && ch.UserChats.Any(uc => uc.UserID == userId)
+                     && ch.UserChats.Count > 2);
+
+    }
+    public async Task AddUserGroupToDb(Guid chatId, HashSet<Guid> usersToAdd)
+    {
+        using var context = _contextFactory.CreateDbContext();
+
+        
+        var chatInfo = await context.Chats
+            .AsNoTracking()
+            .Select(c => new { c.ChatID, c.ChatName })
+            .FirstOrDefaultAsync(c => c.ChatID == chatId);
+
+        if (chatInfo == null) return;
+
+        var existingUserIds = await context.UserChat
+            .Where(uc => uc.ChatID == chatId)
+            .Select(uc => uc.UserID)
+            .ToListAsync();
+
+        var filteredUsers = usersToAdd
+            .Where(id => !existingUserIds.Contains(id))
+            .Select(userId => new UserChat
+            {
+                UserID = userId,
+                ChatID = chatInfo.ChatID,
+                ChatName = chatInfo.ChatName,
+                IsArchive = false
+            }).ToList();
+
+        if (filteredUsers.Any())
+        {
+            await context.UserChat.AddRangeAsync(filteredUsers);
+            await context.SaveChangesAsync();
+        }
+    }
+    public async Task<Chat> FetchChatById(Guid chatId)
+    {
+        using var context = _contextFactory.CreateDbContext();
+        return await context.Chats
+            .Include(uc => uc.UserChats)
+            .FirstOrDefaultAsync(c => c.ChatID == chatId);
+    }
     public async Task<Guid> GetChatIdAsync(Guid user1, Guid user2,CancellationToken token = default)
     {
         using var context = _contextFactory.CreateDbContext();
@@ -59,4 +108,5 @@ public class ChatRepository : IChatRepository
             .FirstOrDefaultAsync();
         return chat?.IsArchive ?? false;
     }
+   
 }

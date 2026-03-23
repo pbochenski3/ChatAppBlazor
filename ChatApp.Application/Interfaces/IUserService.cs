@@ -10,5 +10,6 @@ namespace ChatApp.Application.Interfaces.Service
         Task Register(UserDTO user);
         Task<UserDTO> Login(UserDTO user);
         Task<List<UserDTO>> GetAllUsersToInvite(Guid currentUserId, string query);
+        Task<HashSet<UserDTO>> GetUsersByIdSet(HashSet<Guid> Ids);
     }
 }

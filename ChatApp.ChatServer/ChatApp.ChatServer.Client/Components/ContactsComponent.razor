@@ -50,7 +50,7 @@
                                     {
                                         <p class="contact-name">@chat.counter nowe wiadomości!</p>
                                     }
-                                    @* <p class="contact-status">@(chat. ? "Online" : "Offline")</p> *@
+                                    @* <p class="contact-name">@chat.LastMessage</p>  *@
                                 </div>
                             </div>
                         }
@@ -112,7 +112,7 @@
                             @foreach (var user in UsersList)
                             {
                                 <div class="search-result-item">
-                                    <div class="user-search-info">
+                                    <div class="contacts-info">
                                         <img src="@user.AvatarUrl" class="user-avatar" />
                                         <span class="search-username">@user.Username</span>
     

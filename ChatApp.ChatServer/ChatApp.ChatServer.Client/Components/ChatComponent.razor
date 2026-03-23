@@ -2,16 +2,12 @@
 @inject AppStateService AppState
 
 <div class="chat-main-wrapper @(_isSettingsOpen ? "show-settings" : "")">
-    <div class="confirm-overlay @(_confirmWindow ? " show-window" : "")">
-        <div class="confirm-window">
-            <p>Czy na pewno chcesz usunąć kontakt?</p>
-            <div class="confirm-actions">
-                <button class="btn-confirm-yes" @onclick="() => HandleDelete(true)">Tak</button>
-                <button class="btn-confirm-no" @onclick=" () => HandleDelete(false)">Nie</button>
-            </div>
-        </div>
-    </div>
-
+    @if (_showConfirm)
+    {
+        <ConfirmDialog Title="@_confirmTitle"
+                       Message="@_confirmMessage"
+                       OnClose="HandleConfirm" />
+    }
     <div class="top-bar">
         <div class="user-profile">
             <div class="avatar-wrapper">
@@ -81,36 +77,132 @@
         </div>
 
         <div class="contact-settings-panel">
-            <div class="sidebar-header">
-                <h3>Opcje kontaktu</h3>
-            </div>
             <div class="settings-content">
-                <button class="btn-secondary">Zmień pseudonim</button>
-                <button class="btn-secondary-delete" @onclick="@TriggerConfirmationWindow">Usuń kontakt</button>
+                @switch (currentView)
+                {
+                    case View.Settings:
+                        <div class="sidebar-header">
+                            <h3>Ustawienia</h3>
+                        </div>
+                        <button class="btn-secondary" @onclick="() => currentView = View.Users">Uczestnicy</button>
+                        <button class="btn-secondary" @onclick="async () => { currentView = View.AddUsers; await LoadContact(); }">Dodaj osoby do czatu</button>
+                        @if(!AppState.CurrentChat.IsGroup)
+                        {
+                            <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Usuwanie kontakt", "Czy na pewno chcesz usunąć kontakt?", HandleContactDelete)'>Usuń kontakt</button>
+                        }
+                        else
+                        {
+                            <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Opuszczanie czatu", "Czy na pewno chcesz opuścić czat?", HandleChatLeave)'>Opusc czat</button>
 
-                <div class="section-hint">
-                    Informacje o szyfrowaniu wiadomości są chronione end-to-end.
-                </div>
+                        }
+
+                        break;
+                    case View.AddUsers:
+                        <div class="sidebar-header">
+                            <h3>Dodaj użytkowników do czatu</h3>
+                        </div>
+                        <div class="search-container">
+                            <input type="text" class="form-control search-input"
+                            placeholder="Wpisz nazwę użytkownika..."
+                            @bind="contactSearchTerm"
+                            @bind:event="oninput" />
+                        </div>
+
+                        <div class="search-results">
+                            @if (FilteredContacts != null && FilteredContacts.Any())
+                            {
+                                @foreach (var user in FilteredContacts)
+                                {
+                                    bool isThisUserSelected = ContactsToAdd.Contains(user.ContactUserID);
+                                    <div class="search-result-item" @onclick="async () => { await AddUserToList(user.ContactUserID);  }">
+                                        <div class="user-search-info">
+                                            <img src="@user.AvatarUrl" class="user-avatar" alt="Avatar" />
+                                            <span class="search-username">@user.Username</span>
+                                            <span class="search-username">
+                                                @(isThisUserSelected ? "X" : "")
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                }
+                            }
+                            else if (!string.IsNullOrWhiteSpace(contactSearchTerm) && contactSearchTerm.Length >= 3)
+                            {
+                                <p class="section-hint">Nie znaleziono kontaktów dla frazy "@contactSearchTerm".</p>
+                            }
+                            else
+                            {
+                                <p class="section-hint">Wpisz min. 3 znaki, aby wyszukać.</p>
+                            }
+                        </div>
+                        <button class="btn-add-action"
+                                @onclick="async () => { await CreateGroup(ContactsToAdd); currentView = View.Settings; }">
+                            Dodaj grupę
+                        </button>
+                        <button class="btn-add-action" @onclick="() => currentView = View.Settings">
+                            Cofnij
+                        </button>
+                        break;
+                    case View.Users:
+                        <div class="sidebar-header">
+                            <h3>Użytkownicy na czacie</h3>
+                        </div>
+                        @foreach (var user in ExistingUsers)
+                        {
+                            <div class="search-result-item">
+                                <div class="user-search-info">
+                                    <img src="@user.AvatarUrl" class="user-avatar" alt="Avatar" />
+                                    <span class="search-username">@user.Username</span>
+                                </div>
+                            </div>
+                        }
+                        <button class="btn-add-action" @onclick="() => currentView = View.Settings">
+                            Cofnij
+                        </button>
+                        break;
+                }
             </div>
         </div>
-    </div>
-</div>
+     </div>
+ </div>
 
 @code {
-    [Parameter] public List<MessageDTO> Messages { get; set; } = new();
-    [Parameter] public bool IsLocked { get; set; }
-    [Parameter] public bool IsArchive { get; set; }
-
-    private string _content = string.Empty;
-    private bool _isSettingsOpen = false;
-    private bool _confirmWindow = false;
-
-    private void TriggerConfirmationWindow() => _confirmWindow = !_confirmWindow;
-    private void ToggleSettings() => _isSettingsOpen = !_isSettingsOpen;
-
+    [Parameter] public EventCallback OnAddUserTriggered { get; set; }
+    [Parameter] public EventCallback<HashSet<Guid>> OnAddUserClick { get; set; }
     [Parameter] public EventCallback<string> OnSendMessage { get; set; }
     [Parameter] public EventCallback<Guid> OnDeleteContact { get; set; }
+    [Parameter] public List<MessageDTO> Messages { get; set; } = new();
+    [Parameter] public List<ContactDTO> Contacts { get; set; } = new();
+    [Parameter] public HashSet<Guid> ContactsToAdd { get; set; } = new();
+    [Parameter] public HashSet<UserDTO> ExistingUsers { get; set; } = new();
+    [Parameter] public bool IsLocked { get; set; }
+    [Parameter] public bool IsArchive { get; set; }
+    private enum View { Settings, AddUsers, Users }
+    private View currentView = View.Settings;
 
+    private string contactSearchTerm = "";
+    private string _content = string.Empty;
+    private bool _isSettingsOpen = false;
+    private bool _addWindow = false;
+    private bool _isSelected = false;
+    private bool _showConfirm;
+    private string _confirmTitle = "";
+    private string _confirmMessage = "";
+    private Func<Task> _onConfirmAction;
+
+    private void ToggleSettings() => _isSettingsOpen = !_isSettingsOpen;
+
+
+
+
+    private void OpenConfirmDialog(string title, string message, Func<Task> action)
+    {
+        _confirmTitle = title;
+        _confirmMessage = message;
+        _onConfirmAction = action;
+        _showConfirm = true;
+        StateHasChanged();
+    }
     private async Task HandleKeyDown(KeyboardEventArgs keyClick)
     {
         if (keyClick.Key == "Enter")
@@ -119,20 +211,46 @@
         }
     }
 
-    private async Task HandleDelete(bool response)
+    private IEnumerable<ContactDTO> FilteredContacts =>
+    Contacts?.Where(c =>
+        (string.IsNullOrWhiteSpace(contactSearchTerm) ||
+         c.Username.Contains(contactSearchTerm, StringComparison.OrdinalIgnoreCase))
+        &&
+        !ExistingUsers.Any(u => u.UserID == c.ContactUserID)
+    ) ?? Enumerable.Empty<ContactDTO>();
+
+    private async Task AddUserToList(Guid contactId)
     {
-        if (response)
+        if(ContactsToAdd.Contains(contactId))
         {
-            _confirmWindow = false;
-            _isSettingsOpen = false; 
-            await OnDeleteContact.InvokeAsync();
+            ContactsToAdd.Remove(contactId);
         }
         else
         {
-            _confirmWindow = false;
+            ContactsToAdd.Add(contactId);
         }
     }
+    private async Task CreateGroup(HashSet<Guid> UserToAdd)
+    {
+        await OnAddUserClick.InvokeAsync(UserToAdd);
+        ContactsToAdd.Clear();
+    }
+    public async Task LoadContact()
+    {
+        await OnAddUserTriggered.InvokeAsync();
+    }
+    private async Task HandleContactDelete()
+    {
+        _isSettingsOpen = false; 
+        await OnDeleteContact.InvokeAsync();
 
+    }
+    private async Task HandleChatLeave()
+    {
+        await Task.CompletedTask;
+        _isSettingsOpen = false;
+        Console.WriteLine("User wants to leave chat");
+    }
     private async Task HandleInternalSubmit()
     {
         if (!string.IsNullOrWhiteSpace(_content) && !IsArchive)
@@ -142,7 +260,15 @@
             await OnSendMessage.InvokeAsync(messageToSend);
         }
     }
-
+    private async Task HandleConfirm(bool result)
+    {
+        _showConfirm = false;
+        if (result && _onConfirmAction != null)
+        {
+            await _onConfirmAction.Invoke();
+            StateHasChanged();
+        }
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await JSRuntime.InvokeVoidAsync("scrollToBottom", "chat-window");

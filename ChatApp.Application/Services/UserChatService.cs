@@ -1,11 +1,10 @@
 ﻿ using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Repository;
+using ChatApp.Application.Interfaces.Service;
 using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
-using System;
-using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace ChatApp.Application.Services
@@ -43,9 +42,10 @@ namespace ChatApp.Application.Services
             var contactId = await _userChatRepo.FetchReceiverUser(chatId, userId, token);
             if (contactId == Guid.Empty) return null;
 
-            bool isFriend = chat.IsArchive || await _contactRepo.CheckIfContact(userId, contactId, token);
+            bool isFriend = chat.IsArchive;
+                //|| await _contactRepo.CheckIfContact(userId, contactId, token);
 
-            if (!isFriend) return null;
+            if (isFriend) return null;
 
           
             return new UserChatDTO
@@ -55,8 +55,10 @@ namespace ChatApp.Application.Services
                 ChatName = chat.ChatName,
                 IsAdmin = chat.IsAdmin,
                 IsArchive = chat.IsArchive,
+                IsGroup = chat.Chat.IsGroup,
             };
         }
+
         public async Task MarkChatMessagesAsReadAsync(Guid userId, Guid chatId,CancellationToken token)
         {
             await _userChatRepo.SaveChatAsReaded(userId, chatId,token);
@@ -80,6 +82,46 @@ namespace ChatApp.Application.Services
         public async Task<Guid> GetChatId(Guid userId, Guid contactUserId, CancellationToken token)
         {
             return await _chatRepo.GetChatIdAsync(userId, contactUserId,token);
+        }
+        public async Task<HashSet<Guid>> GetListOfUsersInChatAsync(Guid chatId)
+        {
+            return await _userChatRepo.FetchUsersInChatAsync(chatId);
+
+        }
+        public async Task<bool> GetGroupChatByIdAsync(Guid chatId )
+        {
+            return await _userChatRepo.CheckIfChatExisted(chatId);
+        }
+        public async Task AddUserGroupToDb(Guid chatId,HashSet<Guid> usersToAdd)
+        {
+            await _chatRepo.AddUserGroupToDb(chatId, usersToAdd);
+        }
+
+        public async Task CreateGroupChat(Guid chatId, HashSet<Guid> UsersToAdd)
+        {
+            HashSet<Guid> UsersInGroup = new HashSet<Guid>();
+            UsersInGroup = await _userChatRepo.FetchUsersInChatAsync(chatId);
+            UsersInGroup.UnionWith(UsersToAdd);
+            int number = RandomNumberGenerator.GetInt32(0, 100000);
+            var newChat = new Chat
+            {
+                ChatID = Guid.CreateVersion7(),
+                CreatedAt = DateTime.UtcNow,
+                IsGroup = true,
+                ChatName = $"Chat#{number:D5}",
+                UserChats = new List<UserChat>()
+            };
+            foreach (var user in UsersInGroup)
+            {
+                newChat.UserChats.Add(new UserChat
+                {
+                    UserID = user,
+                    ChatID = newChat.ChatID,
+                    IsArchive = false,
+                });
+            }
+            await _chatRepo.AddChatAsync(newChat);
+
         }
         public async Task CreatePrivateChat(Guid user1, Guid user2)
         {

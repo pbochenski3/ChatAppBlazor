@@ -28,6 +28,20 @@ namespace ChatApp.Application.Services
         {
             return await _chatRepo.GetChatStatusById(ChatId, ContactId);
         }
+        public async Task<bool> GetGroupChatByIdAsync(Guid chatId, Guid userId)
+        {
+            return await _chatRepo.CheckIfGroupExist(chatId, userId);
+        }
+        public async Task<ChatDTO> GetChatById(Guid chatId)
+        {
+           var chat = await _chatRepo.FetchChatById(chatId);
+            return new ChatDTO
+            {
+                ChatID = chat.ChatID,
+                ChatName = chat.ChatName,
+                AvatarUrl = chat.AvatarUrl,
+            };
 
+        }
     }
 }

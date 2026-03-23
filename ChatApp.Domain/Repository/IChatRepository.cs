@@ -12,5 +12,8 @@ namespace ChatApp.Application.Interfaces.Repository
         Task ArchivePrivateChat(Guid chatId, Guid userId, Guid contactId);
         Task<bool> GetChatStatusById(Guid ChatId, Guid ContactId);
         Task<Guid> GetChatIdAsync(Guid user1, Guid user2, CancellationToken token = default);
+        Task<bool> CheckIfGroupExist(Guid chatId, Guid userId);
+        Task<Chat> FetchChatById(Guid chatId);
+        Task AddUserGroupToDb(Guid chatId, HashSet<Guid> usersToAdd);
     }
 }

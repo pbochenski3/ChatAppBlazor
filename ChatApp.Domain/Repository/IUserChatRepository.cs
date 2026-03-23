@@ -17,5 +17,6 @@ namespace ChatApp.Domain.Repository
         Task<List<UserChat>?> FetchAllChatsAsync(Guid userId);
         Task<bool> CheckIfChatExisted(Guid chatId);
         Task RestoreChat(Guid chatId);
+        Task<HashSet<Guid>> FetchUsersInChatAsync(Guid chatId);
     }
 }

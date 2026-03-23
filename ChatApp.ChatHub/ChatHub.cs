@@ -1,11 +1,7 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Service;
-using ChatApp.Application.Services;
-using ChatApp.Domain.Models;
 using Microsoft.AspNetCore.SignalR;
-using System.Security.Cryptography;
-using System.Xml;
 
 namespace ChatApp.ChatHub
 {
@@ -49,16 +45,15 @@ namespace ChatApp.ChatHub
         }
         public async Task MarkChatMessage(Guid chatId)
         {
-            await _userChatService.MarkChatMessagesAsReadAsync(userId, chatId,Context.ConnectionAborted);
+            await _userChatService.MarkChatMessagesAsReadAsync(userId, chatId, Context.ConnectionAborted);
         }
-        //public async Task<List<CounterBadge>> FetchAllUnreadCount()
-        //{
-        //    return await _userChatService.GetAllUnreadCounterAsync(userId);
-        //}
-
+        public async Task<bool> CheckIfGroupExist(Guid chatId)
+        {
+            return await _userChatService.GetGroupChatByIdAsync(chatId);
+        }
         public async Task<int> FetchUnreadCount(Guid chatId)
         {
-            return await _userChatService.GetUnreadCounterAsync(userId,chatId);
+            return await _userChatService.GetUnreadCounterAsync(userId, chatId);
         }
         public async Task SendInvite(Guid receiverId)
         {
@@ -70,7 +65,7 @@ namespace ChatApp.ChatHub
                 await targetUser.SendAsync("ReceiveInviteStatus", "You have a new invite!");
                 await targetUser.SendAsync("InviteReload", true);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 await Clients.Caller.SendAsync("ReceiveStatus", "An error occurred while trying to send the invite.");
             }
@@ -86,15 +81,22 @@ namespace ChatApp.ChatHub
         }
         public async Task<ContactDTO> GetCurrentContacts(Guid contactId)
         {
-            return await _contactService.GetContactById(contactId,userId);
+            return await _contactService.GetContactById(contactId, userId);
         }
-        public async Task SendMessage(MessageDTO dto)
+        public async Task SendMessage(MessageDTO dto, Guid chatId)
         {
-            var receiverId = await _userChatService.GetReceiverUser(dto.ChatID, userId, Context.ConnectionAborted);
             await _userChatService.SaveLastSendedChatMessageAsync(dto.ChatID, dto.MessageID);
             await _messageService.SendChatMessageAsync(dto);
-            var targerUser = Clients.User(receiverId.ToString());
-            await targerUser.SendAsync("ReceiveMessage", dto);
+            await Clients.Group(chatId.ToString()).SendAsync("ReceiveMessage", dto);
+        }
+        public async Task JoinGroupSignal(Guid chatId)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, chatId.ToString());
+        }
+        public async Task<HashSet<UserDTO>> GetUsersFromGroup(Guid chatId)
+        {
+            var userIds = await _userChatService.GetListOfUsersInChatAsync(chatId);
+            return await _userService.GetUsersByIdSet(userIds);
         }
         public async Task DeleteContact(Guid chatId)
         {
@@ -102,7 +104,7 @@ namespace ChatApp.ChatHub
             {
                 CancellationToken token = default;
                 var contactId = await _userChatService.GetReceiverUser(chatId, userId, token);
-                if(contactId == Guid.Empty)
+                if (contactId == Guid.Empty)
                 {
                     throw new Exception();
                 }
@@ -111,7 +113,7 @@ namespace ChatApp.ChatHub
                 await _contactService.DeleteContactAsync(contactId, userId, chatId);
                 var UserChat = Clients.Caller.SendAsync("ChatReload", chatId);
                 var TargetChat = target.SendAsync("ChatReload", chatId);
-                await Task.WhenAll(UserChat,TargetChat);
+                await Task.WhenAll(UserChat, TargetChat);
                 tasks = [
                    Clients.Caller.SendAsync("ReceiveStatus", "Kontakt został usunięty!"),
                    target.SendAsync("ReceiveStatus", "Ktoś usunął cie z kontaktów!"),
@@ -133,7 +135,7 @@ namespace ChatApp.ChatHub
             {
                 var senderId = await _inviteService.InviteAction(inviteId, status, userId);
                 var targetUser = Clients.User(senderId.ToString());
-  
+
                 await Task.WhenAll(
                     Clients.Caller.SendAsync("InviteReload", true),
                     targetUser.SendAsync("InviteReload", true)
@@ -148,7 +150,7 @@ namespace ChatApp.ChatHub
                     await Task.WhenAll(
                     Clients.Caller.SendAsync("SideBarReload", true),
                     targetUser.SendAsync("SideBarReload", true)
-                    ); 
+                    );
                     await Task.WhenAll(
                         Clients.Caller.SendAsync("ChatReload", chatId),
                         targetUser.SendAsync("ChatReload", chatId),
@@ -176,16 +178,12 @@ namespace ChatApp.ChatHub
         }
         public async Task<List<MessageDTO>> GetPrivateHistory(Guid chatId)
         {
-            return await _messageService.GetPrivateHistoryAsync(userId,chatId,Context.ConnectionAborted);
+            return await _messageService.GetPrivateHistoryAsync(userId, chatId, Context.ConnectionAborted);
         }
         public async Task<UserChatDTO> GetChat(Guid chatId)
         {
             return await _userChatService.GetChatAsync(chatId, userId, Context.ConnectionAborted);
         }
-        //public async Task ChatRestore(Guid ContactId)
-        //{
-        //    await _chatService.GetPrivateChatById(userId,ContactId);
-        //}
         public async Task<bool> GetChatStatus(Guid ChatId, Guid ContactId)
         {
             return await _chatService.GetChatStatus(ChatId, ContactId);
@@ -199,5 +197,29 @@ namespace ChatApp.ChatHub
         {
             return await _sidebarService.GetSidebarItems(userId);
         }
+        public async Task<List<ContactDTO>> GetContactList()
+        {
+            return await _contactService.GetUserContactsAsync(userId);
+        }
+        public async Task CreateGroupChat(Guid chatId, HashSet<Guid> usersToAdd)
+        {
+            await _userChatService.CreateGroupChat(chatId, usersToAdd);
+            IReadOnlyList<string> usersToNotify = usersToAdd.Select(id => id.ToString()).ToList();
+            await Clients.Users(usersToNotify).SendAsync("SideBarReload", true);
+
+        }
+        public async Task AddUsersToGroup(Guid chatId, HashSet<Guid> usersToAdd)
+        {
+
+            await _userChatService.AddUserGroupToDb(chatId, usersToAdd);
+            IReadOnlyList<string> usersToNotify = usersToAdd.Select(id => id.ToString()).ToList();
+            await Clients.Users(usersToNotify).SendAsync("SideBarReload", true);
+        }
+        public async Task<HashSet<Guid>> GetUsersInChat(Guid chatId)
+        {
+            return await _userChatService.GetListOfUsersInChatAsync(chatId);
+        }
+
+
     }
 }

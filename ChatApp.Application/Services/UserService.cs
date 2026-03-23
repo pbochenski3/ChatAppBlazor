@@ -103,6 +103,19 @@ namespace ChatApp.Application.Services
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
 
         }
+        public async Task<HashSet<UserDTO>> GetUsersByIdSet(HashSet<Guid> Ids)
+        {
+            var users =  await _userRepo.GetMultipleUserByIdAsync(Ids);
+            var userDtos = users.Select(u => new UserDTO
+            {
+                UserID= u.UserID,
+                Username = u.Username,
+                AvatarUrl = u.AvatarUrl,
+                IsOnline = u.IsOnline,
+                
+            }).ToHashSet();
+            return userDtos;
+        }
     }
 }
 
