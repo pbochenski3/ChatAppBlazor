@@ -39,10 +39,11 @@
             Messages="receivedMessage"
             IsLocked="lockChat"
             IsArchive="isArchive"
-            Contacts="receivedContact"
             OnAddUserTriggered="HandleContactLoad"
             OnAddUserClick="HandleCreateGroupChat"
-            ExistingUsers="UsersInChat"
+            OnChatLeave="HandleChatLeave"
+            userContacts="receivedContacts"
+            ExistingUsers="usersInChat"
         />
         }
     </main>
@@ -53,11 +54,11 @@
     private string? notification = string.Empty;
     UserDTO user = new UserDTO();
     private List<MessageDTO> receivedMessage = new List<MessageDTO>();
-    private List<ContactDTO> receivedContact = new List<ContactDTO>();
     private List<InviteDTO> receivedInvites = new List<InviteDTO>();
     private List<ChatDTO> receivedChats = new List<ChatDTO>();
+    private List<ContactDTO> receivedContacts = new List<ContactDTO>();
     private List<UserDTO> foundUsers = new List<UserDTO>();
-    private HashSet<UserDTO> UsersInChat = new HashSet<UserDTO>();
+    private HashSet<UserDTO> usersInChat = new HashSet<UserDTO>();
     private List<UserChatDTO> SidebarItems = new List<UserChatDTO>();
     private bool isSearchingGlobal = false;
     private bool isPending;
@@ -67,6 +68,7 @@
     private Guid ChatId;
     private int counter;
     private bool isChatLoaded;
+
     protected override async Task OnInitializedAsync()
     {
         if (AppState.CurrentUser == null)
@@ -197,6 +199,18 @@
             _ = ShowNotification($"{ex.Message}");
         }
     }
+    private async Task HandleChatLeave()
+    {
+        try
+        {
+            await ChatHubService.LeaveGroupChat(AppState.CurrentChat.ChatID);
+
+        }
+        catch (Exception ex)
+        {
+            _ = ShowNotification($"{ex.Message}");
+        }
+    }
     private async Task HandleContactStatus(Guid InviteId,bool Status)
     {
         try
@@ -212,10 +226,11 @@
     {
         try
         {
-            receivedContact = await ChatHubService.GetContactList();
+            receivedContacts = await ChatHubService.GetContactList();
+            _logger.LogInformation($"Kontakty załadowane");
         }
         catch(Exception ex)
-        {
+        {;
             _logger.LogError($"Bład podczas ładowania konatkrów {ex}");
         }
         finally
@@ -318,13 +333,23 @@
                 _logger.LogInformation("Switching to chat: {Id}", chatId);
             }
             var chatInformation = await ChatHubService.GetChatInformation(chatId,token);
-            UsersInChat = await ChatHubService.GetGroupUsers(chatId);
+                try
+                {
+                    usersInChat = await ChatHubService.GetGroupUsers(chatId);
+                    _logger.LogInformation("[BLAZORHUB]Existing User Loading Succes");
+
+                }
+                catch
+                {
+                    _logger.LogInformation("[BLAZORHUB]Existing User Loading Failed");
+                }
+
             token.ThrowIfCancellationRequested();
 
 
             if (chatInformation == null)
             {
-                _logger.LogError("Chat could not be loaded for ID: {Id}", chatId);
+                _logger.LogError("[BLAZORHUB]Chat could not be loaded for ID: {Id}", chatId);
                 return;
             }
 
@@ -371,10 +396,12 @@
         if(exist)
         {
             await ChatHubService.AddUserToGroup(AppState.CurrentChat.ChatID, usersToAdd);
+            //usersInChat = await ChatHubService.GetGroupUsers(AppState.CurrentChat.ChatID);
         }
         else
         {
             await ChatHubService.CreateChatGroup(AppState.CurrentChat.ChatID, usersToAdd);
+           // usersInChat = await ChatHubService.GetGroupUsers(AppState.CurrentChat.ChatID);
         }
     }
     private async Task HandleChatUsersLoad()
