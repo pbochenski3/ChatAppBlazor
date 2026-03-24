@@ -42,10 +42,10 @@ namespace ChatApp.Application.Services
             var contactId = await _userChatRepo.FetchReceiverUser(chatId, userId, token);
             if (contactId == Guid.Empty) return null;
 
-            bool isFriend = chat.IsArchive;
+            //bool isFriend = chat.IsArchive;
                 //|| await _contactRepo.CheckIfContact(userId, contactId, token);
 
-            if (isFriend) return null;
+            //if (isFriend) return null;
 
           
             return new UserChatDTO
@@ -96,7 +96,6 @@ namespace ChatApp.Application.Services
         {
             await _chatRepo.AddUserGroupToDb(chatId, usersToAdd);
         }
-
         public async Task CreateGroupChat(Guid chatId, HashSet<Guid> UsersToAdd)
         {
             HashSet<Guid> UsersInGroup = new HashSet<Guid>();
