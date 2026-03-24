@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ChatDbContext))]
-    [Migration("20260319114953_Init")]
+    [Migration("20260324094944_Init")]
     partial class Init
     {
         /// <inheritdoc />

@@ -13,19 +13,17 @@ namespace ChatApp.Application.Services
     {
         private readonly IContactService _contactService;
         private readonly IChatService _chatService;
-        private readonly IUserChatService _userChatService;
-        public SidebarService(IContactService contactService,IChatService chatService,IUserChatService userChatService)
+        public SidebarService(IContactService contactService,IChatService chatService)
         {
             _contactService = contactService;
             _chatService = chatService;
-            _userChatService = userChatService;
         }
         public async Task<List<UserChatDTO>> GetSidebarItems(Guid userId)
         {
             try
             {
-                var chatsTask = _userChatService.GetChatList(userId);
-                var counterTask = _userChatService.GetAllUnreadCounterAsync(userId);
+                var chatsTask = _chatService.GetChatList(userId);
+                var counterTask = _chatService.GetAllUnreadCounterAsync(userId);
 
                 await Task.WhenAll(counterTask,chatsTask);
 

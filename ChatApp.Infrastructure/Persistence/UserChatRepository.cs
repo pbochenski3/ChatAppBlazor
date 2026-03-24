@@ -114,9 +114,19 @@ namespace ChatApp.Infrastructure.Persistence
             using var context = _contextFactory.CreateDbContext();
             return await context.UserChat
                 .AsNoTracking()
-                .Where(uc => uc.ChatID == chatId)
+                .Where(uc => uc.ChatID == chatId && uc.IsArchive == false)
                 .Select(uc => uc.UserID)
                 .ToHashSetAsync();
+        }
+        public async Task ArchivizeChat(Guid chatId,Guid userId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            await context.UserChat
+                .Where(ch => ch.ChatID == chatId && ch.UserID == userId)
+                .ExecuteUpdateAsync(s => s
+                .SetProperty(ch => ch.IsArchive, true)
+                .SetProperty(ch => ch.ArchivedAt, DateTime.UtcNow));
+
         }
         public async Task<List<(Guid ChatId, int Count)>> CountAllUnreadMessagesAsync(Guid userId)
         {

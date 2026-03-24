@@ -161,9 +161,9 @@ public class ChatHubService : IAsyncDisposable
             throw new Exception($"{errorCOntent}");
         }
     }
-    public async Task<UserChatDTO> GetChatInformation(Guid contactId, CancellationToken token)
+    public async Task<UserChatDTO> GetChatInformation(Guid chatId, CancellationToken token)
     {
-        return await HubConnection.InvokeAsync<UserChatDTO>("GetChat", contactId, token);
+        return await HubConnection.InvokeAsync<UserChatDTO>("GetChat", chatId, token);
     }
     public async Task ChatRestore(Guid contactId)
     {
@@ -243,10 +243,13 @@ public class ChatHubService : IAsyncDisposable
     {;
         await HubConnection.InvokeAsync("AddUsersToGroup", chatId, usersToAdd);
     }
-   
     public async Task<List<UserChatDTO>> LoadSidebarItems()
     {
         return await HubConnection.InvokeAsync<List<UserChatDTO>>("GetSidebarList");
+    }
+    public async Task LeaveGroupChat(Guid chatId)
+    {
+        await HubConnection.InvokeAsync("LeaveChat",chatId);
     }
     public async ValueTask DisposeAsync()
     {

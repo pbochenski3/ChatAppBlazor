@@ -1,6 +1,7 @@
 ﻿
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Domain.Models;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
@@ -84,7 +85,16 @@ public class ChatRepository : IChatRepository
         using var context = _contextFactory.CreateDbContext();
         await context.Chats.AddAsync(chat);
         _logger.LogInformation("Adding a new chat to the database:");
-        await context.SaveChangesAsync();
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            var message = ex.InnerException?.Message ?? ex.Message;
+            _logger.LogError($"Błąd zapisu czatu: {message}");
+            throw new HubException("Nie udało się zapisac.");
+        }
     }
     public async Task ArchivePrivateChat(Guid chatId,Guid userId, Guid contactId)
     {

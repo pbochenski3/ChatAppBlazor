@@ -11,7 +11,7 @@
     <div class="top-bar">
         <div class="user-profile">
             <div class="avatar-wrapper">
-                <img src="@AppState."
+                <img src="@AppState.CurrentUser.AvatarUrl"
                      class="user-avatar"
                      alt="Avatar" />
                 <div class="status-dot online"></div>
@@ -170,9 +170,11 @@
     [Parameter] public EventCallback OnAddUserTriggered { get; set; }
     [Parameter] public EventCallback<HashSet<Guid>> OnAddUserClick { get; set; }
     [Parameter] public EventCallback<string> OnSendMessage { get; set; }
-    [Parameter] public EventCallback<Guid> OnDeleteContact { get; set; }
+    [Parameter] public EventCallback OnDeleteContact { get; set; }
+    [Parameter] public EventCallback OnChatLeave { get; set; }
+
     [Parameter] public List<MessageDTO> Messages { get; set; } = new();
-    [Parameter] public List<ContactDTO> Contacts { get; set; } = new();
+    [Parameter] public List<ContactDTO> userContacts { get; set; } = new();
     [Parameter] public HashSet<Guid> ContactsToAdd { get; set; } = new();
     [Parameter] public HashSet<UserDTO> ExistingUsers { get; set; } = new();
     [Parameter] public bool IsLocked { get; set; }
@@ -192,9 +194,6 @@
 
     private void ToggleSettings() => _isSettingsOpen = !_isSettingsOpen;
 
-
-
-
     private void OpenConfirmDialog(string title, string message, Func<Task> action)
     {
         _confirmTitle = title;
@@ -212,7 +211,7 @@
     }
 
     private IEnumerable<ContactDTO> FilteredContacts =>
-    Contacts?.Where(c =>
+    userContacts?.Where(c =>
         (string.IsNullOrWhiteSpace(contactSearchTerm) ||
          c.Username.Contains(contactSearchTerm, StringComparison.OrdinalIgnoreCase))
         &&
@@ -241,15 +240,14 @@
     }
     private async Task HandleContactDelete()
     {
-        _isSettingsOpen = false; 
-        await OnDeleteContact.InvokeAsync();
-
+            _isSettingsOpen = false;
+            await OnDeleteContact.InvokeAsync();
     }
     private async Task HandleChatLeave()
     {
-        await Task.CompletedTask;
-        _isSettingsOpen = false;
-        Console.WriteLine("User wants to leave chat");
+            _isSettingsOpen = false;
+            await OnChatLeave.InvokeAsync();
+
     }
     private async Task HandleInternalSubmit()
     {

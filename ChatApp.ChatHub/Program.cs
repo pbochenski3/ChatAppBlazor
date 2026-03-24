@@ -5,7 +5,6 @@ using ChatApp.Application.Interfaces.Service;
 using ChatApp.Application.Services;
 using ChatApp.ChatHub;
 using ChatApp.Domain.Repository;
-using ChatApp.Infrastructure.Extensions;
 using ChatApp.Infrastructure.Persistence;
 using ChatApp.Infrastructure.Providers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -85,7 +84,6 @@ builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 //JWT
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 //UserChat
-builder.Services.AddScoped<IUserChatService, UserChatService>();
 builder.Services.AddScoped<IUserChatRepository, UserChatRepository>();
 //Sidebar
 builder.Services.AddScoped<ISidebarService, SidebarService>();
