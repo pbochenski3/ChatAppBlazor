@@ -4,37 +4,62 @@
 @inject ChatHubService ChatHubService
 @inject AppStateService AppState
 @implements IDisposable
-
-<EditForm Model="@userDTO" OnValidSubmit="HandleSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-    @if (!string.IsNullOrEmpty(notification))
-    {
-        <div class="notification-toast">
-            <div>@notification</div>
-        </div>
-    }
-    <div class="form-group">
-        <label>Enter username:</label>
-        <InputText @bind-Value="userDTO.Username" class="form-control" disabled="@isProcessing" maxlength="20" />
-        <label>Enter password:</label>
-        <InputText type="password" @bind-Value="userDTO.Password" class="form-control" disabled="@isProcessing" maxlength="128"/>
+@if (!string.IsNullOrEmpty(notification))
+{
+    <div class="notification-toast">
+        <div>@notification</div>
     </div>
+}
+<div class="login-page">
+    <div class="login-card">
+        <div class="login-header">
+            <span class="logo-dot"></span>
+            <h1>Rejestracja</h1>
+        </div>
+        <p class="login-subtitle">Załóż nowe konto</p>
 
-    <button type="submit"
-            class="btn btn-primary mt-2"
-            disabled="@isProcessing">
-        @if (isProcessing)
-        {
-            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-        }
-        else
-        {
-            <span>Register</span>
-        }
-    </button>
-</EditForm>
+        <EditForm Model="@userDTO" OnValidSubmit="HandleSubmit">
 
+            <div class="field-group">
+                <label class="field-label">Nazwa użytkownika</label>
+                <InputText @bind-Value="userDTO.Username"
+                           class="field-input"
+                           disabled="@isProcessing"
+                           maxlength="20"
+                           placeholder="Wpisz nazwe użytkownika" />
+            
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Hasło</label>
+                <InputText type="password"
+                           @bind-Value="userDTO.Password"
+                           class="field-input"
+                           disabled="@isProcessing"
+                           maxlength="128"
+                           placeholder="Wpisz hasło" />
+             
+            </div>
+
+            <button type="submit" class="btn-login" disabled="@isProcessing">
+                @if (isProcessing)
+                {
+                    <span class="spinner"></span>
+                    <span>Rejestracja...</span>
+                }
+                else
+                {
+                    <span>Zarejestruj się</span>
+                }
+            </button>
+        </EditForm>
+
+        <div class="login-footer">
+            <span>Masz już konto?</span>
+            <a href="/login">Zaloguj się</a>
+        </div>
+    </div>
+</div>
 @code {
     private bool isProcessing = false;
     string notification = string.Empty;
