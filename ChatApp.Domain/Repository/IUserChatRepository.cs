@@ -15,8 +15,9 @@ namespace ChatApp.Domain.Repository
         Task<Guid> FetchReceiverUser(Guid chatId, Guid userId, CancellationToken token);
         Task<UserChat?> FetchChatAsync(Guid chatId, Guid userId, CancellationToken token);
         Task<List<UserChat>?> FetchAllChatsAsync(Guid userId);
-        Task<bool> CheckIfChatExisted(Guid chatId);
         Task RestoreChat(Guid chatId);
         Task<HashSet<Guid>> FetchUsersInChatAsync(Guid chatId);
+        Task<bool> CheckIfChatExisted(Guid chatId);
+        Task ArchivizeChat(Guid chatId, Guid userId);
     }
 }
