@@ -89,6 +89,7 @@
         ChatHubService.OnMessageReceived += HandleReceiveMessage;
         ChatHubService.InviteStatusMessage += OnInviteStatusReceived;
         ChatHubService.OnChatLoad += HandleChatLoad;
+        ChatHubService.OnUserInChatReload += HandleUserOnGroupLoad;
         var StartHub = ChatHubService.StartAsync();
         var DataReload = HandleDataReload(true);
         try
@@ -316,6 +317,22 @@
             _ = ShowNotification("Nie udało się wysłać wiadomości.");
         }
     }
+    private async Task HandleUserOnGroupLoad(Guid chatId)
+    {
+        if(AppState.CurrentChat?.ChatID != chatId)
+        {
+            return;
+        }
+            try
+            {
+            usersInChat = await ChatHubService.GetGroupUsers(chatId);
+            await InvokeAsync(StateHasChanged);
+            }
+           catch (Exception ex)
+            {
+            _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", chatId);
+        }
+    }
     private async Task HandleChatLoad(ContactSelectedArgs args)
     {
         bool isSameChat = AppState.CurrentChat?.ChatID == args.ChatId;
@@ -414,5 +431,7 @@
         ChatHubService.InviteStatusMessage -= OnInviteStatusReceived;
         ChatHubService.OnAppReload -= HandleUnifiedReload;
         ChatHubService.OnChatLoad -= HandleChatLoad;
+        ChatHubService.OnUserInChatReload -= HandleUserOnGroupLoad;
+
     }
 }

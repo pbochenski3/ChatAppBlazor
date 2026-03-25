@@ -15,6 +15,7 @@ public class ChatHubService : IAsyncDisposable
     public event Func<string, Guid, Task> InviteStatusMessage;
     public event Func<ContactSelectedArgs, Task> OnChatLoad;
     public event Func<ReloadTarget, Task>? OnAppReload;
+    public event Func<Guid, Task>? OnUserInChatReload;
     public event Action<string, UserDTO>? LoginStatusMessage;
     private readonly AppStateService _appStateService;
     private readonly string? _baseHubUrl;
@@ -51,6 +52,11 @@ public class ChatHubService : IAsyncDisposable
         {
             var handler = OnChatLoad;
             if (handler != null) await handler.Invoke(new ContactSelectedArgs(id, force));
+        });
+        HubConnection.On<Guid>("ChatUsersReload", async (chatId) =>
+        {
+            var handler = OnUserInChatReload;
+            if (handler != null) await handler.Invoke(chatId);
         });
 
     }
