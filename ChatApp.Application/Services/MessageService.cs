@@ -30,7 +30,7 @@ namespace ChatApp.Application.Services
         }
         public async Task SaveChatMessageAsync(MessageDTO dto)
         {
-            if(string.IsNullOrWhiteSpace(dto.Content))
+            if (string.IsNullOrWhiteSpace(dto.Content))
             {
                 throw new Exception("Message content cannot be empty");
             }
@@ -44,26 +44,35 @@ namespace ChatApp.Application.Services
                 IsSystemMessage = dto.IsSystemMessage,
             };
             await _messageRepo.AddAsync(message);
-           
-        }
-           
-        public async Task<List<MessageDTO>> GetPrivateHistoryAsync(Guid userId,Guid chatId,CancellationToken token)
-        {
 
-            var rawMessage = await _messageRepo.GetMessageHistoryAsync(userId,chatId,token);
-            if(!rawMessage.Any()) { return new List<MessageDTO>(); };
-            if (token.IsCancellationRequested) return new List<MessageDTO>();
-            return rawMessage.Select(uc => new MessageDTO
-                {
-                    MessageID = uc.MessageID,
-                    Content = uc.Content,
-                    SentAt = uc.SentAt,
-                    SenderID = uc.SenderID,
-                    SenderUsername = uc.IsSystemMessage ? "SYSTEM" : (uc.Sender?.Username ?? "Unknown"),
-                    ChatID = uc.ChatID,
-                    IsSystemMessage = uc.IsSystemMessage,
-                }).ToList();
+        }
+
+        public async Task<List<MessageDTO>> GetPrivateHistoryAsync(Guid userId, Guid chatId, CancellationToken token)
+        {
+            bool isArchive = await _chatService.CheckIfUserChatIsArchiveAsync(chatId, userId);
+            DateTime? cutoffDate = null;
+
+            if (isArchive)
+            { 
+                cutoffDate = await _chatService.GetLastSeenMessage(userId, chatId);
             }
-            
+
+            var messages = await _messageRepo.GetMessageHistoryAsync(userId, chatId, cutoffDate, token);
+
+            if (token.IsCancellationRequested || messages == null || !messages.Any())
+            {
+                return new List<MessageDTO>();
+            }
+            return messages.Select(uc => new MessageDTO
+            {
+                MessageID = uc.MessageID,
+                Content = uc.Content,
+                SentAt = uc.SentAt,
+                SenderID = uc.SenderID,
+                SenderUsername = uc.IsSystemMessage ? "SYSTEM" : (uc.Sender?.Username ?? "Unknown"),
+                ChatID = uc.ChatID,
+                IsSystemMessage = uc.IsSystemMessage,
+            }).ToList();
         }
     }
+}

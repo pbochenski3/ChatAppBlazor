@@ -29,9 +29,13 @@ namespace ChatApp.Application.Services
         {
             return await _chatRepo.GetChatStatusById(ChatId, ContactId);
         }
-        public async Task<bool> GetGroupChatByIdAsync(Guid chatId, Guid userId)
+        public async Task<bool> CheckIfGroupChapExistAsync(Guid chatId, Guid userId)
         {
             return await _chatRepo.CheckIfGroupExist(chatId, userId);
+        }
+        public async Task<DateTime?> GetLastSeenMessage(Guid userId, Guid chatId)
+        {
+            return await _userChatRepo.FetchLastSeenMessage(userId, chatId);
         }
         public async Task<ChatDTO> GetChatById(Guid chatId)
         {
@@ -142,9 +146,13 @@ namespace ChatApp.Application.Services
             await _chatRepo.AddChatAsync(newChat);
 
         }
-        public async Task<bool> GetGroupChatByIdAsync(Guid chatId)
+        public async Task<bool> CheckIfUserChatExistAsync(Guid chatId)
         {
             return await _userChatRepo.CheckIfChatExisted(chatId);
+        }
+        public async Task<bool> CheckIfUserChatIsArchiveAsync(Guid chatId,Guid userId)
+        {
+            return await _userChatRepo.CheckIfChatIsArchive(chatId,userId);
         }
         public async Task CreatePrivateChat(Guid user1, Guid user2)
         {

@@ -32,14 +32,20 @@ public class MessageRepository : IMessageRepository
         _logger.LogInformation("Saving changes to the database.");
         await context.SaveChangesAsync();
     }
-    public async Task<List<Message>> GetMessageHistoryAsync(Guid userId, Guid chatId,CancellationToken token)
+    public async Task<List<Message>> GetMessageHistoryAsync(Guid userId, Guid chatId, DateTime? cutoffDate, CancellationToken token)
     {
         using var context = _contextFactory.CreateDbContext();
-        return await context.Messages
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .Include(m => m.Sender)
-            .Where(m => m.ChatID == chatId)
+        var query = context.Messages
+         .AsNoTracking()
+         .Include(m => m.Sender)
+         .Where(m => m.ChatID == chatId);
+
+        if (cutoffDate.HasValue)
+        {
+            query = query.Where(m => m.SentAt <= cutoffDate.Value);
+        }
+
+        return await query
             .OrderBy(m => m.SentAt)
             .ToListAsync(token);
     }

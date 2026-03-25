@@ -9,7 +9,7 @@ namespace ChatApp.Application.Interfaces.Service
     public interface IChatService
     {
         Task<bool> GetChatStatus(Guid ChatId, Guid ContactId);
-        Task<bool> GetGroupChatByIdAsync(Guid chatId, Guid userId);
+        Task<bool> CheckIfGroupChapExistAsync(Guid chatId, Guid userId);
         Task<ChatDTO> GetChatById(Guid chatId);
         Task MarkMessageAsReadAsync(Guid userId, Guid chatId, Guid messageId);
         Task<UserChatDTO> GetChatAsync(Guid chatId, Guid userId, CancellationToken token);
@@ -25,6 +25,8 @@ namespace ChatApp.Application.Interfaces.Service
         Task<List<UserChatDTO>> GetChatList(Guid userId);
         Task ArchiveUserGroupChat(Guid chatId, Guid userId);
         Task AddUsersToGroup(Guid chatId, HashSet<Guid> usersToAdd);
+        Task<bool> CheckIfUserChatIsArchiveAsync(Guid chatId, Guid userId);
+        Task<DateTime?> GetLastSeenMessage(Guid userId, Guid chatId);
 
     }
 }

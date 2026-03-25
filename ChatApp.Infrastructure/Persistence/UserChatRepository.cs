@@ -45,6 +45,14 @@ namespace ChatApp.Infrastructure.Persistence
             using var context = _contextFactory.CreateDbContext();
             return await context.UserChat.AnyAsync(c => c.ChatID == chatId);
         }
+        public async Task<bool> CheckIfChatIsArchive(Guid chatId,Guid userId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return await context.UserChat
+                .AnyAsync(c => c.ChatID == chatId &&
+                c.UserID == userId &&
+                c.IsArchive == true);
+        }
         public async Task RestoreChat(Guid chatId)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -71,7 +79,7 @@ namespace ChatApp.Infrastructure.Persistence
         {
             using var context = _contextFactory.CreateDbContext();
             var affected = await context.UserChat
-                .Where(uc => uc.ChatID == chatId)
+                .Where(uc => uc.ChatID == chatId && uc.IsArchive == false)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(uc => uc.LastMessageID, messageId)
                     .SetProperty(uc => uc.LastMessageAt, DateTime.UtcNow)
@@ -136,6 +144,14 @@ namespace ChatApp.Infrastructure.Persistence
                 .SetProperty(ch => ch.IsArchive, true)
                 .SetProperty(ch => ch.ArchivedAt, DateTime.UtcNow));
 
+        }
+        public async Task<DateTime?> FetchLastSeenMessage(Guid userId,Guid chatId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return await context.UserChat
+                .Where(uc => uc.ChatID == chatId && uc.UserID == userId)
+                .Select(uc => (DateTime?)uc.LastReadAt)
+                .FirstOrDefaultAsync();
         }
         public async Task<List<(Guid ChatId, int Count)>> CountAllUnreadMessagesAsync(Guid userId)
         {

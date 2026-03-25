@@ -9,6 +9,6 @@ namespace ChatApp.Application.Interfaces.Repository
     {
         Task AddAsync(Message message);
         Task SaveChangesAsync();
-        Task<List<Message>> GetMessageHistoryAsync(Guid userId, Guid chatId,CancellationToken token);
+        Task<List<Message>> GetMessageHistoryAsync(Guid userId, Guid chatId, DateTime? cutoffDate,CancellationToken token);
     }
 }
