@@ -11,10 +11,10 @@ namespace ChatApp.Domain.Models
         public DateTime SentAt { get; set; }
         public Guid ChatID { get; set; }
         public  Chat Chat { get; set; } = null!;
-        public Guid SenderID { get; set; }
+        public Guid? SenderID { get; set; } = null!;
         public User Sender { get; set; } = null!;
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
-
+        public bool IsSystemMessage { get; set; } = false;
     }
 }

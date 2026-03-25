@@ -9,10 +9,11 @@ namespace ChatApp.Application.DTO
     {
         public Guid MessageID { get; set; }
         public string Content { get; set; } = string.Empty;
-        public DateTime SentAt { get; set; }
-        public Guid SenderID { get; set; }
+        public DateTime SentAt { get; set; } = DateTime.UtcNow;
+        public Guid? SenderID { get; set; }
         public Guid ReceiverId { get; set; }
         public string SenderUsername { get; set; } = string.Empty;
         public Guid ChatID { get; set; }
+        public bool IsSystemMessage { get; set; } = false;
     }
 }

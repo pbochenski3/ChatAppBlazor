@@ -108,7 +108,8 @@ namespace ChatApp.Infrastructure.Migrations
                     ChatID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SenderID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
+                    IsSystemMessage = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {

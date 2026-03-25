@@ -20,7 +20,16 @@ namespace ChatApp.Infrastructure.Persistence
             _contextFactory = contextFactory;
             _logger = logger;
         }
- 
+        public async Task RestoreGroupChatForUser(Guid chatId, HashSet<Guid> usersToAdd)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            await context.UserChat
+                .Where(uc => uc.ChatID == chatId &&
+                usersToAdd.Contains(uc.UserID))
+                .ExecuteUpdateAsync(s => s
+                .SetProperty(uc => uc.IsArchive, false)
+                .SetProperty(uc => uc.ArchivedAt, (DateTime?)null));
+    }
         public async Task SaveChatAsReaded(Guid userId, Guid chatId,CancellationToken token)
         {
             using var context = _contextFactory.CreateDbContext();

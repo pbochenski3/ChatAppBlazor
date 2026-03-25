@@ -13,7 +13,7 @@ public class ChatHubService : IAsyncDisposable
     public event Action<string>? RegisterStatusMessage;
     public event Action<string>? OnContactDelete;
     public event Func<string, Guid, Task> InviteStatusMessage;
-    public event Func<Guid, Task> OnChatLoad;
+    public event Func<ContactSelectedArgs, Task> OnChatLoad;
     public event Func<ReloadTarget, Task>? OnAppReload;
     public event Action<string, UserDTO>? LoginStatusMessage;
     private readonly AppStateService _appStateService;
@@ -47,10 +47,10 @@ public class ChatHubService : IAsyncDisposable
         HubConnection.On<bool>("SideBarReload", async (_) => await TriggerReload(ReloadTarget.Sidebar));
         HubConnection.On<bool>("InviteReload", async (_) => await TriggerReload(ReloadTarget.Invite));
         HubConnection.On<bool>("ContactInviteReload", async (_) => await TriggerReload(ReloadTarget.Global));
-        HubConnection.On<Guid>("ChatReload", async (id) =>
+        HubConnection.On<Guid,bool>("ChatReload", async (id,force) =>
         {
             var handler = OnChatLoad;
-            if (handler != null) await handler.Invoke(id);
+            if (handler != null) await handler.Invoke(new ContactSelectedArgs(id, force));
         });
 
     }
@@ -106,6 +106,14 @@ public class ChatHubService : IAsyncDisposable
         RegisterHandlers();
         await HubConnection.StartAsync();
 
+    }
+    public async Task StopAsync()
+    {
+        if(HubConnection is not null)
+        {
+            await HubConnection.StopAsync();
+            await HubConnection.DisposeAsync();
+        }
     }
     public async Task LoginUserAsync(UserDTO dto)
     {

@@ -10,6 +10,7 @@ namespace ChatApp.Application.Interfaces.Service
         Task Register(UserDTO user);
         Task<UserDTO> Login(UserDTO user);
         Task<List<UserDTO>> GetAllUsersToInvite(Guid currentUserId, string query);
-        Task<HashSet<UserDTO>> GetUsersByIdSet(HashSet<Guid> Ids);
+        Task<HashSet<UserDTO>> GetUsersByIdAsync(HashSet<Guid> Ids);
+        Task<UserDTO> GetUserDtoAsync(Guid userId);
     }
 }

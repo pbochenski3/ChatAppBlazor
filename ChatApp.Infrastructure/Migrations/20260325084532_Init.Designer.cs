@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ChatDbContext))]
-    [Migration("20260324094944_Init")]
+    [Migration("20260325084532_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -134,6 +134,9 @@ namespace ChatApp.Infrastructure.Migrations
                         .HasColumnType("datetime2(0)");
 
                     b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSystemMessage")
                         .HasColumnType("bit");
 
                     b.Property<Guid>("SenderID")

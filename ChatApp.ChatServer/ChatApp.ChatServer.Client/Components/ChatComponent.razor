@@ -21,7 +21,11 @@
                 <span class="user-name">@AppState.CurrentChat.ChatName</span>
             </div>
         </div>
-        <div class="contact-config" @onclick="ToggleSettings" style="cursor:pointer">⚙️</div>
+        @if(!IsArchive)
+        {
+            <div class="contact-config" @onclick="ToggleSettings" style="cursor:pointer">⚙️</div>
+
+        }
     </div>
 
     <div class="chat-body-horizontal-container">
@@ -136,7 +140,7 @@
                             }
                         </div>
                         <button class="btn-add-action"
-                                @onclick="async () => { await CreateGroup(ContactsToAdd); currentView = View.Settings; }">
+                                @onclick="async () => { currentView = View.Settings; await CreateGroup(ContactsToAdd); }">
                             Dodaj grupę
                         </button>
                         <button class="btn-add-action" @onclick="() => currentView = View.Settings">

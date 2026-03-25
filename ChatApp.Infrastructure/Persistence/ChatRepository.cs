@@ -30,6 +30,15 @@ public class ChatRepository : IChatRepository
                      && ch.UserChats.Count > 2);
 
     }
+    public async Task UnArchiveChat(Guid chatId,HashSet<Guid> usersId)
+    {
+        using var context = _contextFactory.CreateDbContext();
+        await context.UserChat
+            .Where(uc => uc.ChatID == chatId && usersId.Contains(uc.UserID))
+            .ExecuteUpdateAsync(s => s
+            .SetProperty(uc => uc.IsArchive, false)
+            .SetProperty(uc => uc.ArchivedAt, (DateTime?)null));
+    }
     public async Task AddUserGroupToDb(Guid chatId, HashSet<Guid> usersToAdd)
     {
         using var context = _contextFactory.CreateDbContext();
@@ -118,5 +127,15 @@ public class ChatRepository : IChatRepository
             .FirstOrDefaultAsync();
         return chat?.IsArchive ?? false;
     }
-   
+    public async Task<HashSet<Guid>> GetExistingUsersInChat(Guid chatId, HashSet<Guid> usersToCheck)
+    {
+        using var context = _contextFactory.CreateDbContext();
+        var existingIds = await context.UserChat
+            .Where(uc => uc.ChatID == chatId && usersToCheck.Contains(uc.UserID))
+            .Select(uc => uc.UserID)
+            .ToListAsync();
+
+        return existingIds.ToHashSet();
+    }
+
 }

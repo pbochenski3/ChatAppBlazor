@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 using System.Text;
 
@@ -103,7 +104,23 @@ namespace ChatApp.Application.Services
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
 
         }
-        public async Task<HashSet<UserDTO>> GetUsersByIdSet(HashSet<Guid> Ids)
+        public async Task<UserDTO> GetUserDtoAsync(Guid userId)
+        {
+            var user = await _userRepo.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"User with ID {userId} not found.");
+            }
+            return new UserDTO
+            {
+                UserID = user.UserID, 
+                Username = user.Username,
+                AvatarUrl = user.AvatarUrl,
+                IsOnline = user.IsOnline
+            };
+        }
+        public async Task<HashSet<UserDTO>> GetUsersByIdAsync(HashSet<Guid> Ids)
         {
             var users =  await _userRepo.GetMultipleUserByIdAsync(Ids);
             var userDtos = users.Select(u => new UserDTO

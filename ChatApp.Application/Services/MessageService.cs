@@ -28,14 +28,9 @@ namespace ChatApp.Application.Services
             _chatService = chatService;
             _userChatRepository = userChatRepository;
         }
-        public async Task SendChatMessageAsync(MessageDTO dto)
+        public async Task SaveChatMessageAsync(MessageDTO dto)
         {
-            var sender = await _userRepo.GetByIdAsync(dto.SenderID);
-            if(sender == null)
-            {
-                throw new Exception($"User: {dto.SenderID} not found");
-            }
-            else if(string.IsNullOrWhiteSpace(dto.Content))
+            if(string.IsNullOrWhiteSpace(dto.Content))
             {
                 throw new Exception("Message content cannot be empty");
             }
@@ -46,6 +41,7 @@ namespace ChatApp.Application.Services
                 ChatID = dto.ChatID,
                 MessageID = dto.MessageID,
                 SentAt = dto.SentAt,
+                IsSystemMessage = dto.IsSystemMessage,
             };
             await _messageRepo.AddAsync(message);
            
@@ -63,8 +59,9 @@ namespace ChatApp.Application.Services
                     Content = uc.Content,
                     SentAt = uc.SentAt,
                     SenderID = uc.SenderID,
-                    SenderUsername = uc.Sender.Username,
-                    ChatID = chatId,
+                    SenderUsername = uc.IsSystemMessage ? "SYSTEM" : (uc.Sender?.Username ?? "Unknown"),
+                    ChatID = uc.ChatID,
+                    IsSystemMessage = uc.IsSystemMessage,
                 }).ToList();
             }
             

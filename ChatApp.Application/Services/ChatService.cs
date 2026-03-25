@@ -104,9 +104,16 @@ namespace ChatApp.Application.Services
             return await _userChatRepo.FetchUsersInChatAsync(chatId);
 
         }
-        public async Task AddUserGroupToDb(Guid chatId, HashSet<Guid> usersToAdd)
+        public async Task AddUsersToGroup(Guid chatId, HashSet<Guid> usersToAdd)
         {
-            await _chatRepo.AddUserGroupToDb(chatId, usersToAdd);
+            var usersWithoutHistory = usersToAdd;
+            var usersWithHistory = await _chatRepo.GetExistingUsersInChat(chatId, usersToAdd);
+            if (usersWithHistory != null)
+            {
+                await _userChatRepo.RestoreGroupChatForUser(chatId, usersWithHistory);
+                usersWithoutHistory = usersToAdd.Where(id => !usersWithHistory.Contains(id)).ToHashSet();
+            }
+            await _chatRepo.AddUserGroupToDb(chatId, usersWithoutHistory);
         }
         public async Task CreateGroupChat(Guid chatId, HashSet<Guid> UsersToAdd)
         {

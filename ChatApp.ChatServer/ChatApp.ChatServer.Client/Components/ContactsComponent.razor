@@ -41,7 +41,7 @@
                             <div class="contact-item @(SelectedContactId == chat.ChatID ? "active" : "")"
                                  @onclick="async () => await SelectContact(chat.ChatID)">
                                 <div class="contact-avatar-container">
-                                    <img src="@chat." class="contact-img" alt="avatar" />
+                                    <img src="@chat.AvatarUrl" class="contact-img" alt="avatar" />
                                     @* <div class="status-indicator @(chat.IsOnline ? "online" : "offline")"></div> *@
                                 </div>
                                 <div class="contact-info">
@@ -57,7 +57,6 @@
                     }
                 </div>
                 break;
-
             case View.Invites:
                 <div class="invites-list">
                     <div class="empty-state-container">
@@ -88,7 +87,6 @@
                     </div>
                 </div>
                 break;
-
             case View.AddContact:
                 <div class="add-contact-view">
                     <h4 class="view-title">Znajdź użytkownika</h4>
@@ -136,7 +134,6 @@
                 break;
         }
     </div>
-
     <div class="sidebar-footer">
         @if (currentView != View.AddContact)
         {
@@ -155,7 +152,7 @@
 
 @code {
     [Parameter] public EventCallback<string> OnSearchRequested { get; set; }
-    [Parameter] public EventCallback<Guid> OnContactSelected { get; set; }
+    [Parameter] public EventCallback<ContactSelectedArgs> OnContactSelected { get; set; }
     [Parameter] public EventCallback<Guid> OnContactInvited { get; set; }
     [Parameter] public EventCallback<(Guid InviteId,bool Status)> OnInviteAction { get; set; }
     [Parameter] public List<UserChatDTO> SidebarItem { get; set; } = new List<UserChatDTO>();
@@ -163,12 +160,8 @@
     [Parameter] public List<InviteDTO> InvitesList { get; set; } = new List<InviteDTO>();
     [Parameter] public bool IsSearching { get; set; }
     [Parameter] public bool isPending { get; set;  }
-
-
-
     private enum View { Contacts, Invites, AddContact }
     private View currentView = View.Contacts;
-
     private string searchTerm = "";
     private string globalSearchQuery = "";
     private int PendingInvitesCount => InvitesList?.Count ?? 0;
@@ -186,7 +179,7 @@
     private async Task SelectContact(Guid contactId)
     {
         SelectedContactId = contactId;
-        await OnContactSelected.InvokeAsync(contactId);
+        await OnContactSelected.InvokeAsync(new ContactSelectedArgs(contactId));
     }
 
     private async Task OnGlobalSearchInput()

@@ -14,7 +14,7 @@
     <ContactsComponent 
         OnSearchRequested="HandleGlobalSearch"
         OnContactInvited="HandleContactInvite"
-        OnContactSelected="HandleChatLoad"
+        OnContactSelected= "HandleChatLoad"
         OnInviteAction="@(args => HandleContactStatus(args.InviteId, args.Status))"
         SidebarItem="SidebarItems"
         UsersList="foundUsers"
@@ -316,26 +316,26 @@
             _ = ShowNotification("Nie udało się wysłać wiadomości.");
         }
     }
-    private async Task HandleChatLoad(Guid chatId)
+    private async Task HandleChatLoad(ContactSelectedArgs args)
     {
         _chatLoadingCts?.Cancel();
         _chatLoadingCts = new CancellationTokenSource();
         var token = _chatLoadingCts.Token;
-
         try
         {
-            bool isSameChat = AppState.CurrentChat?.ChatID == chatId;
+            bool isSameChat = (AppState.CurrentChat?.ChatID == args.ChatId);
 
-            if (!isSameChat)
+
+            if (!isSameChat || (isSameChat && args.Force))
             {
                 isChatLoaded = false;
                 receivedMessage = new List<MessageDTO>();
-                _logger.LogInformation("Switching to chat: {Id}", chatId);
+                _logger.LogInformation("Switching to chat: {Id}", args.ChatId);
             }
-            var chatInformation = await ChatHubService.GetChatInformation(chatId,token);
+            var chatInformation = await ChatHubService.GetChatInformation(args.ChatId, token);
                 try
                 {
-                    usersInChat = await ChatHubService.GetGroupUsers(chatId);
+                usersInChat = await ChatHubService.GetGroupUsers(chatInformation.ChatID);
                     _logger.LogInformation("[BLAZORHUB]Existing User Loading Succes");
 
                 }
@@ -349,11 +349,11 @@
 
             if (chatInformation == null)
             {
-                _logger.LogError("[BLAZORHUB]Chat could not be loaded for ID: {Id}", chatId);
+                _logger.LogError("[BLAZORHUB]Chat could not be loaded for ID: {Id}", args.ChatId);
                 return;
             }
 
-            if (!isSameChat || receivedMessage.Count == 0)
+            if (!isSameChat || receivedMessage.Count == 0 || (isSameChat && args.Force))
             {
                 receivedMessage = await ChatHubService.GetPrivateHistory(chatInformation.ChatID,token);
 
@@ -375,11 +375,11 @@
         }
         catch (OperationCanceledException)
         {
-            _logger.LogInformation("Chat loading cancelled for {Id}", chatId);
+            _logger.LogInformation("Chat loading cancelled for {Id}", args.ChatId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error when trying to load chat {Id}", chatId);
+            _logger.LogError(ex, "Error when trying to load chat {Id}", args.ChatId);
             _ = ShowNotification("Błąd podczas ładowania czatu.");
         }
         finally
@@ -396,12 +396,10 @@
         if(exist)
         {
             await ChatHubService.AddUserToGroup(AppState.CurrentChat.ChatID, usersToAdd);
-            //usersInChat = await ChatHubService.GetGroupUsers(AppState.CurrentChat.ChatID);
         }
         else
         {
             await ChatHubService.CreateChatGroup(AppState.CurrentChat.ChatID, usersToAdd);
-           // usersInChat = await ChatHubService.GetGroupUsers(AppState.CurrentChat.ChatID);
         }
     }
     private async Task HandleChatUsersLoad()

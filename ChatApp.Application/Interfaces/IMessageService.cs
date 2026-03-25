@@ -8,7 +8,7 @@ namespace ChatApp.Application.Interfaces.Service
 {
     public interface IMessageService
     {
-        Task SendChatMessageAsync(MessageDTO dto);
+        Task SaveChatMessageAsync(MessageDTO dto);
         Task<List<MessageDTO>> GetPrivateHistoryAsync(Guid userId, Guid chatId,CancellationToken token);
     }
 }

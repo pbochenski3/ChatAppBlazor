@@ -7,6 +7,7 @@ namespace ChatApp.Application.DTO
     public class UserChatDTO
     {
         public Guid UserID { get; set; }
+        public string AvatarUrl { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
         public Guid ChatID { get; set; }
         public string ChatName { get; set; } = string.Empty;

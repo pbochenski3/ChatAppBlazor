@@ -36,6 +36,7 @@ namespace ChatApp.Application.Services
                     UserID = userId,
                     ChatName = c.ChatName,
                     IsArchive = c.IsArchive,
+                    AvatarUrl = c.AvatarUrl,
                     counter = counterDict.GetValueOrDefault(c.ChatID,0),
                 }).ToList();
                 return sidebarItems;

@@ -20,11 +20,11 @@ namespace ChatApp.Application.Interfaces.Service
         Task<Guid> GetReceiverUser(Guid chatId, Guid userId, CancellationToken token);
         Task<Guid> GetChatId(Guid userId, Guid contactUserId, CancellationToken token);
         Task<HashSet<Guid>> GetListOfUsersInChatAsync(Guid chatId);
-        Task AddUserGroupToDb(Guid chatId, HashSet<Guid> usersToAdd);
         Task CreateGroupChat(Guid chatId, HashSet<Guid> UsersToAdd);
         Task CreatePrivateChat(Guid user1, Guid user2);
         Task<List<UserChatDTO>> GetChatList(Guid userId);
         Task ArchiveUserGroupChat(Guid chatId, Guid userId);
+        Task AddUsersToGroup(Guid chatId, HashSet<Guid> usersToAdd);
 
     }
 }
