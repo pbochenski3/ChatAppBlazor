@@ -318,56 +318,57 @@
     }
     private async Task HandleChatLoad(ContactSelectedArgs args)
     {
+        bool isSameChat = AppState.CurrentChat?.ChatID == args.ChatId;
+
+        if (isSameChat && !args.Force)
+        {
+            return;
+        }
+        if (!isSameChat && args.Force)
+        {
+            return;
+        }
+
         _chatLoadingCts?.Cancel();
         _chatLoadingCts = new CancellationTokenSource();
         var token = _chatLoadingCts.Token;
+
         try
         {
-            bool isSameChat = (AppState.CurrentChat?.ChatID == args.ChatId);
+            isChatLoaded = false;
+            receivedMessage = new List<MessageDTO>();
+            _logger.LogInformation("Loading chat: {Id} (Force: {Force})", args.ChatId, args.Force);
 
-
-            if (!isSameChat || (isSameChat && args.Force))
-            {
-                isChatLoaded = false;
-                receivedMessage = new List<MessageDTO>();
-                _logger.LogInformation("Switching to chat: {Id}", args.ChatId);
-            }
             var chatInformation = await ChatHubService.GetChatInformation(args.ChatId, token);
-                try
-                {
-                usersInChat = await ChatHubService.GetGroupUsers(chatInformation.ChatID);
-                    _logger.LogInformation("[BLAZORHUB]Existing User Loading Succes");
-
-                }
-                catch
-                {
-                    _logger.LogInformation("[BLAZORHUB]Existing User Loading Failed");
-                }
-
-            token.ThrowIfCancellationRequested();
-
 
             if (chatInformation == null)
             {
-                _logger.LogError("[BLAZORHUB]Chat could not be loaded for ID: {Id}", args.ChatId);
+                _logger.LogError("[BLAZORHUB] Chat not found: {Id}", args.ChatId);
                 return;
             }
 
-            if (!isSameChat || receivedMessage.Count == 0 || (isSameChat && args.Force))
-            {
-                receivedMessage = await ChatHubService.GetPrivateHistory(chatInformation.ChatID,token);
+            token.ThrowIfCancellationRequested();
 
-                if (token.IsCancellationRequested) return;
+            try
+            {
+                usersInChat = await ChatHubService.GetGroupUsers(chatInformation.ChatID);
             }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", args.ChatId);
+            }
+
+            receivedMessage = await ChatHubService.GetPrivateHistory(chatInformation.ChatID, token);
+            token.ThrowIfCancellationRequested();
+
             AppState.CurrentChat = chatInformation;
             isArchive = chatInformation.IsArchive;
             lockChat = chatInformation.IsArchive;
 
             if (!chatInformation.IsArchive)
             {
-                await ChatHubService.JoinGroupSignal(AppState.CurrentChat.ChatID);
-                await ChatHubService.MarkChatMessagesAsReaded(chatInformation.ChatID,token);
-                if(token.IsCancellationRequested) return;
+                await ChatHubService.JoinGroupSignal(chatInformation.ChatID);
+                await ChatHubService.MarkChatMessagesAsReaded(chatInformation.ChatID, token);
                 await HandleCounterUpdate(chatInformation.ChatID, true);
             }
 
@@ -375,16 +376,16 @@
         }
         catch (OperationCanceledException)
         {
-            _logger.LogInformation("Chat loading cancelled for {Id}", args.ChatId);
+            _logger.LogInformation("Chat loading cancelled: {Id}", args.ChatId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error when trying to load chat {Id}", args.ChatId);
+            _logger.LogError(ex, "Critical error loading chat {Id}", args.ChatId);
             _ = ShowNotification("Błąd podczas ładowania czatu.");
         }
         finally
         {
-            if (!_chatLoadingCts.IsCancellationRequested)
+            if (!token.IsCancellationRequested)
             {
                 await InvokeAsync(StateHasChanged);
             }
