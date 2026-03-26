@@ -115,7 +115,6 @@ body {
     }
 }
 
-/* --- Tabs --- */
 .nav-tabs {
     display: flex;
     gap: 4px;
@@ -147,7 +146,6 @@ body {
             border-color: var(--accent-ring);
         }
 
-/* --- Search --- */
 .search-container {
     margin-top: 0.75rem;
 }
@@ -176,7 +174,6 @@ body {
         box-shadow: 0 0 0 3px var(--accent-dim);
     }
 
-/* --- Contacts list --- */
 .contacts-list {
     flex: 1;
     overflow-y: auto;
@@ -230,7 +227,6 @@ body {
             box-shadow: 0 0 6px var(--accent);
         }
 
-/* --- Avatar --- */
 .contact-avatar-container {
     position: relative;
     width: 2.5rem;
@@ -271,7 +267,6 @@ body {
         background-color: var(--offline);
     }
 
-/* --- Contact info --- */
 .contact-info {
     overflow: hidden;
     display: flex;
@@ -299,7 +294,6 @@ body {
     color: var(--muted);
 }
 
-/* --- Sidebar footer --- */
 .sidebar-footer {
     padding: 0.875rem 1rem;
     border-top: 1px solid var(--border);
@@ -332,7 +326,6 @@ body {
         box-shadow: 0 0 12px var(--accent-dim);
     }
 
-/* --- Add contact view --- */
 .add-contact-view {
     padding: 0.875rem;
     animation: fadeIn 0.25s ease;
@@ -358,7 +351,31 @@ body {
 
     .search-result-item:hover {
         border-color: var(--border-hover);
+        background: var(--surface3);
+        cursor: pointer;
     }
+
+    .search-result-item.selected {
+        background: rgba(0, 229, 160, 0.12);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 1px var(--accent-ring), inset 0 0 12px rgba(0, 229, 160, 0.06);
+    }
+
+        .search-result-item.selected:hover {
+            background: rgba(0, 229, 160, 0.18);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px var(--accent), inset 0 0 16px rgba(0, 229, 160, 0.1);
+        }
+
+        .search-result-item.selected .contact-name,
+        .search-result-item.selected span {
+            color: var(--accent);
+        }
+
+        .search-result-item.selected .user-avatar {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-ring);
+        }
 
 .user-search-info {
     display: flex;
@@ -393,7 +410,6 @@ body {
         transform: none;
     }
 
-/* --- Secondary / Danger buttons --- */
 .btn-secondary {
     background: transparent;
     color: var(--muted);
@@ -425,7 +441,6 @@ body {
             color: var(--danger);
         }
 
-/* --- Invites --- */
 .invites-list {
     flex: 1;
     overflow-y: auto;
@@ -534,7 +549,6 @@ body {
     background: var(--bg);
 }
 
-/* --- Archived banner --- */
 .archived-status {
     background: rgba(245, 166, 35, 0.06) !important;
     border-top: 1px solid rgba(245, 166, 35, 0.2) !important;
@@ -552,7 +566,6 @@ body {
     text-align: center;
 }
 
-/* --- Settings panel --- */
 .contact-settings-panel {
     width: 0;
     min-width: 0;
@@ -576,7 +589,6 @@ body {
     gap: 14px;
 }
 
-/* --- Confirm overlay --- */
 .confirm-overlay {
     position: fixed;
     inset: 0;
@@ -646,7 +658,6 @@ body {
         color: var(--text);
     }
 
-/* --- Top bar --- */
 .chat-content {
     flex: 1;
     display: flex;
@@ -764,7 +775,8 @@ body {
     flex: 1;
     min-height: 0;
     overflow: hidden;
-}/
+}
+
 .chat-container {
     display: flex;
     flex-direction: column;
@@ -774,9 +786,10 @@ body {
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     min-height: 0;
-    overflow: hidden; 
+    overflow: hidden;
     transition: border-color var(--transition), box-shadow var(--transition);
 }
+
 
     .chat-container:focus-within {
         border-color: var(--accent-ring);
@@ -817,7 +830,6 @@ body {
         border-radius: var(--radius-full);
     }
 
-/* --- Messages --- */
 .message {
     background: var(--surface2);
     margin-bottom: 8px;
@@ -861,7 +873,7 @@ body {
     transition: background var(--transition);
 }
 
-    /* Stan zarchiwizowany */
+
     .message-input-area.archived-status {
         background: rgba(245, 166, 35, 0.06) !important;
         border-top-color: rgba(245, 166, 35, 0.2) !important;
@@ -1110,10 +1122,18 @@ body {
     align-items: center;
     gap: 8px;
     padding-top: 16px;
-    pointer-events: none; 
+    pointer-events: none;
 }
 
 .notification-toast {
+    position: fixed;
+    top: 16px;
+    left: 0;
+    right: 0;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    z-index: 9999;
     pointer-events: auto;
     background: var(--surface);
     color: var(--accent);
@@ -1162,7 +1182,7 @@ body {
 
 @keyframes toast-lifecycle {
     0% {
-        transform: translateY(-120%);
+        transform: translateY(-140%);
         opacity: 0;
     }
 
@@ -1177,7 +1197,7 @@ body {
     }
 
     100% {
-        transform: translateY(-120%);
+        transform: translateY(-140%);
         opacity: 0;
     }
 }

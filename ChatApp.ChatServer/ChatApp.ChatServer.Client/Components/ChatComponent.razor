@@ -9,8 +9,6 @@
                        Message="@_confirmMessage"
                        OnClose="HandleConfirm" />
     }
-
-    @* GŁÓWNA TREŚĆ CZATU *@
     <div class="chat-content">
         <div class="top-bar">
             <div class="user-profile">
@@ -29,7 +27,7 @@
             }
         </div>
 
-        <div class="chat-interaction-area">
+        <div class="chat-container">
             <div class="chat-box" id="chat-window">
                 <div class="chat-messages">
                     @if (Messages != null && Messages.Any())
@@ -50,7 +48,7 @@
                 </div>
             </div>
 
-            <div class="message-input-area show-chat-input @(IsArchive ? "archived-status" : "")">
+            <div class="message-input-area @(IsArchive ? "archived-status" : "")">
                 @if (!IsArchive)
                 {
                     <div class="input-group">
@@ -73,7 +71,6 @@
         </div>
     </div>
 
-    @* PANEL USTAWIEŃ (WYSUWANY) *@
     <div class="contact-settings-panel">
         <div class="settings-content">
             @switch (currentView)
@@ -96,7 +93,8 @@
                 case View.AddUsers:
                     <div class="sidebar-header"><h3>Dodaj osoby</h3></div>
                     <div class="search-container">
-                        <input type="text" class="form-control search-input" placeholder="Szukaj..." @bind="contactSearchTerm" @bind:event="oninput" />
+                        <input type="text" class="form-control search-input" placeholder="Szukaj..."
+                               @bind="contactSearchTerm" @bind:event="oninput" />
                     </div>
                     <div class="search-results">
                         @if (FilteredContacts != null && FilteredContacts.Any())
@@ -104,11 +102,11 @@
                             @foreach (var user in FilteredContacts)
                             {
                                 bool isSelected = ContactsToAdd.Contains(user.ContactUserID);
-                                <div class="search-result-item" @onclick="async () => await AddUserToList(user.ContactUserID)">
+                                <div class="search-result-item @(isSelected ? "selected" : "")"
+                                     @onclick="async () => await AddUserToList(user.ContactUserID)">
                                     <div class="user-search-info">
                                         <img src="@user.AvatarUrl" class="user-avatar" />
                                         <span>@user.Username</span>
-                                        <span>@(isSelected ? " ✅" : "")</span>
                                     </div>
                                 </div>
                             }

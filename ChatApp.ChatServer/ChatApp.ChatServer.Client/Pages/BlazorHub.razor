@@ -8,9 +8,17 @@
 @inject AppStateService AppState
 @implements IAsyncDisposable
 @inject ILogger<BlazorHub> _logger
-@if(isLoading == false)
+@if (isLoading == false)
 {
-<main class="main-layout">
+    <div class="toast-container">
+        @if (!string.IsNullOrEmpty(notification))
+        {
+            <div class="notification-toast">
+                <div>@notification</div>
+            </div>
+        }
+    </div>
+    <main class="main-layout">
     <ContactsComponent 
         OnSearchRequested="HandleGlobalSearch"
         OnContactInvited="HandleContactInvite"
@@ -23,12 +31,6 @@
         isPending="isPending"
         />
        
-        @if (!string.IsNullOrEmpty(notification))
-        {
-            <div class="notification-toast">
-                <div>@notification</div>
-            </div>
-        }
         @if (AppState.CurrentChat != null)
         {
         <ChatComponent
