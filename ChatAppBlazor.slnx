@@ -1,5 +1,4 @@
 <Solution>
-  <Project Path="AppChat.Tests/AppChat.Tests.csproj" Id="0e6a6c97-a34b-4f63-9491-bf749de4ed51" />
   <Project Path="ChatApp.Application/ChatApp.Application.csproj" />
   <Project Path="ChatApp.ChatHub/ChatApp.ChatHub.csproj" />
   <Project Path="ChatApp.ChatServer/ChatApp.ChatServer.Client/ChatApp.ChatServer.Client.csproj" />
