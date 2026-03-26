@@ -1,4 +1,4 @@
-﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Service;
 using ChatApp.Domain.Models;
@@ -47,7 +47,7 @@ namespace ChatApp.ChatHub
         }
         public async Task<bool> CheckIfGroupExist(Guid chatId)
         {
-            return await _chatService.CheckIfGroupChatExistAsync(chatId,userId);
+            return await _chatService.CheckIfGroupChatExistAsync(chatId, userId);
         }
         public async Task<int> FetchUnreadCount(Guid chatId)
         {
@@ -207,29 +207,53 @@ namespace ChatApp.ChatHub
         }
         public async Task AddUsersToGroup(Guid chatId, HashSet<Guid> usersToAdd)
         {
-            await _chatService.AddUsersToGroup(chatId, usersToAdd);
+            var isGroupChat = await _chatService.CheckIfGroupChatExistAsync(chatId, userId);
+            Guid targetChatId = chatId;
+
+            if (!isGroupChat)
+            {
+                targetChatId = await _chatService.CreateGroupChat(chatId, usersToAdd);
+            }
+            else
+            {
+                await _chatService.AddUsersToGroup(chatId, usersToAdd);
+            }
 
             var admin = await _userService.GetUserDtoAsync(userId);
             var users = await _userService.GetUsersByIdAsync(usersToAdd);
 
-            
             string joinedNames = string.Join(", ", users.Select(u => u.Username));
 
             var systemMessage = new MessageDTO
             {
-                ChatID = chatId,
+                ChatID = targetChatId,
                 MessageID = Guid.CreateVersion7(),
                 Content = $"{admin.Username} dodał użytkowników: {joinedNames} do czatu.",
                 SenderUsername = "SYSTEM",
                 IsSystemMessage = true,
+                SentAt = DateTime.UtcNow,
             };
 
             await _messageService.SaveChatMessageAsync(systemMessage);
 
             var usersToNotify = usersToAdd.Select(id => id.ToString()).ToList();
-            await Clients.Group(chatId.ToString()).SendAsync("UsersInChatReload", chatId);
-            await Clients.Users(usersToNotify).SendAsync("ChatReload", chatId,true);
-            await Clients.Group(chatId.ToString()).SendAsync("ReceiveMessage", systemMessage);
+
+
+            // Odświeżenie sidebaru u wszystkich
+            await Clients.Group(chatId.ToString()).SendAsync("SideBarReload", true);
+            await Clients.Users(usersToNotify).SendAsync("SideBarReload", true);
+            await Clients.Group(targetChatId.ToString()).SendAsync("SideBarReload", true);
+
+            // Powiadomienie o nowej wiadomości systemowej w nowej grupie
+            await Clients.Group(targetChatId.ToString()).SendAsync("ReceiveMessage", systemMessage);
+
+            // Odświeżenie stanu czatu u nowo dodanych osób (jeśli miały go otwartego jako archiwum)
+            // Dzięki wcześniejszej zmianie w BlazorHub.razor, to przeładuje czat TYLKO jeśli 
+            // użytkownik ma go już wybranego, więc nie "przeniesie" go siłą z innej rozmowy.
+            await Clients.Users(usersToNotify).SendAsync("ChatReload", targetChatId, true);
+
+            // Odświeżenie listy użytkowników (jeśli ktoś już ma otwarty ten czat, np. przy dodawaniu do istniejącej grupy)
+            await Clients.Group(targetChatId.ToString()).SendAsync("UsersInChatReload", targetChatId);
         }
         public async Task<HashSet<Guid>> GetUsersInChat(Guid chatId)
         {
@@ -260,8 +284,8 @@ namespace ChatApp.ChatHub
         {
             await _chatService.DeleteChatAsync(chatId, userId);
             await Clients.Caller.SendAsync("ReceiveStatus", "Czat został usunięty!");
-            await Clients.Caller.SendAsync("SideBarReload",true);
-            await Clients.Caller.SendAsync("ChatReload",true);
+            await Clients.Caller.SendAsync("SideBarReload", true);
+            await Clients.Caller.SendAsync("ChatReload", true);
         }
 
     }

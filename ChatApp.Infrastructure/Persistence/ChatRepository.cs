@@ -1,4 +1,4 @@
-﻿
+
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Domain.Models;
 using Microsoft.AspNetCore.SignalR;
@@ -15,7 +15,7 @@ public class ChatRepository : IChatRepository
     private readonly IDbContextFactory<ChatDbContext> _contextFactory;
     private readonly ILogger<MessageRepository> _logger;
 
-    
+
     public ChatRepository(IDbContextFactory<ChatDbContext> contextFactory, ILogger<MessageRepository> logger)
     {
         _contextFactory = contextFactory;
@@ -30,7 +30,7 @@ public class ChatRepository : IChatRepository
                      && ch.IsGroup == true);
 
     }
-    public async Task UnArchiveChat(Guid chatId,HashSet<Guid> usersId)
+    public async Task UnArchiveChat(Guid chatId, HashSet<Guid> usersId)
     {
         using var context = _contextFactory.CreateDbContext();
         await context.UserChat
@@ -43,15 +43,23 @@ public class ChatRepository : IChatRepository
     {
         using var context = _contextFactory.CreateDbContext();
 
-        
-        var chatInfo = await context.Chats
-            .AsNoTracking()
-            .Select(c => new { c.ChatID, c.ChatName })
+
+        var chat = await context.Chats
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(c => c.ChatID == chatId);
 
-        if (chatInfo == null) return;
+        if (chat == null) return;
+
+        // Jeśli czat był oznaczony jako usunięty (bo był pusty), przywracamy go
+        if (chat.IsDeleted)
+        {
+            chat.IsDeleted = false;
+            chat.DeletedAt = null;
+            await context.SaveChangesAsync();
+        }
 
         var existingUserIds = await context.UserChat
+            .IgnoreQueryFilters()
             .Where(uc => uc.ChatID == chatId)
             .Select(uc => uc.UserID)
             .ToListAsync();
@@ -61,8 +69,8 @@ public class ChatRepository : IChatRepository
             .Select(userId => new UserChat
             {
                 UserID = userId,
-                ChatID = chatInfo.ChatID,
-                ChatName = chatInfo.ChatName,
+                ChatID = chat.ChatID,
+                ChatName = chat.ChatName,
                 IsArchive = false
             }).ToList();
 
@@ -79,14 +87,14 @@ public class ChatRepository : IChatRepository
             .Include(uc => uc.UserChats)
             .FirstOrDefaultAsync(c => c.ChatID == chatId);
     }
-    public async Task<Guid> GetChatIdAsync(Guid user1, Guid user2,CancellationToken token = default)
+    public async Task<Guid> GetChatIdAsync(Guid user1, Guid user2, CancellationToken token = default)
     {
         using var context = _contextFactory.CreateDbContext();
         return await context.Chats
         .Where(c => !c.IsGroup &&
                     c.UserChats.Any(uc => uc.UserID == user1) &&
                     c.UserChats.Any(uc => uc.UserID == user2))
-        .Select(c => c.ChatID) 
+        .Select(c => c.ChatID)
         .FirstOrDefaultAsync(token);
     }
     public async Task AddChatAsync(Chat chat)
@@ -105,7 +113,7 @@ public class ChatRepository : IChatRepository
             throw new HubException("Nie udało się zapisac.");
         }
     }
-    public async Task ArchivePrivateChat(Guid chatId,Guid userId, Guid contactId)
+    public async Task ArchivePrivateChat(Guid chatId, Guid userId, Guid contactId)
     {
         using var context = _contextFactory.CreateDbContext();
         var affected = await context.UserChat
@@ -117,7 +125,7 @@ public class ChatRepository : IChatRepository
 
         _logger.LogInformation("ArchivePrivateChat: set IsArchive=true for chat {ChatId}, user {UserId}. Rows affected: {Count}", chatId, userId, affected);
     }
-    public async Task<bool> GetChatStatusById(Guid ChatId,Guid ContactId)
+    public async Task<bool> GetChatStatusById(Guid ChatId, Guid ContactId)
     {
         using var context = _contextFactory.CreateDbContext();
         var chat = await context.UserChat
@@ -131,6 +139,7 @@ public class ChatRepository : IChatRepository
     {
         using var context = _contextFactory.CreateDbContext();
         var existingIds = await context.UserChat
+            .IgnoreQueryFilters()
             .Where(uc => uc.ChatID == chatId && usersToCheck.Contains(uc.UserID))
             .Select(uc => uc.UserID)
             .ToListAsync();
@@ -144,8 +153,8 @@ public class ChatRepository : IChatRepository
             .Where(ch => ch.ChatID == chatId && !ch.UserChats.Any())
             .ExecuteUpdateAsync(s => s
             .SetProperty(ch => ch.IsDeleted, true)
-            .SetProperty(ch => ch.DeletedAt,DateTime.UtcNow));
-            
+            .SetProperty(ch => ch.DeletedAt, DateTime.UtcNow));
+
     }
 
 }

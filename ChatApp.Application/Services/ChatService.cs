@@ -1,4 +1,4 @@
-﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
@@ -119,7 +119,7 @@ namespace ChatApp.Application.Services
             }
             await _chatRepo.AddUserGroupToDb(chatId, usersWithoutHistory);
         }
-        public async Task CreateGroupChat(Guid chatId, HashSet<Guid> UsersToAdd)
+        public async Task<Guid> CreateGroupChat(Guid chatId, HashSet<Guid> UsersToAdd)
         {
             HashSet<Guid> UsersInGroup = new HashSet<Guid>();
             UsersInGroup = await _userChatRepo.FetchUsersInChatAsync(chatId);
@@ -144,7 +144,7 @@ namespace ChatApp.Application.Services
                 });
             }
             await _chatRepo.AddChatAsync(newChat);
-
+            return newChat.ChatID;
         }
         public async Task<bool> CheckIfUserChatExistAsync(Guid chatId)
         {

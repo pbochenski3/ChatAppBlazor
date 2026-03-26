@@ -1,4 +1,4 @@
-﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO;
 using ChatApp.Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ namespace ChatApp.Application.Interfaces.Service
         Task<Guid> GetReceiverUser(Guid chatId, Guid userId, CancellationToken token);
         Task<Guid> GetChatId(Guid userId, Guid contactUserId, CancellationToken token);
         Task<HashSet<Guid>> GetListOfUsersInChatAsync(Guid chatId);
-        Task CreateGroupChat(Guid chatId, HashSet<Guid> UsersToAdd);
+        Task<Guid> CreateGroupChat(Guid chatId, HashSet<Guid> UsersToAdd);
         Task CreatePrivateChat(Guid user1, Guid user2);
         Task<List<UserChatDTO>> GetChatList(Guid userId);
         Task ArchiveUserGroupChat(Guid chatId, Guid userId);

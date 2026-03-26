@@ -1,4 +1,4 @@
-﻿@page "/hub"
+@page "/hub"
 @using ChatApp.Application
 @using Microsoft.AspNetCore.SignalR.Client
 @using ChatApp.ChatServer.Client.Components
@@ -247,6 +247,11 @@
         bool isMessageForCurrentChat = AppState.CurrentChat != null && dto.ChatID == AppState.CurrentChat.ChatID;
         if (isMessageForCurrentChat)
         {
+            if (receivedMessage.Any(m => m.MessageID == dto.MessageID))
+            {
+                return;
+            }
+
             receivedMessage.Add(dto);
             await InvokeAsync(StateHasChanged);
 
@@ -339,13 +344,24 @@
     {
         bool isSameChat = AppState.CurrentChat?.ChatID == args.ChatId;
 
-        if (isSameChat && !args.Force)
+        // Jeśli to wymuszone przeładowanie (np. zmiana ID czatu przez serwer)
+        if (args.Force)
         {
-            return;
+            // Przeładowujemy TYLKO jeśli jesteśmy już w tym samym czacie 
+            // LUB jeśli nie mamy otwartego żadnego czatu (inicjalizacja).
+            // Zapobiega to przełączaniu okna u użytkowników, którzy robią coś innego.
+            if (!isSameChat && AppState.CurrentChat != null)
+            {
+                return;
+            }
         }
-        if (!isSameChat && args.Force)
+        else
         {
-            return;
+            // Jeśli to nie jest wymuszone (kliknięcie użytkownika), nie ładujemy tego samego czatu ponownie
+            if (isSameChat)
+            {
+                return;
+            }
         }
 
         _chatLoadingCts?.Cancel();
@@ -412,15 +428,7 @@
     }
     private async Task HandleCreateGroupChat(HashSet<Guid> usersToAdd)
     {
-        var exist = await ChatHubService.CheckIfGroupExist(AppState.CurrentChat.ChatID);
-        if(exist)
-        {
-            await ChatHubService.AddUserToGroup(AppState.CurrentChat.ChatID, usersToAdd);
-        }
-        else
-        {
-            await ChatHubService.CreateChatGroup(AppState.CurrentChat.ChatID, usersToAdd);
-        }
+        await ChatHubService.AddUserToGroup(AppState.CurrentChat.ChatID, usersToAdd);
     }
     private async Task HandleChatUsersLoad()
     {
