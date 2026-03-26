@@ -9,6 +9,7 @@
                        Message="@_confirmMessage"
                        OnClose="HandleConfirm" />
     }
+
     <div class="chat-content">
         <div class="top-bar">
             <div class="user-profile">
@@ -20,11 +21,10 @@
                     <span class="user-name">@AppState.CurrentChat.ChatName</span>
                 </div>
             </div>
-
             <div class="contact-config" @onclick="ToggleSettings">⚙️</div>
         </div>
 
-        <div class="chat-container">
+        <div class="chat-body">
             <div class="chat-box" id="chat-window">
                 <div class="chat-messages">
                     @if (Messages != null && Messages.Any())
@@ -49,8 +49,14 @@
                 @if (!IsArchive)
                 {
                     <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Napisz wiadomość..."
-                               disabled="@IsLocked" @bind="_content" @bind:event="oninput" @onkeydown="HandleKeyDown" />
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Napisz wiadomość..."
+                               disabled="@IsLocked"
+                               @bind="_content"
+                               @bind:event="oninput"
+                               @onkeydown="HandleKeyDown" />
+
                         <button class="btn-primary"
                                 disabled="@(IsLocked || string.IsNullOrWhiteSpace(_content))"
                                 @onclick="HandleInternalSubmit">
@@ -65,6 +71,7 @@
                     </div>
                 }
             </div>
+
         </div>
     </div>
 
