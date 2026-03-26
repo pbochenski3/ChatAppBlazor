@@ -1,13 +1,14 @@
-﻿@page "/"
+@page "/"
 @inject IConfiguration Configuration
 @inject NavigationManager NavManager
 @inject ChatHubService ChatHubService
 @inject AppStateService AppState
 @implements IDisposable
-@if (!string.IsNullOrEmpty(notification))
+
+@if (!string.IsNullOrEmpty(_notification))
 {
     <div class="notification-toast">
-        <div>@notification</div>
+        <div>@_notification</div>
     </div>
 }
 
@@ -17,30 +18,30 @@
             <span class="logo-dot"></span>
             <h1>Logowanie</h1>
         </div>
-        <p class="login-subtitle">Zaloguj sie do swojego konta</p>
+        <p class="login-subtitle">Zaloguj się do swojego konta</p>
 
-        <EditForm Model="@userDTO" OnValidSubmit="HandleLogin">
+        <EditForm Model="@_loginModel" OnValidSubmit="HandleLoginAsync">
             <div class="field-group">
                 <label class="field-label">Nazwa użytkownika</label>
-                <InputText @bind-Value="userDTO.Username"
+                <InputText @bind-Value="_loginModel.Username"
                            class="field-input"
-                           disabled="@isProcessing"
+                           disabled="@_isProcessing"
                            maxlength="20"
-                           placeholder="Wprowadź nazwe" />
+                           placeholder="Wprowadź nazwę" />
             </div>
 
             <div class="field-group">
                 <label class="field-label">Hasło</label>
                 <InputText type="password"
-                           @bind-Value="userDTO.Password"
+                           @bind-Value="_loginModel.Password"
                            class="field-input"
-                           disabled="@isProcessing"
+                           disabled="@_isProcessing"
                            maxlength="128"
                            placeholder="Wprowadź hasło" />
             </div>
 
-            <button type="submit" class="btn-login" disabled="@isProcessing">
-                @if (isProcessing)
+            <button type="submit" class="btn-login" disabled="@_isProcessing">
+                @if (_isProcessing)
                 {
                     <span class="spinner"></span>
                     <span>Logowanie...</span>
@@ -54,54 +55,59 @@
 
         <div class="login-footer">
             <span>Nie masz konta?</span>
-            <a href="/register">Zarejestruj sie</a>
+            <a href="/register">Zarejestruj się</a>
         </div>
     </div>
 </div>
+
 @code {
-    bool isProcessing = false;
-    string? notification = string.Empty;
-    override protected async Task OnInitializedAsync()
+    private bool _isProcessing = false;
+    private string? _notification = string.Empty;
+    private UserDTO _loginModel = new UserDTO();
+
+    protected override async Task OnInitializedAsync()
     {
-        notification = AppState.Message;
+        _notification = AppState.Message;
         AppState.Message = null;
         ChatHubService.LoginStatusMessage += HandleLoginNotification;
     }
-    private UserDTO userDTO = new UserDTO();
-    private void HandleLoginNotification(string message,UserDTO user)
+
+    private void HandleLoginNotification(string message, UserDTO user)
     {
-        notification = message;
+        _notification = message;
         if (message.Equals("Success"))
         {
             AppState.Message = "Logged in successfully!";
             AppState.CurrentUser = user;
-            userDTO = new UserDTO();
+            _loginModel = new UserDTO();
             NavManager.NavigateTo("/hub");
         }
-        isProcessing = false;
+        _isProcessing = false;
         InvokeAsync(StateHasChanged);
     }
-    private async Task HandleLogin()
+
+    private async Task HandleLoginAsync()
     {
-        notification = string.Empty;
-        isProcessing = true;
+        _notification = string.Empty;
+        _isProcessing = true;
         StateHasChanged();
         try
         {
-            await ChatHubService.LoginUserAsync(userDTO);
+            await ChatHubService.LoginUserAsync(_loginModel);
         }
         catch (Exception ex)
         {
-            notification = $"{ex.Message}";
+            _notification = $"{ex.Message}";
         }
         finally
         {
-            isProcessing = false;
+            _isProcessing = false;
             await InvokeAsync(StateHasChanged);
         }
     }
-   public void Dispose()
+
+    public void Dispose()
     {
         ChatHubService.LoginStatusMessage -= HandleLoginNotification;
-    }   
+    }
 }

@@ -1,27 +1,28 @@
-﻿using ChatApp.Domain.Models;
+using ChatApp.Domain.Models;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ChatApp.Domain.Repository
 {
     public interface IUserChatRepository
     {
-        Task SaveLastReadMessage(Guid userId, Guid chatId, Guid messageId);
-        Task SaveLastSendedChatMessage(Guid chatId, Guid messageId);
+        Task UpdateLastReadMessageAsync(Guid userId, Guid chatId, Guid messageId);
+        Task UpdateLastSentMessageAsync(Guid chatId, Guid messageId);
         Task<int> CountUnreadMessagesAsync(Guid userId, Guid chatId);
-        Task<List<(Guid ChatId, int Count)>> CountAllUnreadMessagesAsync(Guid userId);
-        Task SaveChatAsReaded(Guid userId, Guid chatId,CancellationToken token);
-        Task<Guid> FetchReceiverUser(Guid chatId, Guid userId, CancellationToken token);
-        Task<UserChat?> FetchChatAsync(Guid chatId, Guid userId, CancellationToken token);
-        Task<List<UserChat>?> FetchAllChatsAsync(Guid userId);
-        Task RestoreChat(Guid chatId);
-        Task<HashSet<Guid>> FetchUsersInChatAsync(Guid chatId);
-        Task<bool> CheckIfChatExisted(Guid chatId);
-        Task ArchivizeChat(Guid chatId, Guid userId);
-        Task RestoreGroupChatForUser(Guid chatId, HashSet<Guid> usersToAdd);
-        Task<bool> CheckIfChatIsArchive(Guid chatId, Guid userId);
-        Task<DateTime?> FetchLastSeenMessage(Guid userId, Guid chatId);
-        Task SetChatAsDeleted(Guid chatID, Guid userId);
+        Task<List<(Guid ChatId, int Count)>> CountAllUnreadMessageCountsAsync(Guid userId);
+        Task MarkChatAsReadAsync(Guid userId, Guid chatId, CancellationToken token);
+        Task<Guid> GetReceiverUserIdAsync(Guid chatId, Guid userId, CancellationToken token);
+        Task<UserChat?> GetUserChatAsync(Guid chatId, Guid userId, CancellationToken token);
+        Task<List<UserChat>?> GetAllUserChatsAsync(Guid userId);
+        Task RestoreChatAsync(Guid chatId);
+        Task<HashSet<Guid>> GetUsersInChatAsync(Guid chatId);
+        Task<bool> ExistsAsync(Guid chatId);
+        Task ArchiveChatAsync(Guid chatId, Guid userId);
+        Task RestoreGroupChatForUsersAsync(Guid chatId, HashSet<Guid> userIds);
+        Task<bool> IsChatArchivedAsync(Guid chatId, Guid userId);
+        Task<DateTime?> GetLastReadAtAsync(Guid userId, Guid chatId);
+        Task MarkChatAsDeletedAsync(Guid chatId, Guid userId);
     }
 }

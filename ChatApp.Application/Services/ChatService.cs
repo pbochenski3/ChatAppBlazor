@@ -1,13 +1,14 @@
 using ChatApp.Application.DTO;
-using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
 using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ChatApp.Application.Services
 {
@@ -16,58 +17,49 @@ namespace ChatApp.Application.Services
         private readonly IChatRepository _chatRepo;
         private readonly IUserRepository _userRepo;
         private readonly IUserChatRepository _userChatRepo;
-        private readonly IContactRepository _contactRepo;
-        public ChatService(IChatRepository chatRepo, IUserRepository userRepo, IContactRepository contactRepo, IUserChatRepository userChatRepo)
+
+        public ChatService(IChatRepository chatRepo, IUserRepository userRepo, IUserChatRepository userChatRepo)
         {
             _chatRepo = chatRepo;
             _userRepo = userRepo;
             _userChatRepo = userChatRepo;
-            _contactRepo = contactRepo;
         }
 
-        public async Task<bool> GetChatStatus(Guid ChatId, Guid ContactId)
+        public async Task<bool> IsChatArchivedAsync(Guid chatId, Guid userId)
         {
-            return await _chatRepo.GetChatStatusById(ChatId, ContactId);
+            return await _userChatRepo.IsChatArchivedAsync(chatId, userId);
         }
-        public async Task<bool> CheckIfGroupChatExistAsync(Guid chatId, Guid userId)
+
+        public async Task<bool> IsGroupChatExistingAsync(Guid chatId, Guid userId)
         {
             return await _chatRepo.CheckIfGroupExist(chatId, userId);
         }
-        public async Task<DateTime?> GetLastSeenMessage(Guid userId, Guid chatId)
+
+        public async Task<ChatDTO> GetChatDetailsAsync(Guid chatId)
         {
-            return await _userChatRepo.FetchLastSeenMessage(userId, chatId);
-        }
-        public async Task<ChatDTO> GetChatById(Guid chatId)
-        {
-           var chat = await _chatRepo.FetchChatById(chatId);
+            var chat = await _chatRepo.FetchChatById(chatId);
+            if (chat == null) return null!;
+            
             return new ChatDTO
             {
                 ChatID = chat.ChatID,
                 ChatName = chat.ChatName,
                 AvatarUrl = chat.AvatarUrl,
             };
-
         }
+
         public async Task MarkMessageAsReadAsync(Guid userId, Guid chatId, Guid messageId)
         {
-            await _userChatRepo.SaveLastReadMessage(userId, chatId, messageId);
+            await _userChatRepo.UpdateLastReadMessageAsync(userId, chatId, messageId);
         }
-        public async Task<UserChatDTO> GetChatAsync(Guid chatId, Guid userId, CancellationToken token)
+
+        public async Task<UserChatDTO?> GetUserChatDetailsAsync(Guid chatId, Guid userId, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
-            var chat = await _userChatRepo.FetchChatAsync(chatId, userId, token);
+            var chat = await _userChatRepo.GetUserChatAsync(chatId, userId, token);
 
             if (chat == null) return null;
-
-            var contactId = await _userChatRepo.FetchReceiverUser(chatId, userId, token);
-            if (contactId == Guid.Empty) return null;
-
-            //bool isFriend = chat.IsArchive;
-            //|| await _contactRepo.CheckIfContact(userId, contactId, token);
-
-            //if (isFriend) return null;
-
 
             return new UserChatDTO
             {
@@ -79,51 +71,65 @@ namespace ChatApp.Application.Services
                 IsGroup = chat.Chat.IsGroup,
             };
         }
+
         public async Task MarkChatMessagesAsReadAsync(Guid userId, Guid chatId, CancellationToken token)
         {
-            await _userChatRepo.SaveChatAsReaded(userId, chatId, token);
+            await _userChatRepo.MarkChatAsReadAsync(userId, chatId, token);
         }
-        public async Task SaveLastSendedChatMessageAsync(Guid chatId, Guid messageId)
+
+        public async Task SaveLastSentMessageIdAsync(Guid chatId, Guid messageId)
         {
-            await _userChatRepo.SaveLastSendedChatMessage(chatId, messageId);
+            await _userChatRepo.UpdateLastSentMessageAsync(chatId, messageId);
         }
-        public async Task<int> GetUnreadCounterAsync(Guid userId, Guid chatId)
+
+        public async Task<int> GetUnreadMessageCountAsync(Guid userId, Guid chatId)
         {
             return await _userChatRepo.CountUnreadMessagesAsync(userId, chatId);
         }
-        public async Task<List<(Guid ChatId, int Count)>> GetAllUnreadCounterAsync(Guid userId)
+
+        public async Task<List<(Guid ChatId, int Count)>> GetAllUnreadMessageCountsAsync(Guid userId)
         {
-            return await _userChatRepo.CountAllUnreadMessagesAsync(userId);
+            return await _userChatRepo.CountAllUnreadMessageCountsAsync(userId);
         }
-        public async Task<Guid> GetReceiverUser(Guid chatId, Guid userId, CancellationToken token)
+
+        public async Task<Guid> GetReceiverUserIdAsync(Guid chatId, Guid userId, CancellationToken token)
         {
-            return await _userChatRepo.FetchReceiverUser(chatId, userId, token);
+            return await _userChatRepo.GetReceiverUserIdAsync(chatId, userId, token);
         }
-        public async Task<Guid> GetChatId(Guid userId, Guid contactUserId, CancellationToken token)
+
+        public async Task<Guid> GetPrivateChatIdAsync(Guid userId, Guid contactUserId, CancellationToken token)
         {
             return await _chatRepo.GetChatIdAsync(userId, contactUserId, token);
         }
-        public async Task<HashSet<Guid>> GetListOfUsersInChatAsync(Guid chatId)
-        {
-            return await _userChatRepo.FetchUsersInChatAsync(chatId);
 
-        }
-        public async Task AddUsersToGroup(Guid chatId, HashSet<Guid> usersToAdd)
+        public async Task<HashSet<Guid>> GetChatUsersIdsAsync(Guid chatId)
         {
-            var usersWithoutHistory = usersToAdd;
-            var usersWithHistory = await _chatRepo.GetExistingUsersInChat(chatId, usersToAdd);
-            if (usersWithHistory != null)
+            return await _userChatRepo.GetUsersInChatAsync(chatId);
+        }
+
+        public async Task AddUsersToGroupChatAsync(Guid chatId, HashSet<Guid> userIdsToAdd)
+        {
+            var usersWithHistory = await _chatRepo.GetExistingUsersInChat(chatId, userIdsToAdd);
+            if (usersWithHistory != null && usersWithHistory.Any())
             {
-                await _userChatRepo.RestoreGroupChatForUser(chatId, usersWithHistory);
-                usersWithoutHistory = usersToAdd.Where(id => !usersWithHistory.Contains(id)).ToHashSet();
+                await _userChatRepo.RestoreGroupChatForUsersAsync(chatId, usersWithHistory);
+                var usersWithoutHistory = userIdsToAdd.Where(id => !usersWithHistory.Contains(id)).ToHashSet();
+                if (usersWithoutHistory.Any())
+                {
+                    await _chatRepo.AddUserGroupToDb(chatId, usersWithoutHistory);
+                }
             }
-            await _chatRepo.AddUserGroupToDb(chatId, usersWithoutHistory);
+            else
+            {
+                await _chatRepo.AddUserGroupToDb(chatId, userIdsToAdd);
+            }
         }
-        public async Task<Guid> CreateGroupChat(Guid chatId, HashSet<Guid> UsersToAdd)
+
+        public async Task<Guid> CreateGroupChatAsync(Guid existingChatId, HashSet<Guid> userIdsToAdd)
         {
-            HashSet<Guid> UsersInGroup = new HashSet<Guid>();
-            UsersInGroup = await _userChatRepo.FetchUsersInChatAsync(chatId);
-            UsersInGroup.UnionWith(UsersToAdd);
+            var usersInGroup = await _userChatRepo.GetUsersInChatAsync(existingChatId);
+            usersInGroup.UnionWith(userIdsToAdd);
+
             int number = RandomNumberGenerator.GetInt32(0, 100000);
             var newChat = new Chat
             {
@@ -133,68 +139,67 @@ namespace ChatApp.Application.Services
                 ChatName = $"Chat#{number:D5}",
                 UserChats = new List<UserChat>()
             };
-            foreach (var user in UsersInGroup)
+
+            foreach (var userId in usersInGroup)
             {
                 newChat.UserChats.Add(new UserChat
                 {
-                    UserID = user,
+                    UserID = userId,
                     ChatID = newChat.ChatID,
                     ChatName = newChat.ChatName,
                     IsArchive = false,
                 });
             }
+
             await _chatRepo.AddChatAsync(newChat);
             return newChat.ChatID;
         }
-        public async Task<bool> CheckIfUserChatExistAsync(Guid chatId)
+
+        public async Task CreatePrivateChatAsync(Guid userId1, Guid userId2)
         {
-            return await _userChatRepo.CheckIfChatExisted(chatId);
-        }
-        public async Task<bool> CheckIfUserChatIsArchiveAsync(Guid chatId,Guid userId)
-        {
-            return await _userChatRepo.CheckIfChatIsArchive(chatId,userId);
-        }
-        public async Task CreatePrivateChat(Guid user1, Guid user2)
-        {
-            var chatId = await _chatRepo.GetChatIdAsync(user1, user2);
-            var check = await _userChatRepo.CheckIfChatExisted(chatId);
-            if (!check)
+            var chatId = await _chatRepo.GetChatIdAsync(userId1, userId2);
+            var exists = await _userChatRepo.ExistsAsync(chatId);
+
+            if (!exists)
             {
-                var userModel1 = await _userRepo.GetByIdAsync(user1);
-                var userModel2 = await _userRepo.GetByIdAsync(user2);
+                var user1 = await _userRepo.GetByIdAsync(userId1);
+                var user2 = await _userRepo.GetByIdAsync(userId2);
+
                 var newChat = new Chat
                 {
                     ChatID = Guid.CreateVersion7(),
                     CreatedAt = DateTime.UtcNow,
                     IsGroup = false,
                     UserChats = new List<UserChat>(),
-
                 };
+
                 newChat.UserChats.Add(new UserChat
                 {
-                    UserID = user1,
+                    UserID = userId1,
                     ChatID = newChat.ChatID,
-                    ChatName = userModel2.Username,
+                    ChatName = user2.Username,
                     IsArchive = false,
                 });
+
                 newChat.UserChats.Add(new UserChat
                 {
-                    UserID = user2,
+                    UserID = userId2,
                     ChatID = newChat.ChatID,
-                    ChatName = userModel1.Username,
+                    ChatName = user1.Username,
                     IsArchive = false,
                 });
+
                 await _chatRepo.AddChatAsync(newChat);
             }
             else
             {
-
-                await _userChatRepo.RestoreChat(chatId);
+                await _userChatRepo.RestoreChatAsync(chatId);
             }
         }
-        public async Task<List<UserChatDTO>> GetChatList(Guid userId)
+
+        public async Task<List<UserChatDTO>> GetUserChatListAsync(Guid userId)
         {
-            var chatEntries = await _userChatRepo.FetchAllChatsAsync(userId);
+            var chatEntries = await _userChatRepo.GetAllUserChatsAsync(userId);
 
             if (chatEntries == null || !chatEntries.Any())
                 return new List<UserChatDTO>();
@@ -209,15 +214,20 @@ namespace ChatApp.Application.Services
                 JoinedAt = uc.JoinedAt,
             }).ToList();
         }
-        public async Task ArchiveUserGroupChat(Guid chatId, Guid userId)
+
+        public async Task ArchiveUserChatAsync(Guid chatId, Guid userId)
         {
-            {
-                await _userChatRepo.ArchivizeChat(chatId, userId);
-            }
+            await _userChatRepo.ArchiveChatAsync(chatId, userId);
         }
+
+        public async Task<DateTime?> GetLastSeenMessageAtAsync(Guid userId, Guid chatId)
+        {
+            return await _userChatRepo.GetLastReadAtAsync(userId, chatId);
+        }
+
         public async Task DeleteChatAsync(Guid chatId, Guid userId)
         {
-            await _userChatRepo.SetChatAsDeleted(chatId, userId);
+            await _userChatRepo.MarkChatAsDeletedAsync(chatId, userId);
             await _chatRepo.TryDeleteChatIfEmptyAsync(chatId);
         }
     }

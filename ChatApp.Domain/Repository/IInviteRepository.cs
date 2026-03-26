@@ -1,16 +1,16 @@
-﻿using ChatApp.Domain.Models;
+using ChatApp.Domain.Models;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace ChatApp.Application.Interfaces.Repository
 {
     public interface IInviteRepository
     {
         Task SaveChangesToDbAsync();
-        Task AddInviteToDB(Guid senderId, Guid receiverId);
+        Task AddInviteAsync(Guid senderId, Guid receiverId);
         Task<List<Invite>> GetInvitesForUserAsync(Guid userId);
-        Task<Invite> GetInviteForIdAsync(Guid InviteId);
-        Task ChangeInviteStatus(Invite invite);
+        Task<Invite?> GetInviteByIdAsync(Guid inviteId);
+        Task UpdateInviteStatusAsync(Invite invite);
     }
 }

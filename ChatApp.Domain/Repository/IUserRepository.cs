@@ -1,7 +1,7 @@
-﻿using ChatApp.Domain.Models;
+using ChatApp.Domain.Models;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace ChatApp.Application.Interfaces.Repository
 {
@@ -9,11 +9,10 @@ namespace ChatApp.Application.Interfaces.Repository
     {
         Task RegisterAsync(User user);
         Task SaveChangesToDbAsync();
-        //Task LoginAsync(User user);
         Task<User?> GetByUsernameAsync(string username);
         Task<User?> GetByIdAsync(Guid id);
         Task<List<User>> GetAllUsersToInviteAsync(Guid currentUserId, string query);
-        Task SetStatus(Guid id, bool status);
-        Task<HashSet<User>> GetMultipleUserByIdAsync(HashSet<Guid> ids);
+        Task SetUserStatusAsync(Guid id, bool status);
+        Task<HashSet<User>> GetUsersByIdsAsync(HashSet<Guid> ids);
     }
 }

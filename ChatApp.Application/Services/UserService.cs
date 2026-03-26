@@ -1,4 +1,4 @@
-﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
 using ChatApp.Domain.Models;
@@ -7,9 +7,10 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection.Metadata.Ecma335;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ChatApp.Application.Services
 {
@@ -17,65 +18,73 @@ namespace ChatApp.Application.Services
     {
         private readonly JwtSettings _jwtSettings;
         private readonly IUserRepository _userRepo;
+
         public UserService(IUserRepository userRepo, IOptions<JwtSettings> jwtSettings)
         {
             _userRepo = userRepo;
             _jwtSettings = jwtSettings.Value;
         }
-        public async Task Register(UserDTO dto)
+
+        public async Task RegisterUserAsync(UserDTO userDto)
         {
-            if (string.IsNullOrWhiteSpace(dto.Username) || dto.Username.Length < 5)
+            if (string.IsNullOrWhiteSpace(userDto.Username) || userDto.Username.Length < 5)
             {
                 throw new Exception("Username must be at least 5 characters.");
             }
-            else if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 8)
+            if (string.IsNullOrWhiteSpace(userDto.Password) || userDto.Password.Length < 8)
             {
                 throw new Exception("Password must be at least 8 characters.");
             }
-            else if (string.IsNullOrWhiteSpace(dto.Username) || dto.Username.Length > 20)
+            if (userDto.Username.Length > 20)
             {
                 throw new Exception("Username must be less than 20 characters.");
             }
-            else if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length > 128)
+            if (userDto.Password.Length > 128)
             {
                 throw new Exception("Password must be less than 128 characters.");
             }
-            var check = await _userRepo.GetByUsernameAsync(dto.Username);
-            if (check == null)
-            {
-                var user = new User
-                {
-                    Username = dto.Username,
-                    Password = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                    AvatarUrl = $"https://api.dicebear.com/7.x/avataaars/svg?seed={dto.Username}"
-                };
-                await _userRepo.RegisterAsync(user);
-            }
-            else
+
+            var existingUser = await _userRepo.GetByUsernameAsync(userDto.Username);
+            if (existingUser != null)
             {
                 throw new Exception("Username already exists.");
             }
 
+            var user = new User
+            {
+                Username = userDto.Username,
+                Password = BCrypt.Net.BCrypt.HashPassword(userDto.Password),
+                AvatarUrl = $"https://api.dicebear.com/7.x/avataaars/svg?seed={userDto.Username}"
+            };
+            await _userRepo.RegisterAsync(user);
         }
-        public async Task<UserDTO> Login(UserDTO dto)
+
+        public async Task<UserDTO?> LoginUserAsync(UserDTO userDto)
         {
-            if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password))
+            if (string.IsNullOrWhiteSpace(userDto.Username) || string.IsNullOrWhiteSpace(userDto.Password))
             {
                 throw new Exception("Username or password cannot be empty.");
             }
-            var user = await _userRepo.GetByUsernameAsync(dto.Username);
-            if (user is not null && BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
+
+            var user = await _userRepo.GetByUsernameAsync(userDto.Username);
+            if (user != null && BCrypt.Net.BCrypt.Verify(userDto.Password, user.Password))
             {
-                await _userRepo.SetStatus(user.UserID, true);
+                await _userRepo.SetUserStatusAsync(user.UserID, true);
                 var token = GenerateToken(user);
-                return new UserDTO() { Username = user.Username, UserID = user.UserID, IsOnline = true, Token = token };
+                return new UserDTO
+                {
+                    Username = user.Username,
+                    UserID = user.UserID,
+                    IsOnline = true,
+                    Token = token,
+                    AvatarUrl = user.AvatarUrl
+                };
             }
-            else
-            {
-                throw new Exception("Invalid username or password.");
-            }
+
+            throw new Exception("Invalid username or password.");
         }
-        public async Task<List<UserDTO>> GetAllUsersToInvite(Guid currentUserId, string query)
+
+        public async Task<List<UserDTO>> GetUsersToInviteAsync(Guid currentUserId, string query)
         {
             var users = await _userRepo.GetAllUsersToInviteAsync(currentUserId, query);
             return users.Select(u => new UserDTO
@@ -85,6 +94,33 @@ namespace ChatApp.Application.Services
                 AvatarUrl = u.AvatarUrl
             }).ToList();
         }
+
+        public async Task<HashSet<UserDTO>> GetUsersByIdsAsync(HashSet<Guid> userIds)
+        {
+            var users = await _userRepo.GetUsersByIdsAsync(userIds);
+            return users.Select(u => new UserDTO
+            {
+                UserID = u.UserID,
+                Username = u.Username,
+                AvatarUrl = u.AvatarUrl,
+                IsOnline = u.IsOnline
+            }).ToHashSet();
+        }
+
+        public async Task<UserDTO?> GetUserByIdAsync(Guid userId)
+        {
+            var user = await _userRepo.GetByIdAsync(userId);
+            if (user == null) return null;
+
+            return new UserDTO
+            {
+                UserID = user.UserID,
+                Username = user.Username,
+                AvatarUrl = user.AvatarUrl,
+                IsOnline = user.IsOnline
+            };
+        }
+
         private string GenerateToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
@@ -95,46 +131,14 @@ namespace ChatApp.Application.Services
                 new Claim(ClaimTypes.Name, user.Username)
             };
             var tokenDescriptor = new JwtSecurityToken(
-             issuer: _jwtSettings.Issuer,
-             audience: _jwtSettings.Audience,
-             claims: claims,
-             expires: DateTime.Now.AddDays(1),
-             signingCredentials: creds
-         );
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddDays(7),
+                signingCredentials: creds
+            );
+
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
-
-        }
-        public async Task<UserDTO> GetUserDtoAsync(Guid userId)
-        {
-            var user = await _userRepo.GetByIdAsync(userId);
-
-            if (user == null)
-            {
-                throw new KeyNotFoundException($"User with ID {userId} not found.");
-            }
-            return new UserDTO
-            {
-                UserID = user.UserID, 
-                Username = user.Username,
-                AvatarUrl = user.AvatarUrl,
-                IsOnline = user.IsOnline
-            };
-        }
-        public async Task<HashSet<UserDTO>> GetUsersByIdAsync(HashSet<Guid> Ids)
-        {
-            var users =  await _userRepo.GetMultipleUserByIdAsync(Ids);
-            var userDtos = users.Select(u => new UserDTO
-            {
-                UserID= u.UserID,
-                Username = u.Username,
-                AvatarUrl = u.AvatarUrl,
-                IsOnline = u.IsOnline,
-                
-            }).ToHashSet();
-            return userDtos;
         }
     }
 }
-
-
-

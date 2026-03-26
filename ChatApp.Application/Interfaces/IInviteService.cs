@@ -1,14 +1,14 @@
-﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace ChatApp.Application.Interfaces.Service
 {
     public interface IInviteService
     {
-        Task<Guid> InviteAction(Guid InviteId, bool status,Guid userId);
-        Task<List<InviteDTO>> GetInvites(Guid userId);
-        Task SendInvite(Guid senderId, Guid receiverId);
+        Task<Guid> HandleInviteActionAsync(Guid inviteId, bool status, Guid userId);
+        Task<List<InviteDTO>> GetUserInvitesAsync(Guid userId);
+        Task SendInviteAsync(Guid senderId, Guid receiverId);
     }
 }

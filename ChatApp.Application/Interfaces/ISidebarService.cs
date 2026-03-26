@@ -1,12 +1,12 @@
-﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace ChatApp.Application.Interfaces
 {
     public interface ISidebarService
     {
-        Task<List<UserChatDTO>> GetSidebarItems(Guid userId);
+        Task<List<UserChatDTO>> GetSidebarItemsAsync(Guid userId);
     }
 }
