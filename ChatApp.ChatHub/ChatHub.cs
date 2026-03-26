@@ -47,7 +47,7 @@ namespace ChatApp.ChatHub
         }
         public async Task<bool> CheckIfGroupExist(Guid chatId)
         {
-            return await _chatService.CheckIfGroupChapExistAsync(chatId,userId);
+            return await _chatService.CheckIfGroupChatExistAsync(chatId,userId);
         }
         public async Task<int> FetchUnreadCount(Guid chatId)
         {

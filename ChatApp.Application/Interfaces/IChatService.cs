@@ -9,7 +9,7 @@ namespace ChatApp.Application.Interfaces.Service
     public interface IChatService
     {
         Task<bool> GetChatStatus(Guid ChatId, Guid ContactId);
-        Task<bool> CheckIfGroupChapExistAsync(Guid chatId, Guid userId);
+        Task<bool> CheckIfGroupChatExistAsync(Guid chatId, Guid userId);
         Task<ChatDTO> GetChatById(Guid chatId);
         Task MarkMessageAsReadAsync(Guid userId, Guid chatId, Guid messageId);
         Task<UserChatDTO> GetChatAsync(Guid chatId, Guid userId, CancellationToken token);

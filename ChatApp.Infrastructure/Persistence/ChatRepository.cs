@@ -27,7 +27,7 @@ public class ChatRepository : IChatRepository
         return await context.Chats
         .AnyAsync(ch => ch.ChatID == chatId
                      && ch.UserChats.Any(uc => uc.UserID == userId)
-                     && ch.UserChats.Count > 2);
+                     && ch.IsGroup == true);
 
     }
     public async Task UnArchiveChat(Guid chatId,HashSet<Guid> usersId)

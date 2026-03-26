@@ -29,7 +29,7 @@ namespace ChatApp.Application.Services
         {
             return await _chatRepo.GetChatStatusById(ChatId, ContactId);
         }
-        public async Task<bool> CheckIfGroupChapExistAsync(Guid chatId, Guid userId)
+        public async Task<bool> CheckIfGroupChatExistAsync(Guid chatId, Guid userId)
         {
             return await _chatRepo.CheckIfGroupExist(chatId, userId);
         }
