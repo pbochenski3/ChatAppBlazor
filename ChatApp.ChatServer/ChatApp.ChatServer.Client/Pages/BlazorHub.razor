@@ -319,6 +319,10 @@
             }
             await InvokeAsync(StateHasChanged);
         }
+        else if (!clean)
+        {
+            await HandleSidebarLoadAsync(true);
+        }
     }
 
     private async Task HandleSendMessage(string content)
