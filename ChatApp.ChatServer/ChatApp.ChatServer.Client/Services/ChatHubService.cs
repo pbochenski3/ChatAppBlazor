@@ -53,7 +53,7 @@ public class ChatHubService : IAsyncDisposable
             var handler = OnChatLoad;
             if (handler != null) await handler.Invoke(new ContactSelectedArgs(id, force));
         });
-        HubConnection.On<Guid>("ChatUsersReload", async (chatId) =>
+        HubConnection.On<Guid>("UsersInChatReload", async (chatId) =>
         {
             var handler = OnUserInChatReload;
             if (handler != null) await handler.Invoke(chatId);
@@ -264,6 +264,10 @@ public class ChatHubService : IAsyncDisposable
     public async Task LeaveGroupChat(Guid chatId)
     {
         await HubConnection.InvokeAsync("LeaveChat",chatId);
+    }
+    public async Task DeleteChat(Guid chatId)
+    {
+        await HubConnection.InvokeAsync("DeleteChat", chatId);
     }
     public async ValueTask DisposeAsync()
     {

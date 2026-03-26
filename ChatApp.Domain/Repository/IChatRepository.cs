@@ -17,6 +17,7 @@ namespace ChatApp.Application.Interfaces.Repository
         Task AddUserGroupToDb(Guid chatId, HashSet<Guid> usersToAdd);
         Task<HashSet<Guid>> GetExistingUsersInChat(Guid chatId, HashSet<Guid> usersToCheck);
         Task UnArchiveChat(Guid chatId, HashSet<Guid> usersId);
+        Task TryDeleteChatIfEmptyAsync(Guid chatId);
 
     }
 }

@@ -22,5 +22,6 @@ namespace ChatApp.Domain.Repository
         Task RestoreGroupChatForUser(Guid chatId, HashSet<Guid> usersToAdd);
         Task<bool> CheckIfChatIsArchive(Guid chatId, Guid userId);
         Task<DateTime?> FetchLastSeenMessage(Guid userId, Guid chatId);
+        Task SetChatAsDeleted(Guid chatID, Guid userId);
     }
 }

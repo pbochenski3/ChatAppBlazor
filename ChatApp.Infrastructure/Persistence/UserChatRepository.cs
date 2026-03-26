@@ -153,6 +153,16 @@ namespace ChatApp.Infrastructure.Persistence
                 .Select(uc => (DateTime?)uc.LastReadAt)
                 .FirstOrDefaultAsync();
         }
+        public async Task SetChatAsDeleted(Guid chatID, Guid userId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            await context.UserChat
+                .Where(uc => uc.ChatID == chatID && uc.UserID == userId)
+                .ExecuteUpdateAsync(s =>s
+                .SetProperty(uc => uc.IsDeleted,true)
+                .SetProperty(uc => uc.ArchivedAt, DateTime.UtcNow));
+
+        }
         public async Task<List<(Guid ChatId, int Count)>> CountAllUnreadMessagesAsync(Guid userId)
         {
             using var context = _contextFactory.CreateDbContext();

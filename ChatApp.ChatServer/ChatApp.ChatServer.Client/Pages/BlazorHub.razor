@@ -44,11 +44,14 @@
             OnChatLeave="HandleChatLeave"
             userContacts="receivedContacts"
             ExistingUsers="usersInChat"
+            LockSidebar="HandleSidebarLock"
+            OnChatDelete="HandleChatDelete"
         />
         }
     </main>
 }
 @code {
+    #region Variables
     private CancellationTokenSource? _chatLoadingCts;
     private string? notification = string.Empty;
     UserDTO user = new UserDTO();
@@ -67,7 +70,7 @@
     private Guid ChatId;
     private int counter;
     private bool isChatLoaded;
-
+    #endregion
     protected override async Task OnInitializedAsync()
     {
         if (AppState.CurrentUser == null)
@@ -322,13 +325,13 @@
         {
             return;
         }
-            try
-            {
+        try
+        {
             usersInChat = await ChatHubService.GetGroupUsers(chatId);
             await InvokeAsync(StateHasChanged);
-            }
-           catch (Exception ex)
-            {
+        }
+        catch (Exception ex)
+        {
             _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", chatId);
         }
     }
@@ -423,6 +426,23 @@
     {
         await ChatHubService.GetGroupUsers(AppState.CurrentChat.ChatID);
         await InvokeAsync(StateHasChanged);
+    }
+    private async Task HandleSidebarLock()
+    {
+        isPending = !isPending;
+    }
+    private async Task HandleChatDelete()
+    {
+        try
+        {
+            await ChatHubService.DeleteChat(AppState.CurrentChat.ChatID);
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError($"[HandleChatDelete] {ex}");
+        }
+        await ShowNotification("Czat został usunięty!");
+
     }
     public async ValueTask DisposeAsync()
     {

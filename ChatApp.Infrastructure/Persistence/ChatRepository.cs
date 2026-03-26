@@ -137,5 +137,15 @@ public class ChatRepository : IChatRepository
 
         return existingIds.ToHashSet();
     }
+    public async Task TryDeleteChatIfEmptyAsync(Guid chatId)
+    {
+        using var context = _contextFactory.CreateDbContext();
+        await context.Chats
+            .Where(ch => ch.ChatID == chatId && !ch.UserChats.Any())
+            .ExecuteUpdateAsync(s => s
+            .SetProperty(ch => ch.IsDeleted, true)
+            .SetProperty(ch => ch.DeletedAt,DateTime.UtcNow));
+            
+    }
 
 }

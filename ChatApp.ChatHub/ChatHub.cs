@@ -226,7 +226,7 @@ namespace ChatApp.ChatHub
             await _messageService.SaveChatMessageAsync(systemMessage);
 
             var usersToNotify = usersToAdd.Select(id => id.ToString()).ToList();
-            await Clients.Group(chatId.ToString()).SendAsync("ChatUsersReload", chatId);
+            await Clients.Group(chatId.ToString()).SendAsync("UsersInChatReload", chatId);
             await Clients.Users(usersToNotify).SendAsync("ChatReload", chatId,true);
             await Clients.Group(chatId.ToString()).SendAsync("ReceiveMessage", systemMessage);
         }
@@ -239,7 +239,7 @@ namespace ChatApp.ChatHub
             var user = await _userService.GetUserDtoAsync(userId);
             var systemMessage = new MessageDTO
             {
-                ChatID =chatId,
+                ChatID = chatId,
                 MessageID = Guid.CreateVersion7(),
                 Content = $"{user.Username} opuścił czat!",
                 IsSystemMessage = true,
@@ -254,6 +254,13 @@ namespace ChatApp.ChatHub
             await Clients.Caller.SendAsync("ReceiveStatus", "Opuściłeś czat!");
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatId.ToString());
 
+        }
+        public async Task DeleteChat(Guid chatId)
+        {
+            await _chatService.DeleteChatAsync(chatId, userId);
+            await Clients.Caller.SendAsync("ReceiveStatus", "Czat został usunięty!");
+            await Clients.Caller.SendAsync("SideBarReload",true);
+            await Clients.Caller.SendAsync("ChatReload",true);
         }
 
     }

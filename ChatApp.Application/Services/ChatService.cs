@@ -215,5 +215,10 @@ namespace ChatApp.Application.Services
                 await _userChatRepo.ArchivizeChat(chatId, userId);
             }
         }
+        public async Task DeleteChatAsync(Guid chatId, Guid userId)
+        {
+            await _userChatRepo.SetChatAsDeleted(chatId, userId);
+            await _chatRepo.TryDeleteChatIfEmptyAsync(chatId);
+        }
     }
 }

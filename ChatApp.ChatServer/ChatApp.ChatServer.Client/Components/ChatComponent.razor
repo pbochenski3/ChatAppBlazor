@@ -21,10 +21,7 @@
                 </div>
             </div>
 
-            @if (!IsArchive)
-            {
-                <div class="contact-config" @onclick="ToggleSettings">⚙️</div>
-            }
+            <div class="contact-config" @onclick="ToggleSettings">⚙️</div>
         </div>
 
         <div class="chat-container">
@@ -77,19 +74,22 @@
             {
                 case View.Settings:
                     <div class="sidebar-header"><h3>Ustawienia</h3></div>
-                    <button class="btn-secondary" @onclick="() => currentView = View.Users">Uczestnicy</button>
-                    <button class="btn-secondary" @onclick="async () => { currentView = View.AddUsers; await LoadContact(); }">Dodaj osoby</button>
+                    if (!IsArchive)
+                    {
+                        <button class="btn-secondary" @onclick="() => currentView = View.Users">Uczestnicy</button>
+                        <button class="btn-secondary" @onclick="async () => { currentView = View.AddUsers; await LoadContact(); }">Dodaj osoby</button>
 
-                    @if (!AppState.CurrentChat.IsGroup)
-                    {
-                        <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Usuwanie", "Czy na pewno?", HandleContactDelete)'>Usuń kontakt</button>
+                        @if (!AppState.CurrentChat.IsGroup)
+                        {
+                            <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Usuwanie", "Czy na pewno?", HandleContactDelete)'>Usuń kontakt</button>
+                        }
+                        else
+                        {
+                            <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Opuszczanie", "Czy na pewno?", HandleChatLeave)'>Opuść czat</button>
+                        }
                     }
-                    else
-                    {
-                        <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Opuszczanie", "Czy na pewno?", HandleChatLeave)'>Opuść czat</button>
-                    }
+                    <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Usuwanie", "Czy na pewno chcesz usunąć? Ta zmiana jest nieodwracalna!", HandleChatDelete)'>Usuń czat</button>
                     break;
-
                 case View.AddUsers:
                     <div class="sidebar-header"><h3>Dodaj osoby</h3></div>
                     <div class="search-container">
@@ -135,11 +135,14 @@
 </div>
 
 @code {
+    #region Parameters
     [Parameter] public EventCallback OnAddUserTriggered { get; set; }
     [Parameter] public EventCallback<HashSet<Guid>> OnAddUserClick { get; set; }
     [Parameter] public EventCallback<string> OnSendMessage { get; set; }
     [Parameter] public EventCallback OnDeleteContact { get; set; }
     [Parameter] public EventCallback OnChatLeave { get; set; }
+    [Parameter] public EventCallback OnChatDelete { get; set; }
+    [Parameter] public EventCallback<bool> LockSidebar { get; set; }
 
     [Parameter] public List<MessageDTO> Messages { get; set; } = new();
     [Parameter] public List<ContactDTO> userContacts { get; set; } = new();
@@ -147,9 +150,8 @@
     [Parameter] public HashSet<UserDTO> ExistingUsers { get; set; } = new();
     [Parameter] public bool IsLocked { get; set; }
     [Parameter] public bool IsArchive { get; set; }
-    private enum View { Settings, AddUsers, Users }
-    private View currentView = View.Settings;
-
+    #endregion
+    #region Variables
     private string contactSearchTerm = "";
     private string _content = string.Empty;
     private bool _isSettingsOpen = false;
@@ -159,6 +161,9 @@
     private string _confirmTitle = "";
     private string _confirmMessage = "";
     private Func<Task> _onConfirmAction;
+    private enum View { Settings, AddUsers, Users }
+    private View currentView = View.Settings;
+    #endregion
 
     private void ToggleSettings() => _isSettingsOpen = !_isSettingsOpen;
 
@@ -185,7 +190,6 @@
         &&
         !ExistingUsers.Any(u => u.UserID == c.ContactUserID)
     ) ?? Enumerable.Empty<ContactDTO>();
-
     private async Task AddUserToList(Guid contactId)
     {
         if(ContactsToAdd.Contains(contactId))
@@ -215,6 +219,12 @@
     {
             _isSettingsOpen = false;
             await OnChatLeave.InvokeAsync();
+
+    }
+    private async Task HandleChatDelete()
+    {
+        _isSettingsOpen = false;
+        await OnChatDelete.InvokeAsync();
 
     }
     private async Task HandleInternalSubmit()

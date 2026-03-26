@@ -151,6 +151,7 @@
 </aside>
 
 @code {
+    #region Parameters
     [Parameter] public EventCallback<string> OnSearchRequested { get; set; }
     [Parameter] public EventCallback<ContactSelectedArgs> OnContactSelected { get; set; }
     [Parameter] public EventCallback<Guid> OnContactInvited { get; set; }
@@ -160,12 +161,15 @@
     [Parameter] public List<InviteDTO> InvitesList { get; set; } = new List<InviteDTO>();
     [Parameter] public bool IsSearching { get; set; }
     [Parameter] public bool isPending { get; set;  }
+    #endregion
+    #region Variables
     private enum View { Contacts, Invites, AddContact }
     private View currentView = View.Contacts;
     private string searchTerm = "";
     private string globalSearchQuery = "";
     private int PendingInvitesCount => InvitesList?.Count ?? 0;
     protected Guid SelectedContactId;
+    #endregion
     protected override void OnParametersSet()
     {
         StateHasChanged();
@@ -174,14 +178,11 @@
         SidebarItem?.Where(c => string.IsNullOrWhiteSpace(searchTerm) ||
                                c.Username.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
         ?? Enumerable.Empty<UserChatDTO>();
-
-
     private async Task SelectContact(Guid contactId)
     {
         SelectedContactId = contactId;
         await OnContactSelected.InvokeAsync(new ContactSelectedArgs(contactId));
     }
-
     private async Task OnGlobalSearchInput()
     {
         if (string.IsNullOrWhiteSpace(globalSearchQuery) || globalSearchQuery.Length < 3)

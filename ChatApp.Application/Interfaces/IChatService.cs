@@ -27,6 +27,6 @@ namespace ChatApp.Application.Interfaces.Service
         Task AddUsersToGroup(Guid chatId, HashSet<Guid> usersToAdd);
         Task<bool> CheckIfUserChatIsArchiveAsync(Guid chatId, Guid userId);
         Task<DateTime?> GetLastSeenMessage(Guid userId, Guid chatId);
-
+        Task DeleteChatAsync(Guid chatId, Guid userId);
     }
 }
