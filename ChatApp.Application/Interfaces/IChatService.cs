@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace ChatApp.Application.Interfaces.Service
+namespace ChatApp.Application.Interfaces
 {
     public interface IChatService
     {
