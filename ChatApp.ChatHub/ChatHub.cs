@@ -202,6 +202,7 @@ namespace ChatApp.ChatHub
             await _chatService.CreateGroupChat(chatId, usersToAdd);
             IReadOnlyList<string> usersToNotify = usersToAdd.Select(id => id.ToString()).ToList();
             await Clients.Users(usersToNotify).SendAsync("SideBarReload", true);
+            await Clients.Group(chatId.ToString()).SendAsync("SideBarReload", true);
 
         }
         public async Task AddUsersToGroup(Guid chatId, HashSet<Guid> usersToAdd)
@@ -248,7 +249,7 @@ namespace ChatApp.ChatHub
             };
             await _messageService.SaveChatMessageAsync(systemMessage);
             await Clients.Group(chatId.ToString()).SendAsync("ReceiveMessage", systemMessage);
-            await Clients.Group(chatId.ToString()).SendAsync("ChatUsersReload", chatId);
+            await Clients.Group(chatId.ToString()).SendAsync("UsersInChatReload", chatId);
             await _chatService.ArchiveUserGroupChat(chatId, userId);
             await Clients.Caller.SendAsync("ChatReload", chatId, true);
             await Clients.Caller.SendAsync("ReceiveStatus", "Opuściłeś czat!");
