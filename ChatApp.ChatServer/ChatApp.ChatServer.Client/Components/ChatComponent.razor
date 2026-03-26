@@ -2,33 +2,33 @@
 @inject AppStateService AppState
 
 <div class="chat-main-wrapper @(_isSettingsOpen ? "show-settings" : "")">
+
     @if (_showConfirm)
     {
         <ConfirmDialog Title="@_confirmTitle"
                        Message="@_confirmMessage"
                        OnClose="HandleConfirm" />
     }
-    <div class="top-bar">
-        <div class="user-profile">
-            <div class="avatar-wrapper">
-                <img src="@AppState.CurrentUser.AvatarUrl"
-                     class="user-avatar"
-                     alt="Avatar" />
-                <div class="status-dot online"></div>
+
+    @* GŁÓWNA TREŚĆ CZATU *@
+    <div class="chat-content">
+        <div class="top-bar">
+            <div class="user-profile">
+                <div class="avatar-wrapper">
+                    <img src="@AppState.CurrentUser.AvatarUrl" class="user-avatar" alt="Avatar" />
+                    <div class="status-dot online"></div>
+                </div>
+                <div class="user-info-text">
+                    <span class="user-name">@AppState.CurrentChat.ChatName</span>
+                </div>
             </div>
 
-            <div class="user-info-text">
-                <span class="user-name">@AppState.CurrentChat.ChatName</span>
-            </div>
+            @if (!IsArchive)
+            {
+                <div class="contact-config" @onclick="ToggleSettings">⚙️</div>
+            }
         </div>
-        @if(!IsArchive)
-        {
-            <div class="contact-config" @onclick="ToggleSettings" style="cursor:pointer">⚙️</div>
 
-        }
-    </div>
-
-    <div class="chat-body-horizontal-container">
         <div class="chat-interaction-area">
             <div class="chat-box" id="chat-window">
                 <div class="chat-messages">
@@ -50,125 +50,91 @@
                 </div>
             </div>
 
-            @if (!IsArchive)
-            {
-                <div class="message-input-area show-chat-input">
+            <div class="message-input-area show-chat-input @(IsArchive ? "archived-status" : "")">
+                @if (!IsArchive)
+                {
                     <div class="input-group">
-                        <input type="text"
-                               class="form-control"
-                               placeholder="Napisz wiadomość..."
-                               disabled="@IsLocked"
-                               @bind="_content"
-                               @bind:event="oninput"
-                               @onkeydown="HandleKeyDown" />
-
+                        <input type="text" class="form-control" placeholder="Napisz wiadomość..."
+                               disabled="@IsLocked" @bind="_content" @bind:event="oninput" @onkeydown="HandleKeyDown" />
                         <button class="btn-primary"
                                 disabled="@(IsLocked || string.IsNullOrWhiteSpace(_content))"
                                 @onclick="HandleInternalSubmit">
                             Wyślij
                         </button>
                     </div>
-                </div>
-            }
-            else
-            {
-                <div class="message-input-area show-chat-input archived-status">
+                }
+                else
+                {
                     <div class="archived-message">
                         🔒 Czat jest zarchiwizowany. Możliwość pisania została zablokowana.
                     </div>
-                </div>
-            }
-        </div>
-
-        <div class="contact-settings-panel">
-            <div class="settings-content">
-                @switch (currentView)
-                {
-                    case View.Settings:
-                        <div class="sidebar-header">
-                            <h3>Ustawienia</h3>
-                        </div>
-                        <button class="btn-secondary" @onclick="() => currentView = View.Users">Uczestnicy</button>
-                        <button class="btn-secondary" @onclick="async () => { currentView = View.AddUsers; await LoadContact(); }">Dodaj osoby do czatu</button>
-                        @if(!AppState.CurrentChat.IsGroup)
-                        {
-                            <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Usuwanie kontakt", "Czy na pewno chcesz usunąć kontakt?", HandleContactDelete)'>Usuń kontakt</button>
-                        }
-                        else
-                        {
-                            <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Opuszczanie czatu", "Czy na pewno chcesz opuścić czat?", HandleChatLeave)'>Opusc czat</button>
-
-                        }
-
-                        break;
-                    case View.AddUsers:
-                        <div class="sidebar-header">
-                            <h3>Dodaj użytkowników do czatu</h3>
-                        </div>
-                        <div class="search-container">
-                            <input type="text" class="form-control search-input"
-                            placeholder="Wpisz nazwę użytkownika..."
-                            @bind="contactSearchTerm"
-                            @bind:event="oninput" />
-                        </div>
-
-                        <div class="search-results">
-                            @if (FilteredContacts != null && FilteredContacts.Any())
-                            {
-                                @foreach (var user in FilteredContacts)
-                                {
-                                    bool isThisUserSelected = ContactsToAdd.Contains(user.ContactUserID);
-                                    <div class="search-result-item" @onclick="async () => { await AddUserToList(user.ContactUserID);  }">
-                                        <div class="user-search-info">
-                                            <img src="@user.AvatarUrl" class="user-avatar" alt="Avatar" />
-                                            <span class="search-username">@user.Username</span>
-                                            <span class="search-username">
-                                                @(isThisUserSelected ? "X" : "")
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                }
-                            }
-                            else if (!string.IsNullOrWhiteSpace(contactSearchTerm) && contactSearchTerm.Length >= 3)
-                            {
-                                <p class="section-hint">Nie znaleziono kontaktów dla frazy "@contactSearchTerm".</p>
-                            }
-                            else
-                            {
-                                <p class="section-hint">Wpisz min. 3 znaki, aby wyszukać.</p>
-                            }
-                        </div>
-                        <button class="btn-add-action"
-                                @onclick="async () => { currentView = View.Settings; await CreateGroup(ContactsToAdd); }">
-                            Dodaj grupę
-                        </button>
-                        <button class="btn-add-action" @onclick="() => currentView = View.Settings">
-                            Cofnij
-                        </button>
-                        break;
-                    case View.Users:
-                        <div class="sidebar-header">
-                            <h3>Użytkownicy na czacie</h3>
-                        </div>
-                        @foreach (var user in ExistingUsers)
-                        {
-                            <div class="search-result-item">
-                                <div class="user-search-info">
-                                    <img src="@user.AvatarUrl" class="user-avatar" alt="Avatar" />
-                                    <span class="search-username">@user.Username</span>
-                                </div>
-                            </div>
-                        }
-                        <button class="btn-add-action" @onclick="() => currentView = View.Settings">
-                            Cofnij
-                        </button>
-                        break;
                 }
             </div>
         </div>
-     </div>
- </div>
+    </div>
+
+    @* PANEL USTAWIEŃ (WYSUWANY) *@
+    <div class="contact-settings-panel">
+        <div class="settings-content">
+            @switch (currentView)
+            {
+                case View.Settings:
+                    <div class="sidebar-header"><h3>Ustawienia</h3></div>
+                    <button class="btn-secondary" @onclick="() => currentView = View.Users">Uczestnicy</button>
+                    <button class="btn-secondary" @onclick="async () => { currentView = View.AddUsers; await LoadContact(); }">Dodaj osoby</button>
+
+                    @if (!AppState.CurrentChat.IsGroup)
+                    {
+                        <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Usuwanie", "Czy na pewno?", HandleContactDelete)'>Usuń kontakt</button>
+                    }
+                    else
+                    {
+                        <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Opuszczanie", "Czy na pewno?", HandleChatLeave)'>Opuść czat</button>
+                    }
+                    break;
+
+                case View.AddUsers:
+                    <div class="sidebar-header"><h3>Dodaj osoby</h3></div>
+                    <div class="search-container">
+                        <input type="text" class="form-control search-input" placeholder="Szukaj..." @bind="contactSearchTerm" @bind:event="oninput" />
+                    </div>
+                    <div class="search-results">
+                        @if (FilteredContacts != null && FilteredContacts.Any())
+                        {
+                            @foreach (var user in FilteredContacts)
+                            {
+                                bool isSelected = ContactsToAdd.Contains(user.ContactUserID);
+                                <div class="search-result-item" @onclick="async () => await AddUserToList(user.ContactUserID)">
+                                    <div class="user-search-info">
+                                        <img src="@user.AvatarUrl" class="user-avatar" />
+                                        <span>@user.Username</span>
+                                        <span>@(isSelected ? " ✅" : "")</span>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                    <button class="btn-add-action" @onclick="async () => { currentView = View.Settings; await CreateGroup(ContactsToAdd); }">Zatwierdź</button>
+                    <button class="btn-add-action" @onclick="() => currentView = View.Settings">Cofnij</button>
+                    break;
+
+                case View.Users:
+                    <div class="sidebar-header"><h3>Uczestnicy</h3></div>
+                    @foreach (var user in ExistingUsers)
+                    {
+                        <div class="search-result-item">
+                            <div class="user-search-info">
+                                <img src="@user.AvatarUrl" class="user-avatar" />
+                                <span>@user.Username</span>
+                            </div>
+                        </div>
+                    }
+                    <button class="btn-add-action" @onclick="() => currentView = View.Settings">Cofnij</button>
+                    break;
+            }
+        </div>
+    </div>
+</div>
 
 @code {
     [Parameter] public EventCallback OnAddUserTriggered { get; set; }
