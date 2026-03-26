@@ -10,21 +10,21 @@ namespace ChatApp.Application.Services
 {
     public class SidebarService : ISidebarService
     {
-        private readonly IContactService _contactService;
-        private readonly IChatService _chatService;
+        private readonly IUserChatService _userChatService;
+        private readonly IChatReadStatusService _readStatusService;
 
-        public SidebarService(IContactService contactService, IChatService chatService)
+        public SidebarService(IUserChatService userChatService, IChatReadStatusService readStatusService)
         {
-            _contactService = contactService;
-            _chatService = chatService;
+            _userChatService = userChatService;
+            _readStatusService = readStatusService;
         }
 
         public async Task<List<UserChatDTO>> GetSidebarItemsAsync(Guid userId)
         {
             try
             {
-                var chatsTask = _chatService.GetUserChatListAsync(userId);
-                var counterTask = _chatService.GetAllUnreadMessageCountsAsync(userId);
+                var chatsTask = _userChatService.GetUserChatListAsync(userId);
+                var counterTask = _readStatusService.GetAllUnreadMessageCountsAsync(userId);
 
                 await Task.WhenAll(chatsTask, counterTask);
 

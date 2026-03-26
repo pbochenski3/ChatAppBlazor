@@ -78,6 +78,10 @@ builder.Services.AddScoped<IInviteService, InviteService>();
 builder.Services.AddScoped<IInviteRepository, InviteRepository>();
 //Chat
 builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IPrivateChatService, PrivateChatService>();
+builder.Services.AddScoped<IGroupChatService, GroupChatService>();
+builder.Services.AddScoped<IUserChatService, UserChatService>();
+builder.Services.AddScoped<IChatReadStatusService, ChatReadStatusService>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 //SignalR - UserIdProvider
 builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();

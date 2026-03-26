@@ -2,7 +2,6 @@ using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
 using ChatApp.Domain.Models;
-using ChatApp.Domain.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,19 +13,16 @@ namespace ChatApp.Application.Services
     public class MessageService : IMessageService
     {
         private readonly IMessageRepository _messageRepo;
-        private readonly IUserRepository _userRepo;
-        private readonly IChatService _chatService;
-        private readonly IUserChatRepository _userChatRepo;
+        private readonly IUserChatService _userChatService;
+        private readonly IChatReadStatusService _readStatusService;
 
         public MessageService(IMessageRepository messageRepo,
-            IUserRepository userRepo,
-            IChatService chatService,
-            IUserChatRepository userChatRepo)
+            IUserChatService userChatService,
+            IChatReadStatusService readStatusService)
         {
             _messageRepo = messageRepo;
-            _userRepo = userRepo;
-            _chatService = chatService;
-            _userChatRepo = userChatRepo;
+            _userChatService = userChatService;
+            _readStatusService = readStatusService;
         }
 
         public async Task SaveMessageAsync(MessageDTO messageDto)
@@ -45,17 +41,17 @@ namespace ChatApp.Application.Services
                 SentAt = messageDto.SentAt,
                 IsSystemMessage = messageDto.IsSystemMessage,
             };
-            await _messageRepo.AddAsync(message);
+            await _messageRepo.AddMessageAsync(message);
         }
 
         public async Task<List<MessageDTO>> GetChatHistoryAsync(Guid userId, Guid chatId, CancellationToken token)
         {
-            bool isArchive = await _chatService.IsChatArchivedAsync(chatId, userId);
+            bool isArchive = await _userChatService.IsChatArchivedAsync(chatId, userId);
             DateTime? cutoffDate = null;
 
             if (isArchive)
             {
-                cutoffDate = await _chatService.GetLastSeenMessageAtAsync(userId, chatId);
+                cutoffDate = await _readStatusService.GetLastSeenMessageAtAsync(userId, chatId);
             }
 
             var messages = await _messageRepo.GetMessageHistoryAsync(userId, chatId, cutoffDate, token);

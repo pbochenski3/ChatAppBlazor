@@ -13,7 +13,7 @@ namespace ChatApp.Application.Interfaces.Repository
         Task<bool> GetChatStatusById(Guid chatId, Guid contactId);
         Task<Guid> GetChatIdAsync(Guid userId1, Guid userId2, CancellationToken token = default);
         Task<bool> CheckIfGroupExist(Guid chatId, Guid userId);
-        Task<Chat> FetchChatById(Guid chatId);
+        Task<Chat?> FetchChatById(Guid chatId);
         Task AddUserGroupToDb(Guid chatId, HashSet<Guid> userIdsToAdd);
         Task<HashSet<Guid>> GetExistingUsersInChat(Guid chatId, HashSet<Guid> userIdsToCheck);
         Task UnarchiveChatAsync(Guid chatId, HashSet<Guid> userIds);

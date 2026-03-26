@@ -115,6 +115,14 @@ body {
     }
 }
 
+.sidebar-content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
 .nav-tabs {
     display: flex;
     gap: 4px;
@@ -334,7 +342,23 @@ body {
 .add-contact-view {
     padding: 0.875rem;
     animation: fadeIn 0.25s ease;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
 }
+
+    .add-contact-view::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .add-contact-view::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .add-contact-view::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: var(--radius-full);
+    }
 
 .search-results {
     margin-top: 1.125rem;
@@ -596,7 +620,23 @@ body {
     display: flex;
     flex-direction: column;
     gap: 14px;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
 }
+
+    .settings-content::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .settings-content::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .settings-content::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: var(--radius-full);
+    }
 
 .confirm-overlay {
     position: fixed;

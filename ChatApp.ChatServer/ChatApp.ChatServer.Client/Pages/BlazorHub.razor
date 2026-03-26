@@ -23,7 +23,7 @@
         <ContactsComponent 
             OnSearchRequested="HandleGlobalSearch"
             OnContactInvited="HandleContactInvite"
-            OnContactSelected="HandleChatLoad"
+            OnContactSelected="HandleChatLoadAsync"
             OnInviteAction="@(args => HandleContactStatus(args.InviteId, args.Status))"
             SidebarItem="_sidebarItems"
             UsersList="_foundUsers"

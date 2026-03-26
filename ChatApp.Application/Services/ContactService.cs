@@ -42,7 +42,7 @@ namespace ChatApp.Application.Services
 
         public async Task<List<ContactDTO>> GetUserContactsAsync(Guid userId)
         {
-            var contacts = await _contactRepo.GetAllContactAsync(userId);
+            var contacts = await _contactRepo.GetAllContactsAsync(userId);
             if (contacts == null || !contacts.Any())
             {
                 return new List<ContactDTO>();
@@ -64,14 +64,14 @@ namespace ChatApp.Application.Services
                 UserID = userId1,
                 ContactUserID = userId2,
             };
-            await _contactRepo.AddContactToDb(contact1);
+            await _contactRepo.AddContactAsync(contact1);
 
             var contact2 = new Contact
             {
                 UserID = userId2,
                 ContactUserID = userId1
             };
-            await _contactRepo.AddContactToDb(contact2);
+            await _contactRepo.AddContactAsync(contact2);
         }
 
         public async Task AddContactAsync(Guid userId, Guid contactUserId)
@@ -81,20 +81,20 @@ namespace ChatApp.Application.Services
                 throw new ArgumentException("[AddContactAsync] userId or contactUserId is empty");
             }
 
-            var isDeleted = await _contactRepo.CheckDeletedContact(userId, contactUserId);
+            var isDeleted = await _contactRepo.IsContactDeletedAsync(userId, contactUserId);
             if (!isDeleted)
             {
                 await CreateContactAsync(userId, contactUserId);
             }
             else
             {
-                await _contactRepo.RestoreContacts(userId, contactUserId);
+                await _contactRepo.RestoreContactsAsync(userId, contactUserId);
             }
         }
 
         public async Task RemoveContactAsync(Guid contactUserId, Guid userId, Guid chatId)
         {
-            await _contactRepo.DeleteContactFromDb(contactUserId, userId);
+            await _contactRepo.DeleteContactAsync(contactUserId, userId);
             await _chatRepo.ArchivePrivateChatAsync(chatId, userId, contactUserId);
         }
     }
