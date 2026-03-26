@@ -89,13 +89,14 @@
             _ = ShowNotificationAsync(_notification);
         }
 
+        var startHubTask = ChatHubService.StartAsync();
+
         ChatHubService.OnAppReload += HandleUnifiedReloadAsync;
         ChatHubService.OnMessageReceived += HandleReceiveMessageAsync;
         ChatHubService.InviteStatusMessage += HandleInviteStatusReceivedAsync;
         ChatHubService.OnChatLoad += HandleChatLoadAsync;
         ChatHubService.OnUserInChatReload += HandleUserOnGroupLoadAsync;
 
-        var startHubTask = ChatHubService.StartAsync();
         var dataReloadTask = HandleDataReloadAsync(true);
         
         try
