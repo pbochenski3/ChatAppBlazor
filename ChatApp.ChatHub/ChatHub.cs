@@ -237,6 +237,7 @@ namespace ChatApp.ChatHub
         }
         public async Task LeaveChat(Guid chatId)
         {
+            await _chatService.ArchiveUserGroupChat(chatId, userId);
             var user = await _userService.GetUserDtoAsync(userId);
             var systemMessage = new MessageDTO
             {
@@ -250,7 +251,6 @@ namespace ChatApp.ChatHub
             await _messageService.SaveChatMessageAsync(systemMessage);
             await Clients.Group(chatId.ToString()).SendAsync("ReceiveMessage", systemMessage);
             await Clients.Group(chatId.ToString()).SendAsync("UsersInChatReload", chatId);
-            await _chatService.ArchiveUserGroupChat(chatId, userId);
             await Clients.Caller.SendAsync("ChatReload", chatId, true);
             await Clients.Caller.SendAsync("ReceiveStatus", "Opuściłeś czat!");
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatId.ToString());
