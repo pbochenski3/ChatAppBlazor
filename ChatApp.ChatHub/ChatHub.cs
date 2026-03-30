@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using System.Runtime.InteropServices;
 
 namespace ChatApp.ChatHub
 {
@@ -175,6 +176,7 @@ namespace ChatApp.ChatHub
                         Clients.Caller.SendAsync("ChatReload", chatId, true),
                         targetUser.SendAsync("ChatReload", chatId, true)
                     });
+                    await Task.WhenAll(tasks);
                 }
                 await Task.WhenAll(
                       Clients.Caller.SendAsync("ReceiveStatus", statusMsgCaller, senderId),
@@ -275,6 +277,17 @@ namespace ChatApp.ChatHub
         }
         public async Task LeaveChatGroupAsync(Guid chatId)
         {
+            try
+            {
+                await _userChatService.ArchiveUserChatAsync(chatId, UserId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in LeaveChatGroupAsync");
+                await Clients.Caller.SendAsync("ReceiveStatus", "An error occurred while trying to leave the chat.");
+                return;
+            }
+            var tasks = new List<Task>();
             var user = await _userService.GetUserByIdAsync(UserId);
             var systemMessage = new MessageDTO
             {
@@ -286,10 +299,15 @@ namespace ChatApp.ChatHub
                 SentAt = DateTime.UtcNow,
             };
             await _messageService.SaveMessageAsync(systemMessage);
-            await Clients.Group(chatId.ToString()).SendAsync("ReceiveMessage", systemMessage);
-            await Clients.Group(chatId.ToString()).SendAsync("UsersInChatReload", chatId);
-            await Clients.Caller.SendAsync("ChatReload", chatId, true);
-            await Clients.Caller.SendAsync("ReceiveStatus", "Opuściłeś czat!");
+            tasks.AddRange(new[]
+            {
+                Clients.Group(chatId.ToString()).SendAsync("ReceiveMessage", systemMessage),
+                Clients.Group(chatId.ToString()).SendAsync("UsersInChatReload", chatId),
+                Clients.Caller.SendAsync("ChatReload", chatId, true),
+                Clients.Caller.SendAsync("ReceiveStatus", "Opuściłeś czat!"),
+        });
+            await Task.WhenAll(tasks);
+
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatId.ToString());
         }
         public async Task DeleteChatAsync(Guid chatId)
