@@ -145,9 +145,9 @@
                     <div class="input-group">
                         <input type="text" class="form-control" placeholder="Nowa nazwa czatu..."
                                @bind="newChatName" />
+                    </div>
                         <button class="btn-primary" @onclick="async () => { _currentView = View.Settings; await HandleChatNameChangeAsync(newChatName); }">Zatwierdź</button>
                         <button class="btn-secondary" @onclick="() => _currentView = View.Settings">Cofnij</button>
-                    </div>
                     break;
             }
         </div>
