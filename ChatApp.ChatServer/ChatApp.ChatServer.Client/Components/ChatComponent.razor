@@ -95,7 +95,10 @@
                             <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Opuszczanie", "Czy na pewno?", HandleChatLeaveAsync)'>Opuść czat</button>
                         }
                     }
-                    <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Usuwanie", "Czy na pewno chcesz usunąć? Ta zmiana jest nieodwracalna!", HandleChatDeleteAsync)'>Usuń czat</button>
+                    @if(IsArchive)
+                    {
+                        <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Usuwanie", "Czy na pewno chcesz usunąć? Ta zmiana jest nieodwracalna!", HandleChatDeleteAsync)'>Usuń czat</button>
+                    }
                     break;
                 case View.AddUsers:
                     <div class="sidebar-header"><h3>Dodaj osoby</h3></div>

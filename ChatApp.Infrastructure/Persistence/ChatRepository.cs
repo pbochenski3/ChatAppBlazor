@@ -95,7 +95,7 @@ namespace ChatApp.Infrastructure.Persistence
             using var context = _contextFactory.CreateDbContext();
             return await context.Chats
                 .Where(c => !c.IsGroup &&
-                            c.UserChats.Any(uc => uc.UserID == userId1) &&
+                            c.UserChats.Any(uc => uc.UserID == userId1) ||
                             c.UserChats.Any(uc => uc.UserID == userId2))
                 .Select(c => c.ChatID)
                 .FirstOrDefaultAsync(token);
