@@ -154,12 +154,23 @@ namespace ChatApp.ChatHub
             try
             {
                 await _userChatService.UpdateChatNameAsync(chatId, chatName);
-                var tasks = new List<Task>
+                var chat = await _chatService.GetChatUsersIdsAsync(chatId);
+                var participants = chat.Select(id => id.ToString()).ToList();
+                var admin = await _userService.GetUserByIdAsync(UserId);
+
+                var systemMessage = new MessageDTO
                 {
-                    Clients.Group(chatId.ToString()).SendAsync("SideBarReload", true),
-                    Clients.Group(chatId.ToString()).SendAsync("ChatReload", chatId, true)
+                    ChatID = chatId,
+                    MessageID = Guid.CreateVersion7(),
+                    Content = $"{admin.Username} zmienił nazwe czatu na {chatName}.",
+                    SenderUsername = "SYSTEM",
+                    IsSystemMessage = true,
+                    SentAt = DateTime.UtcNow,
                 };
-                await Task.WhenAll(tasks);
+
+                await _messageService.SaveMessageAsync(systemMessage);
+                await Clients.Users(participants).SendAsync("ReceiveMessage", systemMessage);
+                await Clients.Users(participants).SendAsync("UpdateChatName", chatId,chatName);
             }
             catch (Exception ex)
             {

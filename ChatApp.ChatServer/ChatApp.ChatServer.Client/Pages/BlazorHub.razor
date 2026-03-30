@@ -59,7 +59,6 @@
     private UserDTO _currentUser = new UserDTO();
     private List<MessageDTO> _receivedMessages = new List<MessageDTO>();
     private List<InviteDTO> _receivedInvites = new List<InviteDTO>();
-    private List<ChatDTO> _receivedChats = new List<ChatDTO>();
     private List<ContactDTO> _receivedContacts = new List<ContactDTO>();
     private List<UserDTO> _foundUsers = new List<UserDTO>();
     private HashSet<UserDTO> _usersInChat = new HashSet<UserDTO>();
@@ -95,6 +94,7 @@
         ChatHubService.InviteStatusMessage += HandleInviteStatusReceivedAsync;
         ChatHubService.OnChatLoad += HandleChatLoadAsync;
         ChatHubService.OnUserInChatReload += HandleUserOnGroupLoadAsync;
+        ChatHubService.OnChatNameChanged += HandleChatNameReload;
 
         var dataReloadTask = HandleDataReloadAsync(true);
 
@@ -194,6 +194,19 @@
         {
             await InvokeAsync(StateHasChanged);
         }
+    }
+    private async Task HandleChatNameReload(Guid chatId, string newChatName)
+    {
+        var chat = _sidebarItems.FirstOrDefault(c => c.ChatID == chatId);
+        if (chat != null)
+        {
+            chat.ChatName = newChatName;
+        }
+        if(AppState.CurrentChat != null && AppState.CurrentChat.ChatID == chatId)
+        {
+            AppState.CurrentChat.ChatName = newChatName;
+        }
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task HandleContactInvite(Guid contactId)

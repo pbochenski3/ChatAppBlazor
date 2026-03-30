@@ -21,6 +21,7 @@ public class ChatHubService : IAsyncDisposable
     public event Func<ContactSelectedArgs, Task>? OnChatLoad;
     public event Func<ReloadTarget, Task>? OnAppReload;
     public event Func<Guid, Task>? OnUserInChatReload;
+    public event Func<Guid,string, Task>? OnChatNameChanged;
     public event Action<string, UserDTO>? LoginStatusMessage;
 
     private readonly AppStateService _appStateService;
@@ -75,6 +76,10 @@ public class ChatHubService : IAsyncDisposable
             {
                 await OnUserInChatReload.Invoke(chatId);
             }
+        });
+        HubConnection.On<Guid, string>("UpdateChatName", async (chatId, newName) =>
+        {
+            await OnChatNameChanged.Invoke(chatId, newName);
         });
     }
     private async Task TriggerReload(ReloadTarget target)
