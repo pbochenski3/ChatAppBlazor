@@ -1,16 +1,16 @@
-﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace ChatApp.Application.Interfaces.Service
 {
     public interface IUserService
     {
-        Task Register(UserDTO user);
-        Task<UserDTO> Login(UserDTO user);
-        Task<List<UserDTO>> GetAllUsersToInvite(Guid currentUserId, string query);
-        Task<HashSet<UserDTO>> GetUsersByIdAsync(HashSet<Guid> Ids);
-        Task<UserDTO> GetUserDtoAsync(Guid userId);
+        Task RegisterUserAsync(UserDTO userDto);
+        Task<UserDTO?> LoginUserAsync(UserDTO userDto);
+        Task<List<UserDTO>> GetUsersToInviteAsync(Guid currentUserId, string query);
+        Task<HashSet<UserDTO>> GetUsersByIdsAsync(HashSet<Guid> userIds);
+        Task<UserDTO?> GetUserByIdAsync(Guid userId);
     }
 }

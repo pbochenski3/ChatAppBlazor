@@ -1,60 +1,57 @@
-﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
 using ChatApp.Domain.Models;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Microsoft.Extensions.Logging;
-using ChatApp.Domain.Repository;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ChatApp.Application.Services
 {
     public class MessageService : IMessageService
     {
         private readonly IMessageRepository _messageRepo;
-        private readonly IUserRepository _userRepo;
-        private readonly IChatService _chatService;
-        private readonly IUserChatRepository _userChatRepository;
+        private readonly IUserChatService _userChatService;
+        private readonly IChatReadStatusService _readStatusService;
 
         public MessageService(IMessageRepository messageRepo,
-            IUserRepository userRepo,
-            IChatService chatService,
-            IUserChatRepository userChatRepository
-            )
+            IUserChatService userChatService,
+            IChatReadStatusService readStatusService)
         {
             _messageRepo = messageRepo;
-            _userRepo = userRepo;
-            _chatService = chatService;
-            _userChatRepository = userChatRepository;
+            _userChatService = userChatService;
+            _readStatusService = readStatusService;
         }
-        public async Task SaveChatMessageAsync(MessageDTO dto)
+
+        public async Task SaveMessageAsync(MessageDTO messageDto)
         {
-            if (string.IsNullOrWhiteSpace(dto.Content))
+            if (string.IsNullOrWhiteSpace(messageDto.Content))
             {
                 throw new Exception("Message content cannot be empty");
             }
+
             var message = new Message
             {
-                Content = dto.Content,
-                SenderID = dto.SenderID,
-                ChatID = dto.ChatID,
-                MessageID = dto.MessageID,
-                SentAt = dto.SentAt,
-                IsSystemMessage = dto.IsSystemMessage,
+                Content = messageDto.Content,
+                SenderID = messageDto.SenderID,
+                ChatID = messageDto.ChatID,
+                MessageID = messageDto.MessageID,
+                SentAt = messageDto.SentAt,
+                IsSystemMessage = messageDto.IsSystemMessage,
             };
-            await _messageRepo.AddAsync(message);
-
+            await _messageRepo.AddMessageAsync(message);
         }
 
-        public async Task<List<MessageDTO>> GetPrivateHistoryAsync(Guid userId, Guid chatId, CancellationToken token)
+        public async Task<List<MessageDTO>> GetChatHistoryAsync(Guid userId, Guid chatId, CancellationToken token)
         {
-            bool isArchive = await _chatService.CheckIfUserChatIsArchiveAsync(chatId, userId);
+            bool isArchive = await _userChatService.IsChatArchivedAsync(chatId, userId);
             DateTime? cutoffDate = null;
 
             if (isArchive)
-            { 
-                cutoffDate = await _chatService.GetLastSeenMessage(userId, chatId);
+            {
+                cutoffDate = await _readStatusService.GetLastSeenMessageAtAsync(userId, chatId);
             }
 
             var messages = await _messageRepo.GetMessageHistoryAsync(userId, chatId, cutoffDate, token);
@@ -63,15 +60,16 @@ namespace ChatApp.Application.Services
             {
                 return new List<MessageDTO>();
             }
-            return messages.Select(uc => new MessageDTO
+
+            return messages.Select(m => new MessageDTO
             {
-                MessageID = uc.MessageID,
-                Content = uc.Content,
-                SentAt = uc.SentAt,
-                SenderID = uc.SenderID,
-                SenderUsername = uc.IsSystemMessage ? "SYSTEM" : (uc.Sender?.Username ?? "Unknown"),
-                ChatID = uc.ChatID,
-                IsSystemMessage = uc.IsSystemMessage,
+                MessageID = m.MessageID,
+                Content = m.Content,
+                SentAt = m.SentAt,
+                SenderID = m.SenderID,
+                SenderUsername = m.IsSystemMessage ? "SYSTEM" : (m.Sender?.Username ?? "Unknown"),
+                ChatID = m.ChatID,
+                IsSystemMessage = m.IsSystemMessage,
             }).ToList();
         }
     }

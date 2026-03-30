@@ -1,35 +1,38 @@
-﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Service;
-using ChatApp.Domain.Models;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ChatApp.Application.Services
 {
     public class SidebarService : ISidebarService
     {
-        private readonly IContactService _contactService;
-        private readonly IChatService _chatService;
-        public SidebarService(IContactService contactService,IChatService chatService)
+        private readonly IUserChatService _userChatService;
+        private readonly IChatReadStatusService _readStatusService;
+
+        public SidebarService(IUserChatService userChatService, IChatReadStatusService readStatusService)
         {
-            _contactService = contactService;
-            _chatService = chatService;
+            _userChatService = userChatService;
+            _readStatusService = readStatusService;
         }
-        public async Task<List<UserChatDTO>> GetSidebarItems(Guid userId)
+
+        public async Task<List<UserChatDTO>> GetSidebarItemsAsync(Guid userId)
         {
             try
             {
-                var chatsTask = _chatService.GetChatList(userId);
-                var counterTask = _chatService.GetAllUnreadCounterAsync(userId);
+                var chatsTask = _userChatService.GetUserChatListAsync(userId);
+                var counterTask = _readStatusService.GetAllUnreadMessageCountsAsync(userId);
 
-                await Task.WhenAll(counterTask,chatsTask);
+                await Task.WhenAll(chatsTask, counterTask);
 
-                var counter = await counterTask ?? new List<(Guid ChatId, int Count)>();
                 var chats = await chatsTask ?? new List<UserChatDTO>();
-                var counterDict = counter.ToDictionary(t => t.ChatId, t => t.Count);
+                var counters = await counterTask ?? new List<(Guid ChatId, int Count)>();
+
+                var counterDict = counters.ToDictionary(t => t.ChatId, t => t.Count);
+
                 var sidebarItems = chats.Select(c => new UserChatDTO
                 {
                     ChatID = c.ChatID,
@@ -37,15 +40,14 @@ namespace ChatApp.Application.Services
                     ChatName = c.ChatName,
                     IsArchive = c.IsArchive,
                     AvatarUrl = c.AvatarUrl,
-                    counter = counterDict.GetValueOrDefault(c.ChatID,0),
+                    UnreadMessageCount = counterDict.GetValueOrDefault(c.ChatID, 0),
                 }).ToList();
-                return sidebarItems;
 
-      
+                return sidebarItems;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
     }

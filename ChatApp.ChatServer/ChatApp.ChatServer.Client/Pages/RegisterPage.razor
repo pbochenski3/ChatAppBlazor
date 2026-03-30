@@ -1,15 +1,17 @@
-﻿@page "/register"
+@page "/register"
 @inject IConfiguration Configuration
 @inject NavigationManager NavManager
 @inject ChatHubService ChatHubService
 @inject AppStateService AppState
 @implements IDisposable
-@if (!string.IsNullOrEmpty(notification))
+
+@if (!string.IsNullOrEmpty(_notification))
 {
     <div class="notification-toast">
-        <div>@notification</div>
+        <div>@_notification</div>
     </div>
 }
+
 <div class="login-page">
     <div class="login-card">
         <div class="login-header">
@@ -18,31 +20,28 @@
         </div>
         <p class="login-subtitle">Załóż nowe konto</p>
 
-        <EditForm Model="@userDTO" OnValidSubmit="HandleSubmit">
-
+        <EditForm Model="@_registerModel" OnValidSubmit="HandleRegisterAsync">
             <div class="field-group">
                 <label class="field-label">Nazwa użytkownika</label>
-                <InputText @bind-Value="userDTO.Username"
+                <InputText @bind-Value="_registerModel.Username"
                            class="field-input"
-                           disabled="@isProcessing"
+                           disabled="@_isProcessing"
                            maxlength="20"
-                           placeholder="Wpisz nazwe użytkownika" />
-            
+                           placeholder="Wpisz nazwę użytkownika" />
             </div>
 
             <div class="field-group">
                 <label class="field-label">Hasło</label>
                 <InputText type="password"
-                           @bind-Value="userDTO.Password"
+                           @bind-Value="_registerModel.Password"
                            class="field-input"
-                           disabled="@isProcessing"
+                           disabled="@_isProcessing"
                            maxlength="128"
                            placeholder="Wpisz hasło" />
-             
             </div>
 
-            <button type="submit" class="btn-login" disabled="@isProcessing">
-                @if (isProcessing)
+            <button type="submit" class="btn-login" disabled="@_isProcessing">
+                @if (_isProcessing)
                 {
                     <span class="spinner"></span>
                     <span>Rejestracja...</span>
@@ -60,42 +59,46 @@
         </div>
     </div>
 </div>
+
 @code {
-    private bool isProcessing = false;
-    string notification = string.Empty;
+    private bool _isProcessing = false;
+    private string? _notification = string.Empty;
+    private UserDTO _registerModel = new UserDTO();
+
     protected override async Task OnInitializedAsync()
     {
         ChatHubService.RegisterStatusMessage += HandleRegisterNotification;
     }
-    private UserDTO userDTO = new UserDTO();
 
     private void HandleRegisterNotification(string message)
     {
-        notification = message;
+        _notification = message;
         if (message.Equals("User registered successfully."))
         {
-            userDTO = new UserDTO();
+            _registerModel = new UserDTO();
             AppState.Message = "Registered successfully!";
             NavManager.NavigateTo("/");
             return;
         }
-        isProcessing = false;
+        _isProcessing = false;
         InvokeAsync(StateHasChanged);
     }
-    private async Task HandleSubmit()
+
+    private async Task HandleRegisterAsync()
     {
-        isProcessing = true;
+        _isProcessing = true;
         try
         {
-            await ChatHubService.RegisterUserAsync(userDTO);
+            await ChatHubService.RegisterUserAsync(_registerModel);
         }
         catch (Exception ex)
         {
-            notification = $"{ex.Message}";
-            isProcessing = false;
+            _notification = $"{ex.Message}";
+            _isProcessing = false;
             await InvokeAsync(StateHasChanged);
         }
     }
+
     public void Dispose()
     {
         ChatHubService.RegisterStatusMessage -= HandleRegisterNotification;

@@ -1,32 +1,15 @@
-﻿using ChatApp.Application.DTO;
-using ChatApp.Domain.Models;
+using ChatApp.Application.DTO;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 
-namespace ChatApp.Application.Interfaces.Service
+namespace ChatApp.Application.Interfaces
 {
     public interface IChatService
     {
-        Task<bool> GetChatStatus(Guid ChatId, Guid ContactId);
-        Task<bool> CheckIfGroupChatExistAsync(Guid chatId, Guid userId);
-        Task<ChatDTO> GetChatById(Guid chatId);
-        Task MarkMessageAsReadAsync(Guid userId, Guid chatId, Guid messageId);
-        Task<UserChatDTO> GetChatAsync(Guid chatId, Guid userId, CancellationToken token);
-        Task MarkChatMessagesAsReadAsync(Guid userId, Guid chatId, CancellationToken token);
-        Task SaveLastSendedChatMessageAsync(Guid chatId, Guid messageId);
-        Task<int> GetUnreadCounterAsync(Guid userId, Guid chatId);
-        Task<List<(Guid ChatId, int Count)>> GetAllUnreadCounterAsync(Guid userId);
-        Task<Guid> GetReceiverUser(Guid chatId, Guid userId, CancellationToken token);
-        Task<Guid> GetChatId(Guid userId, Guid contactUserId, CancellationToken token);
-        Task<HashSet<Guid>> GetListOfUsersInChatAsync(Guid chatId);
-        Task CreateGroupChat(Guid chatId, HashSet<Guid> UsersToAdd);
-        Task CreatePrivateChat(Guid user1, Guid user2);
-        Task<List<UserChatDTO>> GetChatList(Guid userId);
-        Task ArchiveUserGroupChat(Guid chatId, Guid userId);
-        Task AddUsersToGroup(Guid chatId, HashSet<Guid> usersToAdd);
-        Task<bool> CheckIfUserChatIsArchiveAsync(Guid chatId, Guid userId);
-        Task<DateTime?> GetLastSeenMessage(Guid userId, Guid chatId);
+        Task<ChatDTO> GetChatDetailsAsync(Guid chatId);
+        Task<HashSet<Guid>> GetChatUsersIdsAsync(Guid chatId);
         Task DeleteChatAsync(Guid chatId, Guid userId);
+        Task<bool> IsGroupChatExistingAsync(Guid chatId, Guid userId);
     }
 }

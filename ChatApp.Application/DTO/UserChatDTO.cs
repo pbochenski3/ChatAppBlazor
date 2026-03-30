@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System;
 
 namespace ChatApp.Application.DTO
 {
@@ -20,8 +18,8 @@ namespace ChatApp.Application.DTO
         public DateTime? DeletedAt { get; set; }
         public Guid? LastReadMessageID { get; set; }
         public DateTime LastReadAt { get; set; }
-        public Guid? LastMessageID { get; private set; }
+        public Guid? LastMessageID { get; set; }
         public DateTime LastMessageAt { get; set; }
-        public int counter { get; set; }
+        public int UnreadMessageCount { get; set; }
     }
 }

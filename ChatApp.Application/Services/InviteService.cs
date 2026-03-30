@@ -1,10 +1,11 @@
-﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
 using ChatApp.Domain.Models;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ChatApp.Application.Services
 {
@@ -12,20 +13,22 @@ namespace ChatApp.Application.Services
     {
         private readonly IContactService _contactService;
         private readonly IInviteRepository _inviteRepo;
+
         public InviteService(IInviteRepository inviteRepo, IContactService contactService)
         {
             _inviteRepo = inviteRepo;
             _contactService = contactService;
         }
-        public async Task SendInvite(Guid senderId, Guid receiverId)
+
+        public async Task SendInviteAsync(Guid senderId, Guid receiverId)
         {
-            await _inviteRepo.AddInviteToDB(senderId, receiverId);
-  
+            await _inviteRepo.AddInviteAsync(senderId, receiverId);
         }
-        public async Task<List<InviteDTO>> GetInvites(Guid userId)
+
+        public async Task<List<InviteDTO>> GetUserInvitesAsync(Guid userId)
         {
             var invites = await _inviteRepo.GetInvitesForUserAsync(userId);
-            return  invites.Select(i => new InviteDTO
+            return invites.Select(i => new InviteDTO
             {
                 InviteID = i.InviteID,
                 SenderID = i.SenderID,
@@ -36,27 +39,27 @@ namespace ChatApp.Application.Services
                 Status = i.Status,
             }).ToList();
         }
-        public async Task<Guid> InviteAction(Guid InviteId, bool status,Guid userId)
+
+        public async Task<Guid> HandleInviteActionAsync(Guid inviteId, bool status, Guid userId)
         {
-            var invite = await _inviteRepo.GetInviteForIdAsync(InviteId);
-            if (invite.ReceiverID != userId)
+            var invite = await _inviteRepo.GetInviteByIdAsync(inviteId);
+            if (invite == null || invite.ReceiverID != userId)
             {
-                return invite.SenderID;
+                return invite?.SenderID ?? Guid.Empty;
             }
-            if (invite != null && status)
+
+            if (status)
             {
                 await _contactService.AddContactAsync(invite.SenderID, invite.ReceiverID);
                 invite.Status = InviteStatus.Accepted;
-                await _inviteRepo.ChangeInviteStatus(invite);
-                
-               
+                await _inviteRepo.UpdateInviteStatusAsync(invite);
             }
             else
-                if (invite != null && !status)
-                {
-                    invite.Status = InviteStatus.Rejected;
-                    await _inviteRepo.ChangeInviteStatus(invite);
-                }
+            {
+                invite.Status = InviteStatus.Rejected;
+                await _inviteRepo.UpdateInviteStatusAsync(invite);
+            }
+
             return invite.SenderID;
         }
     }

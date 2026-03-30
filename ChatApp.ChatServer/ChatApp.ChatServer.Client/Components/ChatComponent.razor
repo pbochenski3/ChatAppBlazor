@@ -1,4 +1,4 @@
-﻿@inject IJSRuntime JSRuntime
+@inject IJSRuntime JSRuntime
 @inject AppStateService AppState
 
 <div class="chat-main-wrapper @(_isSettingsOpen ? "show-settings" : "")">
@@ -7,7 +7,7 @@
     {
         <ConfirmDialog Title="@_confirmTitle"
                        Message="@_confirmMessage"
-                       OnClose="HandleConfirm" />
+                       OnClose="HandleConfirmAsync" />
     }
 
     <div class="chat-content">
@@ -53,13 +53,13 @@
                                class="form-control"
                                placeholder="Napisz wiadomość..."
                                disabled="@IsLocked"
-                               @bind="_content"
+                               @bind="_messageContent"
                                @bind:event="oninput"
-                               @onkeydown="HandleKeyDown" />
+                               @onkeydown="HandleKeyDownAsync" />
 
                         <button class="btn-primary"
-                                disabled="@(IsLocked || string.IsNullOrWhiteSpace(_content))"
-                                @onclick="HandleInternalSubmit">
+                                disabled="@(IsLocked || string.IsNullOrWhiteSpace(_messageContent))"
+                                @onclick="HandleInternalSubmitAsync">
                             Wyślij
                         </button>
                     </div>
@@ -77,31 +77,31 @@
 
     <div class="contact-settings-panel">
         <div class="settings-content">
-            @switch (currentView)
+            @switch (_currentView)
             {
                 case View.Settings:
                     <div class="sidebar-header"><h3>Ustawienia</h3></div>
                     if (!IsArchive)
                     {
-                        <button class="btn-secondary" @onclick="() => currentView = View.Users">Uczestnicy</button>
-                        <button class="btn-secondary" @onclick="async () => { currentView = View.AddUsers; await LoadContact(); }">Dodaj osoby</button>
+                        <button class="btn-secondary" @onclick="() => _currentView = View.Users">Uczestnicy</button>
+                        <button class="btn-secondary" @onclick="async () => { _currentView = View.AddUsers; await LoadContactsAsync(); }">Dodaj osoby</button>
 
                         @if (!AppState.CurrentChat.IsGroup)
                         {
-                            <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Usuwanie", "Czy na pewno?", HandleContactDelete)'>Usuń kontakt</button>
+                            <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Usuwanie", "Czy na pewno?", HandleContactDeleteAsync)'>Usuń kontakt</button>
                         }
                         else
                         {
-                            <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Opuszczanie", "Czy na pewno?", HandleChatLeave)'>Opuść czat</button>
+                            <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Opuszczanie", "Czy na pewno?", HandleChatLeaveAsync)'>Opuść czat</button>
                         }
                     }
-                    <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Usuwanie", "Czy na pewno chcesz usunąć? Ta zmiana jest nieodwracalna!", HandleChatDelete)'>Usuń czat</button>
+                    <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Usuwanie", "Czy na pewno chcesz usunąć? Ta zmiana jest nieodwracalna!", HandleChatDeleteAsync)'>Usuń czat</button>
                     break;
                 case View.AddUsers:
                     <div class="sidebar-header"><h3>Dodaj osoby</h3></div>
                     <div class="search-container">
                         <input type="text" class="form-control search-input" placeholder="Szukaj..."
-                               @bind="contactSearchTerm" @bind:event="oninput" />
+                               @bind="_contactSearchTerm" @bind:event="oninput" />
                     </div>
                     <div class="search-results">
                         @if (FilteredContacts != null && FilteredContacts.Any())
@@ -110,7 +110,7 @@
                             {
                                 bool isSelected = ContactsToAdd.Contains(user.ContactUserID);
                                 <div class="search-result-item @(isSelected ? "selected" : "")"
-                                     @onclick="async () => await AddUserToList(user.ContactUserID)">
+                                     @onclick="async () => await AddUserToSelectionAsync(user.ContactUserID)">
                                     <div class="user-search-info">
                                         <img src="@user.AvatarUrl" class="user-avatar" />
                                         <span>@user.Username</span>
@@ -119,8 +119,8 @@
                             }
                         }
                     </div>
-                    <button class="btn-add-action" @onclick="async () => { currentView = View.Settings; await CreateGroup(ContactsToAdd); }">Zatwierdź</button>
-                    <button class="btn-add-action" @onclick="() => currentView = View.Settings">Cofnij</button>
+                    <button class="btn-add-action" @onclick="async () => { _currentView = View.Settings; await CreateGroupAsync(ContactsToAdd); }">Zatwierdź</button>
+                    <button class="btn-add-action" @onclick="() => _currentView = View.Settings">Cofnij</button>
                     break;
 
                 case View.Users:
@@ -134,7 +134,7 @@
                             </div>
                         </div>
                     }
-                    <button class="btn-add-action" @onclick="() => currentView = View.Settings">Cofnij</button>
+                    <button class="btn-add-action" @onclick="() => _currentView = View.Settings">Cofnij</button>
                     break;
             }
         </div>
@@ -152,24 +152,23 @@
     [Parameter] public EventCallback<bool> LockSidebar { get; set; }
 
     [Parameter] public List<MessageDTO> Messages { get; set; } = new();
-    [Parameter] public List<ContactDTO> userContacts { get; set; } = new();
+    [Parameter] public List<ContactDTO> UserContacts { get; set; } = new();
     [Parameter] public HashSet<Guid> ContactsToAdd { get; set; } = new();
     [Parameter] public HashSet<UserDTO> ExistingUsers { get; set; } = new();
     [Parameter] public bool IsLocked { get; set; }
     [Parameter] public bool IsArchive { get; set; }
     #endregion
-    #region Variables
-    private string contactSearchTerm = "";
-    private string _content = string.Empty;
+
+    #region Private Fields
+    private string _contactSearchTerm = string.Empty;
+    private string _messageContent = string.Empty;
     private bool _isSettingsOpen = false;
-    private bool _addWindow = false;
-    private bool _isSelected = false;
-    private bool _showConfirm;
-    private string _confirmTitle = "";
-    private string _confirmMessage = "";
-    private Func<Task> _onConfirmAction;
+    private bool _showConfirm = false;
+    private string _confirmTitle = string.Empty;
+    private string _confirmMessage = string.Empty;
+    private Func<Task>? _onConfirmAction;
     private enum View { Settings, AddUsers, Users }
-    private View currentView = View.Settings;
+    private View _currentView = View.Settings;
     #endregion
 
     private void ToggleSettings() => _isSettingsOpen = !_isSettingsOpen;
@@ -182,24 +181,26 @@
         _showConfirm = true;
         StateHasChanged();
     }
-    private async Task HandleKeyDown(KeyboardEventArgs keyClick)
+
+    private async Task HandleKeyDownAsync(KeyboardEventArgs keyClick)
     {
         if (keyClick.Key == "Enter")
         {
-            await HandleInternalSubmit();
+            await HandleInternalSubmitAsync();
         }
     }
 
     private IEnumerable<ContactDTO> FilteredContacts =>
-    userContacts?.Where(c =>
-        (string.IsNullOrWhiteSpace(contactSearchTerm) ||
-         c.Username.Contains(contactSearchTerm, StringComparison.OrdinalIgnoreCase))
-        &&
-        !ExistingUsers.Any(u => u.UserID == c.ContactUserID)
-    ) ?? Enumerable.Empty<ContactDTO>();
-    private async Task AddUserToList(Guid contactId)
+        UserContacts?.Where(c =>
+            (string.IsNullOrWhiteSpace(_contactSearchTerm) ||
+             c.Username.Contains(_contactSearchTerm, StringComparison.OrdinalIgnoreCase))
+            &&
+            !ExistingUsers.Any(u => u.UserID == c.ContactUserID)
+        ) ?? Enumerable.Empty<ContactDTO>();
+
+    private async Task AddUserToSelectionAsync(Guid contactId)
     {
-        if(ContactsToAdd.Contains(contactId))
+        if (ContactsToAdd.Contains(contactId))
         {
             ContactsToAdd.Remove(contactId);
         }
@@ -207,43 +208,49 @@
         {
             ContactsToAdd.Add(contactId);
         }
+        await Task.CompletedTask;
     }
-    private async Task CreateGroup(HashSet<Guid> UserToAdd)
+
+    private async Task CreateGroupAsync(HashSet<Guid> usersToAdd)
     {
-        await OnAddUserClick.InvokeAsync(UserToAdd);
+        await OnAddUserClick.InvokeAsync(usersToAdd);
         ContactsToAdd.Clear();
     }
-    public async Task LoadContact()
+
+    public async Task LoadContactsAsync()
     {
         await OnAddUserTriggered.InvokeAsync();
     }
-    private async Task HandleContactDelete()
-    {
-            _isSettingsOpen = false;
-            await OnDeleteContact.InvokeAsync();
-    }
-    private async Task HandleChatLeave()
-    {
-            _isSettingsOpen = false;
-            await OnChatLeave.InvokeAsync();
 
+    private async Task HandleContactDeleteAsync()
+    {
+        _isSettingsOpen = false;
+        await OnDeleteContact.InvokeAsync();
     }
-    private async Task HandleChatDelete()
+
+    private async Task HandleChatLeaveAsync()
+    {
+        _isSettingsOpen = false;
+        await OnChatLeave.InvokeAsync();
+    }
+
+    private async Task HandleChatDeleteAsync()
     {
         _isSettingsOpen = false;
         await OnChatDelete.InvokeAsync();
-
     }
-    private async Task HandleInternalSubmit()
+
+    private async Task HandleInternalSubmitAsync()
     {
-        if (!string.IsNullOrWhiteSpace(_content) && !IsArchive)
+        if (!string.IsNullOrWhiteSpace(_messageContent) && !IsArchive)
         {
-            var messageToSend = _content;
-            _content = string.Empty;
+            var messageToSend = _messageContent;
+            _messageContent = string.Empty;
             await OnSendMessage.InvokeAsync(messageToSend);
         }
     }
-    private async Task HandleConfirm(bool result)
+
+    private async Task HandleConfirmAsync(bool result)
     {
         _showConfirm = false;
         if (result && _onConfirmAction != null)
@@ -252,6 +259,7 @@
             StateHasChanged();
         }
     }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await JSRuntime.InvokeVoidAsync("scrollToBottom", "chat-window");

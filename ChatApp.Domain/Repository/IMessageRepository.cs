@@ -1,14 +1,15 @@
-﻿using ChatApp.Domain.Models;
+using ChatApp.Domain.Models;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ChatApp.Application.Interfaces.Repository
 {
     public interface IMessageRepository
     {
-        Task AddAsync(Message message);
+        Task AddMessageAsync(Message message);
         Task SaveChangesAsync();
-        Task<List<Message>> GetMessageHistoryAsync(Guid userId, Guid chatId, DateTime? cutoffDate,CancellationToken token);
+        Task<List<Message>> GetMessageHistoryAsync(Guid userId, Guid chatId, DateTime? cutoffDate, CancellationToken token);
     }
 }

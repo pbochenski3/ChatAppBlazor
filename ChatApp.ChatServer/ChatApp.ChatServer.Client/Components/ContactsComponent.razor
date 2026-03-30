@@ -1,4 +1,4 @@
-﻿@using ChatApp.Application.Interfaces
+@using ChatApp.Application.Interfaces
 @inject AppStateService AppState
 <aside class="sidebar">
     <div class="sidebar-header">
@@ -46,9 +46,9 @@
                                 </div>
                                 <div class="contact-info">
                                     <p class="contact-name">@chat.ChatName</p>
-                                    @if(chat.counter > 0)
+                                    @if(chat.UnreadMessageCount > 0)
                                     {
-                                        <p class="contact-name">@chat.counter nowe wiadomości!</p>
+                                        <p class="contact-name">@chat.UnreadMessageCount nowe wiadomości!</p>
                                     }
                                     @* <p class="contact-name">@chat.LastMessage</p>  *@
                                 </div>

@@ -1,14 +1,14 @@
-﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO;
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ChatApp.Application.Interfaces.Service
 {
     public interface IMessageService
     {
-        Task SaveChatMessageAsync(MessageDTO dto);
-        Task<List<MessageDTO>> GetPrivateHistoryAsync(Guid userId, Guid chatId,CancellationToken token);
+        Task SaveMessageAsync(MessageDTO messageDto);
+        Task<List<MessageDTO>> GetChatHistoryAsync(Guid userId, Guid chatId, CancellationToken token);
     }
 }
