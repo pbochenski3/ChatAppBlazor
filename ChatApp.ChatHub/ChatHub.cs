@@ -151,6 +151,7 @@ namespace ChatApp.ChatHub
         {
             try
             {
+                var tasks = new List<Task>();
                 var senderId = await _inviteService.HandleInviteActionAsync(inviteId, status, UserId);
                 var targetUser = Clients.User(senderId.ToString());
 
@@ -167,23 +168,18 @@ namespace ChatApp.ChatHub
                     await _privateChatService.CreatePrivateChatAsync(UserId, senderId);
                     var chatId = await _privateChatService.GetPrivateChatIdAsync(UserId, senderId, Context.ConnectionAborted);
                     
-                    await Task.WhenAll(
+                    tasks.AddRange(new[]
+                    {
                         Clients.Caller.SendAsync("SideBarReload", true),
-                        targetUser.SendAsync("SideBarReload", true)
-                    );
-                    
-                    await Task.WhenAll(
-                        Clients.Caller.SendAsync("ReceiveStatus", statusMsgCaller, senderId),
-                        targetUser.SendAsync("ReceiveStatus", statusMsgTarget, UserId)
-                    );
+                        targetUser.SendAsync("SideBarReload", true),
+                        Clients.Caller.SendAsync("ChatReload", chatId, true),
+                        targetUser.SendAsync("ChatReload", chatId, true)
+                    });
                 }
-                else
-                {
-                    await Task.WhenAll(
-                        Clients.Caller.SendAsync("ReceiveStatus", statusMsgCaller, senderId),
-                        targetUser.SendAsync("ReceiveStatus", statusMsgTarget, UserId)
-                    );
-                }
+                await Task.WhenAll(
+                      Clients.Caller.SendAsync("ReceiveStatus", statusMsgCaller, senderId),
+                      targetUser.SendAsync("ReceiveStatus", statusMsgTarget, UserId)
+                  );
             }
             catch (Exception ex)
             {
