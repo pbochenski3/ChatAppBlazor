@@ -79,10 +79,11 @@ namespace ChatApp.ChatHub
             try
             {
                 await _inviteService.SendInviteAsync(UserId, receiverId);
-                await Clients.Caller.SendAsync("ReceiveInviteStatus", "Invite sent!");
+                await Clients.Caller.SendAsync("ReceiveStatus", "Invite sent!",UserId);
                 var targetUser = Clients.User(receiverId.ToString());
-                await targetUser.SendAsync("ReceiveInviteStatus", "You have a new invite!");
                 await targetUser.SendAsync("InviteReload", true);
+                await targetUser.SendAsync("ReceiveStatus", "You have a new invite!",receiverId);
+               
             }
             catch (Exception)
             {
