@@ -179,7 +179,7 @@
     }
     private IEnumerable<UserChatDTO> FilteredSidebar =>
         SidebarItem?.Where(c => string.IsNullOrWhiteSpace(searchTerm) ||
-                               c.Username.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                               c.ChatName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
         ?? Enumerable.Empty<UserChatDTO>();
     private async Task SelectContact(Guid contactId)
     {
