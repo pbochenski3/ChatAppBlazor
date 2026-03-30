@@ -39,6 +39,7 @@
                 Messages="_receivedMessages"
                 IsLocked="_isChatLocked"
                 IsArchive="_isChatArchived"
+                IsSettingsOpen="_isSettingsOpen"
                 OnAddUserTriggered="HandleContactLoad"
                 OnAddUserClick="HandleCreateGroupChat"
                 OnChatLeave="HandleChatLeave"
@@ -68,6 +69,8 @@
     private bool _isChatLocked = true;
     private bool _isChatArchived = false;
     private bool _isLoading = true;
+    private bool _isSettingsOpen;
+
     #endregion
 
     protected override async Task OnInitializedAsync()
@@ -410,7 +413,7 @@
                 return;
             }
         }
-
+        _isSettingsOpen = false;
         _chatLoadingCts?.Cancel();
         _chatLoadingCts = new CancellationTokenSource();
         var token = _chatLoadingCts.Token;

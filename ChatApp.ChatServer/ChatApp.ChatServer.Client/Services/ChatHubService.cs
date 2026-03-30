@@ -184,6 +184,10 @@ public class ChatHubService : IAsyncDisposable
         {
             throw new ArgumentException("Password must be at least 8 characters.");
         }
+        if(dto.Username.Equals("SYSTEM", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Username is already oucppied.");
+        };
         
         var response = await _httpClient.PostAsJsonAsync("api/user/register", dto);
         if (response.IsSuccessStatusCode)

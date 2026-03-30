@@ -1,7 +1,7 @@
 @inject IJSRuntime JSRuntime
 @inject AppStateService AppState
 
-<div class="chat-main-wrapper @(_isSettingsOpen ? "show-settings" : "")">
+<div class="chat-main-wrapper @(IsSettingsOpen ? "show-settings" : "")">
 
     @if (_showConfirm)
     {
@@ -31,16 +31,16 @@
                     {
                         @foreach (var msg in Messages)
                         {
-                            <div class="message">
+                            var isMine = msg.SenderUsername == AppState.CurrentUser.Username;
+                            <div class="message @(msg.IsSystemMessage ? "system" : "") @(isMine ? "mine" : "")">
+                                @if (!msg.IsSystemMessage && !isMine)
+                                {
                                 <span class="message-time">[@msg.SentAt.ToString("HH:mm")]</span>
                                 <span class="message-user">@msg.SenderUsername:</span>
-                                <span class="message-content">@msg.Content</span>
-                            </div>
+                                }
+                                    <span class="message-content">@msg.Content</span>
+                                </div>
                         }
-                    }
-                    else
-                    {
-                        <div class="no-messages">Brak wiadomości. Przywitaj się!</div>
                     }
                 </div>
             </div>
@@ -171,13 +171,13 @@
     [Parameter] public HashSet<UserDTO> ExistingUsers { get; set; } = new();
     [Parameter] public bool IsLocked { get; set; }
     [Parameter] public bool IsArchive { get; set; }
+    [Parameter] public bool IsSettingsOpen { get; set; }
     #endregion
 
     #region Private Fields
     private string _contactSearchTerm = string.Empty;
     private string _messageContent = string.Empty;
     private string newChatName = string.Empty;
-    private bool _isSettingsOpen = false;
     private bool _showConfirm = false;
     private string _confirmTitle = string.Empty;
     private string _confirmMessage = string.Empty;
@@ -186,7 +186,7 @@
     private View _currentView = View.Settings;
     #endregion
 
-    private void ToggleSettings() => _isSettingsOpen = !_isSettingsOpen;
+    private void ToggleSettings() => IsSettingsOpen = !IsSettingsOpen;
 
     private void OpenConfirmDialog(string title, string message, Func<Task> action)
     {
@@ -240,26 +240,26 @@
     {
         if (!string.IsNullOrWhiteSpace(name))
         {
-            _isSettingsOpen = false;
+            _currentView = View.Settings;
             await OnChatNameChange.InvokeAsync(name);
         }
     }
 
     private async Task HandleContactDeleteAsync()
     {
-        _isSettingsOpen = false;
+        _currentView = View.Settings;
         await OnDeleteContact.InvokeAsync();
     }
 
     private async Task HandleChatLeaveAsync()
     {
-        _isSettingsOpen = false;
+        IsSettingsOpen = false;
         await OnChatLeave.InvokeAsync();
     }
 
     private async Task HandleChatDeleteAsync()
     {
-        _isSettingsOpen = false;
+        IsSettingsOpen = false;
         await OnChatDelete.InvokeAsync();
     }
 

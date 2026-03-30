@@ -565,10 +565,7 @@ body {
     flex-direction: column;
     flex: 1;
     min-height: 0;
-    margin: clamp(0.75rem, 1.5vw, 1.25rem);
-    background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
     overflow: hidden;
 }
 
@@ -782,7 +779,7 @@ body {
 }
 
 .chat-name {
-    font-size: 0.88rem;
+    font-size: 0.8rem;
     color: var(--muted);
     font-weight: 400;
 }
@@ -847,12 +844,17 @@ body {
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
 }
-
 .chat-box {
     flex: 1;
     overflow-y: auto;
     min-height: 0;
     padding: 1rem;
+}
+.chat-messages {
+    display: flex;
+    flex-direction: column; 
+    gap: 8px;
+    padding: 10px;
 }
 
     .chat-box::-webkit-scrollbar {
@@ -876,7 +878,22 @@ body {
     border-left: 2px solid var(--accent2);
     animation: fadeIn 0.25s ease;
     transition: border-color var(--transition);
+    width: fit-content; 
+    max-width: 85%; 
+    display: block;
 }
+
+    .message.system {
+        border-left-color: #1E90FF;
+        font-style: italic;
+    }
+
+    .message.mine {
+        border-left: 0px;
+        border-right: 2px solid ;
+        border-right-color: #7CFC00;
+        align-self: flex-end;
+    }
 
     .message:hover {
         border-left-color: var(--accent);
@@ -884,20 +901,20 @@ body {
 
 .message-time {
     color: var(--muted2);
-    font-size: 0.72rem;
+    font-size: 1rem;
     margin-right: 8px;
 }
 
 .message-user {
     color: var(--accent);
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 1rem;
     margin-right: 6px;
 }
 
 .message-content {
     color: var(--text);
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     word-wrap: break-word;
     line-height: 1.5;
 }
