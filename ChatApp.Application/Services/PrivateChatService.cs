@@ -14,12 +14,14 @@ namespace ChatApp.Application.Services
         private readonly IChatRepository _chatRepo;
         private readonly IUserRepository _userRepo;
         private readonly IUserChatRepository _userChatRepo;
+        private readonly IMessageRepository _messageRepo;
 
-        public PrivateChatService(IChatRepository chatRepo, IUserRepository userRepo, IUserChatRepository userChatRepo)
+        public PrivateChatService(IChatRepository chatRepo, IUserRepository userRepo, IUserChatRepository userChatRepo,IMessageRepository messageRepo)
         {
             _chatRepo = chatRepo;
             _userRepo = userRepo;
             _userChatRepo = userChatRepo;
+            _messageRepo = messageRepo;
         }
 
         public async Task CreatePrivateChatAsync(Guid userId1, Guid userId2)
@@ -57,6 +59,15 @@ namespace ChatApp.Application.Services
                 });
 
                 await _chatRepo.AddChatAsync(newChat);
+                var systemMessage = new Message
+                {
+                    MessageID = Guid.CreateVersion7(),
+                    ChatID = newChat.ChatID,
+                    Content = "Ten czat nie ma jeszcze wiadomości! Przywitaj się!",
+                    SentAt = DateTime.UtcNow,
+                    IsSystemMessage = true,
+                };
+                await _messageRepo.AddMessageAsync(systemMessage);
             }
             else
             {
