@@ -26,10 +26,9 @@ namespace ChatApp.Application.Services
 
         public async Task CreatePrivateChatAsync(Guid userId1, Guid userId2)
         {
-            var chatId = await _chatRepo.GetChatIdAsync(userId1, userId2);
-            var exists = await _userChatRepo.ExistsAsync(chatId);
+            var chat = await _chatRepo.GetChatAsync(userId1, userId2);
 
-            if (!exists)
+            if (chat == null)
             {
                 var user1 = await _userRepo.GetByIdAsync(userId1);
                 var user2 = await _userRepo.GetByIdAsync(userId2);
@@ -71,13 +70,14 @@ namespace ChatApp.Application.Services
             }
             else
             {
-                await _userChatRepo.RestoreChatAsync(chatId);
+                await _userChatRepo.RestoreChatAsync(chat.ChatID);
             }
         }
 
-        public async Task<Guid> GetPrivateChatIdAsync(Guid userId, Guid contactUserId, CancellationToken token)
+        public async Task<Guid?> GetPrivateChatIdAsync(Guid userId, Guid contactUserId, CancellationToken token)
         {
-            return await _chatRepo.GetChatIdAsync(userId, contactUserId, token);
+            var chat =  await _chatRepo.GetChatAsync(userId, contactUserId, token);
+            return chat.ChatID;
         }
 
         public async Task<Guid> GetReceiverUserIdAsync(Guid chatId, Guid userId, CancellationToken token)

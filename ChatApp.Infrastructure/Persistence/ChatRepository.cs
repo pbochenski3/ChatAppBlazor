@@ -90,14 +90,13 @@ namespace ChatApp.Infrastructure.Persistence
                 .FirstOrDefaultAsync(c => c.ChatID == chatId);
         }
 
-        public async Task<Guid> GetChatIdAsync(Guid userId1, Guid userId2, CancellationToken token = default)
+        public async Task<Chat?> GetChatAsync(Guid userId1, Guid userId2, CancellationToken token = default)
         {
             using var context = _contextFactory.CreateDbContext();
             return await context.Chats
                 .Where(c => !c.IsGroup &&
-                            c.UserChats.Any(uc => uc.UserID == userId1) ||
+                            c.UserChats.Any(uc => uc.UserID == userId1) &&
                             c.UserChats.Any(uc => uc.UserID == userId2))
-                .Select(c => c.ChatID)
                 .FirstOrDefaultAsync(token);
         }
 
