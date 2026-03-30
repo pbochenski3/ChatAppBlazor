@@ -76,7 +76,6 @@ public class ChatHubService : IAsyncDisposable
             }
         });
     }
-
     private async Task TriggerReload(ReloadTarget target)
     {
         if (OnAppReload != null)
@@ -84,25 +83,21 @@ public class ChatHubService : IAsyncDisposable
             await OnAppReload.Invoke(target);
         }
     }
-
     public async Task MarkMessageAsReadAsync(Guid chatId, Guid messageId)
     {
         if (HubConnection == null) return;
         await HubConnection.InvokeAsync("MarkMessageAsReadAsync", chatId, messageId);
     }
-
     public async Task MarkChatMessagesAsReadAsync(Guid chatId, CancellationToken token)
     {
         if (HubConnection == null) return;
         await HubConnection.InvokeAsync("MarkChatMessagesAsReadAsync", chatId, token);
     }
-
     public async Task<int> GetUnreadMessageCountAsync(Guid chatId)
     {
         if (HubConnection == null) return 0;
         return await HubConnection.InvokeAsync<int>("GetUnreadMessageCountAsync", chatId);
     }
-
     public async Task SendMessageAsync(MessageDTO message, Guid chatId)
     {
         if (message == null || string.IsNullOrWhiteSpace(message.Content))
@@ -114,13 +109,11 @@ public class ChatHubService : IAsyncDisposable
             await HubConnection.InvokeAsync("SendMessageAsync", message, chatId);
         }
     }
-
     public async Task JoinChatGroupSignalAsync(Guid chatId)
     {
         if (HubConnection == null) return;
         await HubConnection.InvokeAsync("JoinChatGroupSignalAsync", chatId);
     }
-
     public async Task StartAsync()
     {
         if (HubConnection != null && HubConnection.State == HubConnectionState.Connected)
@@ -141,7 +134,6 @@ public class ChatHubService : IAsyncDisposable
         RegisterHandlers();
         await HubConnection.StartAsync();
     }
-
     public async Task StopAsync()
     {
         if (HubConnection is not null)
@@ -151,7 +143,6 @@ public class ChatHubService : IAsyncDisposable
             HubConnection = null;
         }
     }
-
     public async Task LoginUserAsync(UserDTO dto)
     {
         var response = await _httpClient.PostAsJsonAsync("api/user/login", dto);
@@ -177,7 +168,6 @@ public class ChatHubService : IAsyncDisposable
             throw new Exception(errorContent);
         }
     }
-
     public async Task RegisterUserAsync(UserDTO dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Username) || dto.Username.Length < 5)
@@ -200,19 +190,16 @@ public class ChatHubService : IAsyncDisposable
             throw new Exception(errorContent);
         }
     }
-
     public async Task<UserChatDTO?> GetChatDetailsAsync(Guid chatId, CancellationToken token)
     {
         if (HubConnection == null) return null;
         return await HubConnection.InvokeAsync<UserChatDTO?>("GetChatDetailsAsync", chatId, token);
     }
-
     public async Task RestoreChatAsync(Guid chatId)
     {
         if (HubConnection == null) return;
         await HubConnection.InvokeAsync("RestoreChatAsync", chatId);
     }
-
     public async Task<List<MessageDTO>> GetChatHistoryAsync(Guid chatId, CancellationToken token)
     {
         if (HubConnection == null) return new List<MessageDTO>();
@@ -226,115 +213,96 @@ public class ChatHubService : IAsyncDisposable
             return new List<MessageDTO>();
         }
     }
-
     public async Task<List<InviteDTO>> GetUserInvitesAsync()
     {
         if (HubConnection == null) return new List<InviteDTO>();
         return await HubConnection.InvokeAsync<List<InviteDTO>>("GetUserInvitesAsync");
     }
-
     public async Task<List<ContactDTO>> GetUserContactsAsync()
     {
         if (HubConnection == null) return new List<ContactDTO>();
         return await HubConnection.InvokeAsync<List<ContactDTO>>("GetUserContactsAsync");
     }
-
     public async Task<ContactDTO?> GetContactByIdAsync(Guid contactId)
     {
         if (HubConnection == null) return null;
         return await HubConnection.InvokeAsync<ContactDTO?>("GetContactByIdAsync", contactId);
     }
-
     public async Task<List<UserDTO>> GetUsersToInviteAsync(string query)
     {
         if (HubConnection == null) return new List<UserDTO>();
         return await HubConnection.InvokeAsync<List<UserDTO>>("GetUsersToInviteAsync", query);
     }
-
     public async Task SendContactInviteAsync(Guid receiverId)
     {
         if (HubConnection == null) return;
         await HubConnection.InvokeAsync("SendContactInviteAsync", receiverId);
     }
-
     public async Task<bool> IsChatArchivedAsync(Guid chatId, Guid contactId)
     {
         if (HubConnection == null) return false;
         return await HubConnection.InvokeAsync<bool>("IsChatArchivedAsync", chatId, contactId);
     }
-
     public async Task HandleInviteActionAsync(Guid inviteId, bool status)
     {
         if (HubConnection == null) return;
         await HubConnection.InvokeAsync("HandleInviteActionAsync", inviteId, status);
     }
-
     public async Task RemoveContactAsync(Guid chatId)
     {
         if (HubConnection == null) return;
         await HubConnection.InvokeAsync("RemoveContactAsync", chatId);
     }
-
     public async Task<List<ContactDTO>> GetContactListAsync()
     {
         if (HubConnection == null) return new List<ContactDTO>();
         return await HubConnection.InvokeAsync<List<ContactDTO>>("GetContactListAsync");
     }
-
     public async Task<HashSet<UserDTO>> GetChatUsersAsync(Guid chatId)
     {
         if (HubConnection == null) return new HashSet<UserDTO>();
         return await HubConnection.InvokeAsync<HashSet<UserDTO>>("GetChatUsersAsync", chatId);
     }
-
     public async Task<List<UserChatDTO>> GetUserChatListAsync()
     {
         if (HubConnection == null) return new List<UserChatDTO>();
         return await HubConnection.InvokeAsync<List<UserChatDTO>>("GetUserChatListAsync");
     }
-
     public async Task CreateGroupChatAsync(Guid chatId, HashSet<Guid> userIdsToAdd)
     {
         if (HubConnection == null) return;
         await HubConnection.InvokeAsync("CreateGroupChatAsync", chatId, userIdsToAdd);
     }
-
     public async Task<HashSet<Guid>> GetChatUsersIdsAsync(Guid chatId)
     {
         if (HubConnection == null) return new HashSet<Guid>();
         return await HubConnection.InvokeAsync<HashSet<Guid>>("GetChatUsersIdsAsync", chatId);
     }
-
     public async Task<bool> IsGroupChatExistingAsync(Guid chatId)
     {
         if (HubConnection == null) return false;
         return await HubConnection.InvokeAsync<bool>("IsGroupChatExistingAsync", chatId);
     }
-
     public async Task AddUsersToGroupChatAsync(Guid chatId, HashSet<Guid> userIdsToAdd)
     {
         if (HubConnection == null) return;
         await HubConnection.InvokeAsync("AddUsersToGroupChatAsync", chatId, userIdsToAdd);
     }
-
     public async Task<List<UserChatDTO>> GetSidebarItemsAsync()
     {
         if (HubConnection == null) return new List<UserChatDTO>();
         return await HubConnection.InvokeAsync<List<UserChatDTO>>("GetSidebarItemsAsync");
     }
-
     public async Task LeaveChatGroupAsync(Guid chatId)
     {
         if (HubConnection == null) return;
         await HubConnection.InvokeAsync("LeaveChatGroupAsync", chatId);
     }
-
     public async Task DeleteChatAsync(Guid chatId)
     {
         if (HubConnection == null) return;
         await HubConnection.InvokeAsync("DeleteChatAsync", chatId);
     }
-
     public async ValueTask DisposeAsync()
     {
         if (HubConnection is not null)

@@ -58,7 +58,6 @@ namespace ChatApp.Application.Services
             };
             await _userRepo.RegisterAsync(user);
         }
-
         public async Task<UserDTO?> LoginUserAsync(UserDTO userDto)
         {
             if (string.IsNullOrWhiteSpace(userDto.Username) || string.IsNullOrWhiteSpace(userDto.Password))
@@ -83,7 +82,6 @@ namespace ChatApp.Application.Services
 
             throw new Exception("Invalid username or password.");
         }
-
         public async Task<List<UserDTO>> GetUsersToInviteAsync(Guid currentUserId, string query)
         {
             var users = await _userRepo.GetAllUsersToInviteAsync(currentUserId, query);
@@ -94,7 +92,6 @@ namespace ChatApp.Application.Services
                 AvatarUrl = u.AvatarUrl
             }).ToList();
         }
-
         public async Task<HashSet<UserDTO>> GetUsersByIdsAsync(HashSet<Guid> userIds)
         {
             var users = await _userRepo.GetUsersByIdsAsync(userIds);
@@ -106,7 +103,6 @@ namespace ChatApp.Application.Services
                 IsOnline = u.IsOnline
             }).ToHashSet();
         }
-
         public async Task<UserDTO?> GetUserByIdAsync(Guid userId)
         {
             var user = await _userRepo.GetByIdAsync(userId);
@@ -120,7 +116,6 @@ namespace ChatApp.Application.Services
                 IsOnline = user.IsOnline
             };
         }
-
         private string GenerateToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
