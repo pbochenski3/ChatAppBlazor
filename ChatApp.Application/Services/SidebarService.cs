@@ -40,7 +40,8 @@ namespace ChatApp.Application.Services
                     ChatName = c.ChatName,
                     IsArchive = c.IsArchive,
                     AvatarUrl = c.AvatarUrl,
-                    
+                    LastMessageContent = c.LastMessageContent, 
+                    LastMessageSender = c.LastMessageSender,
                     UnreadMessageCount = counterDict.GetValueOrDefault(c.ChatID, 0),
                 }).ToList();
 

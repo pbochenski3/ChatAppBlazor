@@ -1,3 +1,4 @@
+using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Domain.Models;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,18 @@ namespace ChatApp.Infrastructure.Persistence
             await context.SaveChangesAsync();
         }
 
+        public async Task<Dictionary<Guid, MessagePreview>> GetMessagePreviewsAsync(List<Guid> ids)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Messages
+                .AsNoTracking()
+                .Include(m => m.Sender)
+                .Where(m => ids.Contains(m.MessageID))
+                .ToDictionaryAsync(
+                    m => m.MessageID,
+                    m => new MessagePreview(m.Content, m.Sender.Username) 
+                );
+        }
         public async Task<List<Message>> GetMessageHistoryAsync(Guid userId, Guid chatId, DateTime? cutoffDate, CancellationToken token)
         {
             using var context = _contextFactory.CreateDbContext();

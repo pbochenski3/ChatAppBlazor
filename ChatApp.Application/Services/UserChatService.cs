@@ -13,15 +13,23 @@ namespace ChatApp.Application.Services
     public class UserChatService : IUserChatService
     {
         private readonly IUserChatRepository _userChatRepo;
+        private readonly IMessageRepository _messageRepo;
 
-        public UserChatService(IUserChatRepository userChatRepo)
+        public UserChatService(IUserChatRepository userChatRepo, IMessageRepository messageRepo)
         {
             _userChatRepo = userChatRepo;
+            _messageRepo = messageRepo;
         }
 
         public async Task<List<UserChatDTO>> GetUserChatListAsync(Guid userId)
         {
             var chatEntries = await _userChatRepo.GetAllUserChatsAsync(userId);
+            var messageIds = chatEntries
+                .Where(uc => uc.LastMessageID.HasValue) 
+                .Select(uc => uc.LastMessageID.Value)   
+                .Distinct()                                 
+                .ToList();
+            var contentDict = await _messageRepo.GetMessagePreviewsAsync(messageIds);
 
             if (chatEntries == null || !chatEntries.Any())
                 return new List<UserChatDTO>();
@@ -33,8 +41,16 @@ namespace ChatApp.Application.Services
                 ChatName = uc.ChatName,
                 IsArchive = uc.IsArchive,
                 IsAdmin = uc.IsAdmin,
-                JoinedAt = uc.JoinedAt,
-            }).ToList();
+
+                LastMessageContent = uc.LastMessageID.HasValue && contentDict.TryGetValue(uc.LastMessageID.Value, out var preview)
+                    ? preview.Content
+                    : null,
+                LastMessageSender = uc.LastMessageID.HasValue && contentDict.TryGetValue(uc.LastMessageID.Value, out var authorPreview)
+                    ? authorPreview.Author
+                    : null,
+                IsGroup = uc.Chat.IsGroup,
+               
+            }).ToList(); 
         }
 
         public async Task<UserChatDTO?> GetUserChatDetailsAsync(Guid chatId, Guid userId, CancellationToken token)

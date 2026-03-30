@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using System.Runtime.InteropServices;
+using System.Xml;
 
 namespace ChatApp.ChatHub
 {
@@ -105,6 +106,11 @@ namespace ChatApp.ChatHub
             await _readStatusService.SaveLastSentMessageIdAsync(dto.ChatID, dto.MessageID);
             await _messageService.SaveMessageAsync(dto);
             await Clients.Group(chatId.ToString()).SendAsync("ReceiveMessage", dto);
+            var chat = await _chatService.GetChatUsersIdsAsync(chatId);
+            var participants = chat.Select(id => id.ToString()).ToList();
+            await Clients.Users(participants).SendAsync("UpdateLastMessage", dto.ChatID,dto.SenderUsername,dto.Content);
+
+
         }
         public async Task JoinChatGroupSignalAsync(Guid chatId)
         {

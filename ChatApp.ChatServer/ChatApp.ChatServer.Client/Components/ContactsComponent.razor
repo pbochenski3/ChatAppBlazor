@@ -42,15 +42,18 @@
                                  @onclick="async () => await SelectContact(chat.ChatID)">
                                 <div class="contact-avatar-container">
                                     <img src="@chat.AvatarUrl" class="contact-img" alt="avatar" />
-                                    @* <div class="status-indicator @(chat.IsOnline ? "online" : "offline")"></div> *@
                                 </div>
                                 <div class="contact-info">
                                     <p class="contact-name">@chat.ChatName</p>
+                                    <p class="contact-name">
+                                        @((chat.LastMessageSender == AppState.CurrentUser.Username)
+                                                                ? $"Ty: {chat.LastMessageContent}"
+                                                                : $"{chat.LastMessageSender}: {chat.LastMessageContent}")
+                                    </p>
                                     @if(chat.UnreadMessageCount > 0)
                                     {
                                         <p class="contact-name">@chat.UnreadMessageCount nowe wiadomości!</p>
                                     }
-                                    @* <p class="contact-name">@chat.LastMessage</p>  *@
                                 </div>
                             </div>
                         }
