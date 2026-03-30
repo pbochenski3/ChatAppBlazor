@@ -65,5 +65,9 @@ namespace ChatApp.Application.Services
         {
             await _userChatRepo.ArchiveChatAsync(chatId, userId);
         }
+        public async Task UpdateChatNameAsync(Guid chatId, string chatName)
+        {
+            await _userChatRepo.UpdateChatNameAsync(chatId, chatName);
+        }
     }
 }

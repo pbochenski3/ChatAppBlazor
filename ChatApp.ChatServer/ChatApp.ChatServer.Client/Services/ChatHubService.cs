@@ -254,6 +254,11 @@ public class ChatHubService : IAsyncDisposable
         if (HubConnection == null) return;
         await HubConnection.InvokeAsync("RemoveContactAsync", chatId);
     }
+    public async Task ChangeChatNameAsync(Guid chatId, string chatName)
+    {
+        if (HubConnection == null) return;
+        await HubConnection.InvokeAsync("ChangeChatNameAsync", chatId, chatName);
+    }
     public async Task<List<ContactDTO>> GetContactListAsync()
     {
         if (HubConnection == null) return new List<ContactDTO>();

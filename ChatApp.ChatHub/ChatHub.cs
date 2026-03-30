@@ -148,6 +148,25 @@ namespace ChatApp.ChatHub
                 await Clients.Caller.SendAsync("ReceiveStatus", "An error occurred while processing the delete action.");
             }
         }
+
+        public async Task ChangeChatNameAsync(Guid chatId, string chatName)
+        {
+            try
+            {
+                await _userChatService.UpdateChatNameAsync(chatId, chatName);
+                var tasks = new List<Task>
+                {
+                    Clients.Group(chatId.ToString()).SendAsync("SideBarReload", true),
+                    Clients.Group(chatId.ToString()).SendAsync("ChatReload", chatId, true)
+                };
+                await Task.WhenAll(tasks);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in ChangeChatNameAsync");
+                await Clients.Caller.SendAsync("ReceiveStatus", "An error occurred while trying to change the chat name.");
+            }
+        }
         public async Task HandleInviteActionAsync(Guid inviteId, bool status)
         {
             try

@@ -12,5 +12,6 @@ namespace ChatApp.Application.Interfaces.Service
         Task<UserChatDTO?> GetUserChatDetailsAsync(Guid chatId, Guid userId, CancellationToken token);
         Task<bool> IsChatArchivedAsync(Guid chatId, Guid userId);
         Task ArchiveUserChatAsync(Guid chatId, Guid userId);
+        Task UpdateChatNameAsync(Guid chatId, string chatName);
     }
 }

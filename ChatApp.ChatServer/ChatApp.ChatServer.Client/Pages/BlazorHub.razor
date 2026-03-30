@@ -45,7 +45,9 @@
                 UserContacts="_receivedContacts"
                 ExistingUsers="_usersInChat"
                 LockSidebar="HandleSidebarLock"
-                OnChatDelete="HandleChatDelete" />
+                OnChatDelete="HandleChatDelete" 
+                OnChatNameChange="HandleChangeChatNameAsync"  />
+                
         }
     </main>
 }
@@ -67,9 +69,6 @@
     private bool _isChatLocked = true;
     private bool _isChatArchived = false;
     private bool _isLoading = true;
-    private Guid _currentChatId;
-    private int _unreadCounter;
-    private bool _isChatLoaded;
     #endregion
 
     protected override async Task OnInitializedAsync()
@@ -224,7 +223,10 @@
     {
         AppState.CurrentChat = null;
     }
-
+    private async Task HandleChangeChatNameAsync(string chatName)
+    {
+        await ChatHubService.ChangeChatNameAsync(AppState.CurrentChat.ChatID, chatName);
+    }
     private async Task HandleChatLeave()
     {
         try
@@ -402,7 +404,6 @@
 
         try
         {
-            _isChatLoaded = false;
             _receivedMessages = new List<MessageDTO>();
             _logger.LogInformation("Loading chat: {Id} (Force: {Force})", args.ChatId, args.Force);
 
@@ -439,7 +440,6 @@
                 await HandleCounterUpdateAsync(chatInformation.ChatID, true);
             }
 
-            _isChatLoaded = true;
         }
         catch (OperationCanceledException)
         {

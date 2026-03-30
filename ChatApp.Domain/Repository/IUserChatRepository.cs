@@ -24,5 +24,6 @@ namespace ChatApp.Domain.Repository
         Task<bool> IsChatArchivedAsync(Guid chatId, Guid userId);
         Task<DateTime?> GetLastReadAtAsync(Guid userId, Guid chatId);
         Task MarkChatAsDeletedAsync(Guid chatId, Guid userId);
+        Task UpdateChatNameAsync(Guid chatId, string chatName);
     }
 }

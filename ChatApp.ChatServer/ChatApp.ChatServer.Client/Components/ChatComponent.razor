@@ -83,6 +83,7 @@
                     <div class="sidebar-header"><h3>Ustawienia</h3></div>
                     if (!IsArchive)
                     {
+                        <button class="btn-secondary" @onclick="() => _currentView = View.ChangeName">Zmień nazwe czatu</button>
                         <button class="btn-secondary" @onclick="() => _currentView = View.Users">Uczestnicy</button>
                         <button class="btn-secondary" @onclick="async () => { _currentView = View.AddUsers; await LoadContactsAsync(); }">Dodaj osoby</button>
 
@@ -139,6 +140,15 @@
                     }
                     <button class="btn-add-action" @onclick="() => _currentView = View.Settings">Cofnij</button>
                     break;
+                case View.ChangeName:
+                    <div class="sidebar-header"><h3>Zmień nazwę czatu</h3></div>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Nowa nazwa czatu..."
+                               @bind="newChatName" />
+                        <button class="btn-primary" @onclick="async () => { _currentView = View.Settings; await HandleChatNameChangeAsync(newChatName); }">Zatwierdź</button>
+                        <button class="btn-secondary" @onclick="() => _currentView = View.Settings">Cofnij</button>
+                    </div>
+                    break;
             }
         </div>
     </div>
@@ -152,6 +162,7 @@
     [Parameter] public EventCallback OnDeleteContact { get; set; }
     [Parameter] public EventCallback OnChatLeave { get; set; }
     [Parameter] public EventCallback OnChatDelete { get; set; }
+    [Parameter] public EventCallback<string> OnChatNameChange { get; set; }
     [Parameter] public EventCallback<bool> LockSidebar { get; set; }
 
     [Parameter] public List<MessageDTO> Messages { get; set; } = new();
@@ -165,12 +176,13 @@
     #region Private Fields
     private string _contactSearchTerm = string.Empty;
     private string _messageContent = string.Empty;
+    private string newChatName = string.Empty;
     private bool _isSettingsOpen = false;
     private bool _showConfirm = false;
     private string _confirmTitle = string.Empty;
     private string _confirmMessage = string.Empty;
     private Func<Task>? _onConfirmAction;
-    private enum View { Settings, AddUsers, Users }
+    private enum View { Settings, AddUsers, Users,ChangeName }
     private View _currentView = View.Settings;
     #endregion
 
@@ -220,9 +232,17 @@
         ContactsToAdd.Clear();
     }
 
-    public async Task LoadContactsAsync()
+    private async Task LoadContactsAsync()
     {
         await OnAddUserTriggered.InvokeAsync();
+    }
+    private async Task HandleChatNameChangeAsync(string name)
+    {
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            _isSettingsOpen = false;
+            await OnChatNameChange.InvokeAsync(name);
+        }
     }
 
     private async Task HandleContactDeleteAsync()

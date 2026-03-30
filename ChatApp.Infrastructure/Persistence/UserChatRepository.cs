@@ -195,5 +195,13 @@ namespace ChatApp.Infrastructure.Persistence
                 .ToListAsync();
             return rawData.Select(x => (x.Id, x.UnreadCount)).ToList();
         }
+        public async Task UpdateChatNameAsync(Guid chatId, string chatName)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            await context.UserChat
+                .Where(uc => uc.ChatID == chatId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(uc => uc.ChatName, chatName));
+        }
     }
 }
