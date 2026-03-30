@@ -82,7 +82,7 @@
 
         _currentUser = AppState.CurrentUser;
         _notification = AppState.Message;
-        
+
         if (!string.IsNullOrEmpty(_notification))
         {
             AppState.Message = null;
@@ -98,7 +98,7 @@
         ChatHubService.OnUserInChatReload += HandleUserOnGroupLoadAsync;
 
         var dataReloadTask = HandleDataReloadAsync(true);
-        
+
         try
         {
             await Task.WhenAll(startHubTask, dataReloadTask);
@@ -133,6 +133,9 @@
                     break;
                 case ReloadTarget.Global:
                     await HandleDataReloadAsync(true);
+                    break;
+                case ReloadTarget.Chat:
+                    await HandleChatClose(true);
                     break;
             }
             StateHasChanged();
@@ -215,6 +218,11 @@
             _logger.LogError(ex, "Error during contact deletion");
             _ = ShowNotificationAsync($"{ex.Message}");
         }
+    }
+
+    private async Task HandleChatClose(bool close)
+    {
+        AppState.CurrentChat = null;
     }
 
     private async Task HandleChatLeave()

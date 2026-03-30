@@ -59,6 +59,7 @@ public class ChatHubService : IAsyncDisposable
         HubConnection.On<bool>("SideBarReload", async (_) => await TriggerReload(ReloadTarget.Sidebar));
         HubConnection.On<bool>("InviteReload", async (_) => await TriggerReload(ReloadTarget.Invite));
         HubConnection.On<bool>("ContactInviteReload", async (_) => await TriggerReload(ReloadTarget.Global));
+        HubConnection.On<bool>("ChatClose", async (_) => await TriggerReload(ReloadTarget.Chat));
         
         HubConnection.On<Guid, bool>("ChatReload", async (id, force) =>
         {

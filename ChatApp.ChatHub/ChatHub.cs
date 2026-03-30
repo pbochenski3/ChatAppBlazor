@@ -315,7 +315,7 @@ namespace ChatApp.ChatHub
             await _chatService.DeleteChatAsync(chatId, UserId);
             await Clients.Caller.SendAsync("ReceiveStatus", "Czat został usunięty!");
             await Clients.Caller.SendAsync("SideBarReload", true);
-            await Clients.Caller.SendAsync("ChatReload", chatId, true);
+            await Clients.Caller.SendAsync("ChatClose", true);
         }
     }
 }
