@@ -30,13 +30,6 @@ namespace ChatApp.Infrastructure.Persistence
             await context.SaveChangesAsync();
         }
 
-        public async Task SaveChangesAsync()
-        {
-            using var context = _contextFactory.CreateDbContext();
-            _logger.LogInformation("Saving changes to the database.");
-            await context.SaveChangesAsync();
-        }
-
         public async Task<Dictionary<Guid, MessagePreview>> GetMessagePreviewsAsync(List<Guid> ids)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -46,7 +39,11 @@ namespace ChatApp.Infrastructure.Persistence
                 .Where(m => ids.Contains(m.MessageID))
                 .ToDictionaryAsync(
                     m => m.MessageID,
-                    m => new MessagePreview(m.Content, m.Sender.Username) 
+                    m => new MessagePreview
+                    {
+                        Content = m.Content,
+                        Author = m.Sender.Username
+                    }
                 );
         }
         public async Task<List<Message>> GetMessageHistoryAsync(Guid userId, Guid chatId, DateTime? cutoffDate, CancellationToken token)

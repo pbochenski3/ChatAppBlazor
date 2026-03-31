@@ -5,14 +5,17 @@ using ChatApp.Application.Interfaces.Service;
 using ChatApp.Application.Services;
 using ChatApp.ChatHub;
 using ChatApp.Domain.Repository;
+using ChatApp.Domain.Repository.Decorators;
 using ChatApp.Infrastructure.Persistence;
 using ChatApp.Infrastructure.Providers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.SignalR;
+using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using ChatApp.Infrastructure.Persistence.Decorators;
 
 var builder = WebApplication.CreateBuilder(args);
 var JwtSetting = builder.Configuration.GetSection("JwtSettings");
@@ -66,7 +69,7 @@ builder.Services.AddCors(options =>
 });
 //Messages
 builder.Services.AddScoped<IMessageService, MessageService>();
-builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddInfrastructure(builder.Configuration);
 //Users
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
