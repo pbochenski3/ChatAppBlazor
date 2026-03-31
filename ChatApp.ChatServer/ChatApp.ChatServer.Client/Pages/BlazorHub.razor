@@ -307,17 +307,17 @@
             {
                 try
                 {
-                            _ = Task.Run(async () =>
-                   {
-                       try
-                       {
-                           await ChatHubService.MarkMessageAsReadAsync(dto.ChatID, dto.MessageID);
-                       }
-                       catch (Exception ex)
-                       {
-                           _logger.LogWarning(ex, "Failed to mark as read");
-                       }
-                   });
+                    _ = Task.Run(async () =>
+           {
+               try
+               {
+                   await ChatHubService.MarkMessageAsReadAsync(dto.ChatID, dto.MessageID);
+               }
+               catch (Exception ex)
+               {
+                   _logger.LogWarning(ex, "Failed to mark as read");
+               }
+           });
                 }
                 catch (Exception ex)
                 {
@@ -335,13 +335,13 @@
     }
     private async Task HandleSidebarMessageReloadAsync(Guid chatId, string sender,string content)
     {
-        _sidebarItems.Where(sb => sb.ChatID == chatId)
-                     .ToList()
-                     .ForEach(sb =>
-                     {
-                         sb.LastMessageContent = content;
-                         sb.LastMessageSender = sender;
-                     });
+        var itemsToUpdate = _sidebarItems.FirstOrDefault(sb => sb.ChatID == chatId);
+        if (itemsToUpdate != null)
+        {
+            itemsToUpdate.LastMessageContent = content;
+            itemsToUpdate.LastMessageSender = sender;
+        }
+          
         await InvokeAsync(StateHasChanged);
 
     }
