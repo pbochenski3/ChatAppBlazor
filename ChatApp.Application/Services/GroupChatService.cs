@@ -43,6 +43,10 @@ namespace ChatApp.Application.Services
         {
             var usersInGroup = await _userChatRepo.GetUsersInChatAsync(existingChatId);
             usersInGroup.UnionWith(userIdsToAdd);
+            if(usersInGroup.Count < 3)
+            {
+                throw new InvalidOperationException("Chat group need more that 2 people!");
+            }
 
             int number = RandomNumberGenerator.GetInt32(0, 100000);
             var newChat = new Chat
