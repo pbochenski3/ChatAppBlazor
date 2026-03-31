@@ -33,13 +33,13 @@
        
         @if (AppState.CurrentChat != null)
         {
-            <ChatComponent
+            <ChatComponent 
+                @bind-IsSettingsOpen="_isSettingsOpen"
                 OnSendMessage="HandleSendMessage"
                 OnDeleteContact="HandleContactDelete"
                 Messages="_receivedMessages"
                 IsLocked="_isChatLocked"
                 IsArchive="_isChatArchived"
-                IsSettingsOpen="_isSettingsOpen"
                 OnAddUserTriggered="HandleContactLoad"
                 OnAddUserClick="HandleCreateGroupChat"
                 OnChatLeave="HandleChatLeave"
@@ -277,6 +277,7 @@
     {
         try
         {
+            _isSettingsOpen = true;
             _receivedContacts = await ChatHubService.GetContactListAsync();
             _logger.LogInformation("Contacts loaded");
         }

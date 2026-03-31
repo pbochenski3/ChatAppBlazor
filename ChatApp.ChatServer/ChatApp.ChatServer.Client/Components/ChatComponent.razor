@@ -167,6 +167,7 @@
     [Parameter] public EventCallback OnChatDelete { get; set; }
     [Parameter] public EventCallback<string> OnChatNameChange { get; set; }
     [Parameter] public EventCallback<bool> LockSidebar { get; set; }
+    [Parameter] public EventCallback<bool> IsSettingsOpenChanged { get; set; }
 
     [Parameter] public List<MessageDTO> Messages { get; set; } = new();
     [Parameter] public List<ContactDTO> UserContacts { get; set; } = new();
@@ -175,6 +176,7 @@
     [Parameter] public bool IsLocked { get; set; }
     [Parameter] public bool IsArchive { get; set; }
     [Parameter] public bool IsSettingsOpen { get; set; }
+  
     #endregion
 
     #region Private Fields
