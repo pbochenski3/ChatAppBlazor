@@ -45,11 +45,15 @@
                                 </div>
                                 <div class="contact-info">
                                     <p class="contact-name">@chat.ChatName</p>
+                                    @if(chat.LastMessageContent != null)
+                                    {
                                     <p class="contact-name">
                                         @((chat.LastMessageSender == AppState.CurrentUser.Username)
                                                                 ? $"Ty: {chat.LastMessageContent}"
                                                                 : $"{chat.LastMessageSender}: {chat.LastMessageContent}")
                                     </p>
+                                        
+                                    }
                                     @if(chat.UnreadMessageCount > 0)
                                     {
                                         <p class="contact-name">@chat.UnreadMessageCount nowe wiadomości!</p>
