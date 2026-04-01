@@ -20,5 +20,6 @@ namespace ChatApp.Application.DTO
         public Guid? LastMessageID { get; set; }
         public DateTime LastMessageAt { get; set; }
         public int UnreadMessageCount { get; set; }
+        public Guid? OtherUserId { get; set; }
     }
 }

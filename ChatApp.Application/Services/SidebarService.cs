@@ -42,6 +42,7 @@ namespace ChatApp.Application.Services
                     AvatarUrl = c.AvatarUrl,
                     LastMessageContent = c.LastMessageContent, 
                     LastMessageSender = c.LastMessageSender,
+                    OtherUserId = c.OtherUserId,
                     UnreadMessageCount = counterDict.GetValueOrDefault(c.ChatID, 0),
                 }).ToList();
 

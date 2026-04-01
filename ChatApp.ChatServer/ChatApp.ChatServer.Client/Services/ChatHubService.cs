@@ -21,7 +21,7 @@ public class ChatHubService : IAsyncDisposable
     public event Func<ContactSelectedArgs, Task>? OnChatLoad;
     public event Func<ReloadTarget, Task>? OnAppReload;
     public event Func<Guid, Task>? OnUserInChatReload;
-    public event Func<string, Task>? OnAvatarReload;
+    public event Func<string,Guid, Task>? OnAvatarReload;
     public event Func<Guid,string, Task>? OnChatNameChanged;
     public event Func<Guid,string,string, Task>? OnLastMessageChanged;
     public event Action<string, UserDTO>? LoginStatusMessage;
@@ -84,6 +84,13 @@ public class ChatHubService : IAsyncDisposable
         HubConnection.On<Guid, string,string>("UpdateLastMessage", async (chatId, lastSender, lastMessage) =>
         {
             await OnLastMessageChanged.Invoke(chatId,lastSender,lastMessage);
+        });
+        HubConnection.On<string,Guid>("AvatarReload", async (avatarUrl,changignUserId) =>
+        {
+            if (OnAvatarReload != null)
+            {
+                await OnAvatarReload.Invoke(avatarUrl, changignUserId);
+            }
         });
 
 

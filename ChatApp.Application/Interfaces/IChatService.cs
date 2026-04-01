@@ -7,7 +7,6 @@ namespace ChatApp.Application.Interfaces
 {
     public interface IChatService
     {
-        Task<ChatDTO> GetChatDetailsAsync(Guid chatId);
         Task<HashSet<Guid>> GetChatUsersIdsAsync(Guid chatId);
         Task DeleteChatAsync(Guid chatId, Guid userId);
         Task<bool> IsGroupChatExistingAsync(Guid chatId, Guid userId);

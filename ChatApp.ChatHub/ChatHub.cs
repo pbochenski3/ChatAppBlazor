@@ -164,7 +164,10 @@ namespace ChatApp.ChatHub
         }
         public async Task UpdateUserAvatarAsync()
         {
-            await Clients.Caller.SendAsync("AvatarReload",true);
+            var contacts = await _contactService.GetUserContactsAsync(UserId);
+            var contactIds = contacts.Select(c => c.ContactUserID.ToString()).ToList();
+            var avatarUrl = await _userService.GetAvatarUrlAsync(UserId);
+            await Clients.Users(contactIds).SendAsync("AvatarReload", avatarUrl,UserId);
         }
         public async Task ChangeChatNameAsync(Guid chatId, string chatName)
         {

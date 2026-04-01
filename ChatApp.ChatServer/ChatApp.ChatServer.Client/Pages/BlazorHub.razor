@@ -102,8 +102,9 @@
         ChatHubService.InviteStatusMessage += HandleInviteStatusReceivedAsync;
         ChatHubService.OnChatLoad += HandleChatLoadAsync;
         ChatHubService.OnUserInChatReload += HandleUserOnGroupLoadAsync;
-        ChatHubService.OnChatNameChanged += HandleChatNameReload;
+        ChatHubService.OnChatNameChanged += HandleChatNameReloadAsync;
         ChatHubService.OnLastMessageChanged += HandleSidebarMessageReloadAsync;
+        ChatHubService.OnAvatarReload += HandleAvatarReloadAsync;
 
         var dataReloadTask = HandleDataReloadAsync(true);
 
@@ -209,7 +210,33 @@
             await InvokeAsync(StateHasChanged);
         }
     }
-    private async Task HandleChatNameReload(Guid chatId, string newChatName)
+    private async Task HandleAvatarReloadAsync(string newAvatarUrl,Guid chaningUserId)
+    {
+        var userInChat = _usersInChat.FirstOrDefault(u => u.UserID == chaningUserId);
+        if (userInChat != null)
+        {
+            userInChat.AvatarUrl = newAvatarUrl;
+        }
+
+        if (AppState.CurrentChat != null && AppState.CurrentChat.IsGroup == false)
+        {
+            var other = _usersInChat.FirstOrDefault(u => u.UserID != _currentUser.UserID);
+            if (other != null && other.UserID == chaningUserId)
+            {
+                AppState.CurrentChat.AvatarUrl = newAvatarUrl;
+            }
+        }
+        if (_sidebarItems != null && _sidebarItems.Any())
+        {
+           var item =  _sidebarItems.FirstOrDefault(sb => !sb.IsGroup && sb.OtherUserId == chaningUserId);
+           if(item != null)
+           {
+               item.AvatarUrl = newAvatarUrl;
+            }
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+    private async Task HandleChatNameReloadAsync(Guid chatId, string newChatName)
     {
         var chat = _sidebarItems.FirstOrDefault(c => c.ChatID == chatId);
         if (chat != null)
@@ -220,7 +247,8 @@
         {
             AppState.CurrentChat.ChatName = newChatName;
         }
-        await InvokeAsync(StateHasChanged);
+         await InvokeAsync(StateHasChanged);
+
     }
 
     private async Task HandleContactInvite(Guid contactId)
@@ -557,7 +585,8 @@
         ChatHubService.OnAppReload -= HandleUnifiedReloadAsync;
         ChatHubService.OnChatLoad -= HandleChatLoadAsync;
         ChatHubService.OnUserInChatReload -= HandleUserOnGroupLoadAsync;
-        ChatHubService.OnChatNameChanged -= HandleChatNameReload;
+        ChatHubService.OnChatNameChanged -= HandleChatNameReloadAsync;
+        ChatHubService.OnAvatarReload -= HandleAvatarReloadAsync;
         ChatHubService.OnLastMessageChanged -= HandleSidebarMessageReloadAsync;
     }
 }

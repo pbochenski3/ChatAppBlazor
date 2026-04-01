@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using static System.Net.WebRequestMethods;
 
 namespace ChatApp.Application.Services
 {
@@ -55,7 +56,8 @@ namespace ChatApp.Application.Services
                 CreatedAt = DateTime.UtcNow,
                 IsGroup = true,
                 ChatName = $"Chat#{number:D5}",
-                UserChats = new List<UserChat>()
+                UserChats = new List<UserChat>(),
+                AvatarUrl = "https://localhost:7255/cdn/avatars/default-group-avatar.png"
             };
 
             foreach (var userId in usersInGroup)

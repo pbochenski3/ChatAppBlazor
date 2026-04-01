@@ -19,18 +19,6 @@ namespace ChatApp.Application.Services
             _userChatRepo = userChatRepo;
         }
 
-        public async Task<ChatDTO> GetChatDetailsAsync(Guid chatId)
-        {
-            var chat = await _chatRepo.FetchChatById(chatId);
-            if (chat == null) return null!;
-
-            return new ChatDTO
-            {
-                ChatID = chat.ChatID,
-                ChatName = chat.ChatName,
-                AvatarUrl = chat.AvatarUrl,
-            };
-        }
 
         public async Task<HashSet<Guid>> GetChatUsersIdsAsync(Guid chatId)
         {

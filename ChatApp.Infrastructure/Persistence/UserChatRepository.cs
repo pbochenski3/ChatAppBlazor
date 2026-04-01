@@ -122,8 +122,9 @@ namespace ChatApp.Infrastructure.Persistence
         {
             using var context = _contextFactory.CreateDbContext();
             return await context.UserChat
-               .AsNoTracking()
                .Include(ch => ch.Chat)
+                     .ThenInclude(c => c.UserChats)
+                          .ThenInclude(uc => uc.User)
                .IgnoreQueryFilters()
                .Where(c => c.ChatID == chatId && c.UserID == userId)
                .FirstOrDefaultAsync(token);
@@ -133,8 +134,9 @@ namespace ChatApp.Infrastructure.Persistence
         {
             using var context = _contextFactory.CreateDbContext();
             return await context.UserChat
-                .AsNoTracking()
                 .Include(uc => uc.Chat)
+                    .ThenInclude(c => c.UserChats)
+                        .ThenInclude(uc => uc.User)
                 .Where(uc => uc.UserID == userId)
                 .ToListAsync();
         }

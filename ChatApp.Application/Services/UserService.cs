@@ -54,7 +54,7 @@ namespace ChatApp.Application.Services
             {
                 Username = userDto.Username,
                 Password = BCrypt.Net.BCrypt.HashPassword(userDto.Password),
-                AvatarUrl = $"https://api.dicebear.com/7.x/avataaars/svg?seed={userDto.Username}"
+                AvatarUrl = $"https://localhost:7255/cdn/avatars/default-avatar.png"
             };
             await _userRepo.RegisterAsync(user);
         }

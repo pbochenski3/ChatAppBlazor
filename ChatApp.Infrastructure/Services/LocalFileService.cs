@@ -28,6 +28,7 @@ namespace ChatApp.Infrastructure.Services
             {
                 await fileStream.CopyToAsync(destinationStream);
             }
+            
             var uriBuilder = new UriBuilder("https", "localhost", 7255, $"{PublicPrefix}/{fileName}");
             return uriBuilder.ToString();
         }

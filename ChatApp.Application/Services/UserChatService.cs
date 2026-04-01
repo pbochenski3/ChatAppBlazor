@@ -1,6 +1,7 @@
 using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
+using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
 using System;
 using System.Collections.Generic;
@@ -24,15 +25,17 @@ namespace ChatApp.Application.Services
         public async Task<List<UserChatDTO>> GetUserChatListAsync(Guid userId)
         {
             var chatEntries = await _userChatRepo.GetAllUserChatsAsync(userId);
-            var messageIds = chatEntries
-                .Where(uc => uc.LastMessageID.HasValue) 
-                .Select(uc => uc.LastMessageID.Value)   
-                .Distinct()                                 
-                .ToList();
-            var contentDict = await _messageRepo.GetMessagePreviewsAsync(messageIds);
-
+          
             if (chatEntries == null || !chatEntries.Any())
                 return new List<UserChatDTO>();
+
+            var messageIds = chatEntries
+            .Where(uc => uc.LastMessageID.HasValue)
+            .Select(uc => uc.LastMessageID.Value)
+            .Distinct()
+            .ToList();
+
+            var contentDict = await _messageRepo.GetMessagePreviewsAsync(messageIds);
 
             return chatEntries.Select(uc => new UserChatDTO
             {
@@ -41,7 +44,6 @@ namespace ChatApp.Application.Services
                 ChatName = uc.ChatName,
                 IsArchive = uc.IsArchive,
                 IsAdmin = uc.IsAdmin,
-
                 LastMessageContent = uc.LastMessageID.HasValue && contentDict.TryGetValue(uc.LastMessageID.Value, out var preview)
                     ? preview.Content
                     : null,
@@ -49,7 +51,12 @@ namespace ChatApp.Application.Services
                     ? authorPreview.Author
                     : null,
                 IsGroup = uc.Chat.IsGroup,
-               
+                AvatarUrl = uc.Chat.IsGroup
+                ? uc.Chat.AvatarUrl
+                : uc.Chat.UserChats.FirstOrDefault(p => p.UserID != userId)?
+                .User?.AvatarUrl ?? "https://localhost:7255/cdn/avatars/default-avatar.png",
+                OtherUserId = uc.Chat.IsGroup ? null : uc.Chat.UserChats.FirstOrDefault(p => p.UserID != userId)?.UserID,
+
             }).ToList(); 
         }
 
@@ -69,6 +76,10 @@ namespace ChatApp.Application.Services
                 IsAdmin = chat.IsAdmin,
                 IsArchive = chat.IsArchive,
                 IsGroup = chat.Chat.IsGroup,
+                AvatarUrl = chat.Chat.IsGroup
+                ? chat.Chat.AvatarUrl
+                : chat.Chat.UserChats.FirstOrDefault(p => p.UserID != userId)?
+                .User?.AvatarUrl ?? "https://localhost:7255/cdn/avatars/default-avatar.png",
             };
         }
 
