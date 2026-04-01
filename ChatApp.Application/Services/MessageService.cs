@@ -52,7 +52,7 @@ namespace ChatApp.Application.Services
 
             if (isArchive)
             {
-                cutoffDate = await _readStatusService.GetLastSeenMessageAtAsync(userId, chatId);
+                cutoffDate = await _readStatusService.GetLastMessageAtChatAsync(userId, chatId);
             }
 
             var messages = await _messageRepo.GetMessageHistoryAsync(userId, chatId, cutoffDate, token);
