@@ -42,9 +42,9 @@ namespace ChatApp.Application.Services.Chats
             return await _userChatRepo.CountAllUnreadMessageCountsAsync(userId);
         }
 
-        public async Task<DateTime?> GetLastSeenMessageAtAsync(Guid userId, Guid chatId)
+        public async Task<DateTime?> GetLastMessageAtChatAsync(Guid userId, Guid chatId)
         {
-            return await _userChatRepo.GetLastReadAtAsync(userId, chatId);
+            return await _userChatRepo.GetLastMessageDateAsync(userId, chatId);
         }
 
         public async Task SaveLastSentMessageIdAsync(Guid chatId, Guid messageId)

@@ -11,7 +11,7 @@ namespace ChatApp.Application.Interfaces.Chats
         Task MarkChatMessagesAsReadAsync(Guid userId, Guid chatId, CancellationToken token);
         Task<int> GetUnreadMessageCountAsync(Guid userId, Guid chatId);
         Task<List<(Guid ChatId, int Count)>> GetAllUnreadMessageCountsAsync(Guid userId);
-        Task<DateTime?> GetLastSeenMessageAtAsync(Guid userId, Guid chatId);
+        Task<DateTime?> GetLastMessageAtChatAsync(Guid userId, Guid chatId);
         Task SaveLastSentMessageIdAsync(Guid chatId, Guid messageId);
     }
 }

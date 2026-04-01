@@ -79,7 +79,7 @@ namespace ChatApp.Application.Services.Chats
 
             return new UserChatDTO
             {
-                Identity = new DTO.Chats.ChatIdentityDTO
+                Identity = new ChatIdentityDTO
                 {
                     ChatID = chat.ChatID,
                     ChatName = chat.ChatName,
@@ -90,7 +90,7 @@ namespace ChatApp.Application.Services.Chats
                     UserID = chat.UserID,
                     OtherUserId = chat.Chat.IsGroup ? null : chat.Chat.UserChats.FirstOrDefault(p => p.UserID != userId)?.UserID
                 },
-                State = new DTO.Chats.ChatStateDTO
+                State = new ChatStateDTO
                 {
                     IsAdmin = chat.IsAdmin,
                     IsArchive = chat.IsArchive
@@ -109,7 +109,6 @@ namespace ChatApp.Application.Services.Chats
         }
         public async Task UpdateChatNameAsync(Guid chatId, string chatName)
         {
-            // Chat name belongs to Chat entity, update via chat repository
             await _chatRepo.UpdateChatNameAsync(chatId, chatName);
         }
     }

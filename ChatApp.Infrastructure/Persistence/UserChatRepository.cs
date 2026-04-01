@@ -20,7 +20,96 @@ namespace ChatApp.Infrastructure.Persistence
             _contextFactory = contextFactory;
             _logger = logger;
         }
+        #region Read & Sync Status
+        public async Task UpdateLastReadMessageAsync(Guid userId, Guid chatId, Guid messageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            await context.UserChat
+                .Where(uc => uc.UserID == userId && uc.ChatID == chatId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(uc => uc.LastReadMessageID, messageId)
+                    .SetProperty(uc => uc.LastReadAt, DateTime.UtcNow)
+                );
+        }
+        public async Task UpdateLastSentMessageAsync(Guid chatId, Guid messageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var affected = await context.UserChat
+                .Where(uc => uc.ChatID == chatId && uc.IsArchive == false)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(uc => uc.LastMessageID, messageId)
+                    .SetProperty(uc => uc.LastMessageAt, DateTime.UtcNow)
+                );
+            _logger.LogInformation("UpdateLastSentMessageAsync: updated {Count} UserChat rows for ChatID={ChatId}", affected, chatId);
+        }
+        public async Task<int> CountUnreadMessagesAsync(Guid userId, Guid chatId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return await context.UserChat
+                 .Where(uc => uc.UserID == userId && uc.ChatID == chatId)
+                 .Select(uc => uc.Chat.Messages
+                     .Count(m => m.SentAt > uc.LastReadAt
+                              && m.SenderID != userId
+                              && !m.IsDeleted))
+                 .FirstOrDefaultAsync();
+        }
+        public async Task<List<(Guid ChatId, int Count)>> CountAllUnreadMessageCountsAsync(Guid userId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var rawData = await context.UserChat
+                .Where(uc => uc.UserID == userId)
+                .Select(uc => new
+                {
+                    Id = uc.ChatID,
+                    UnreadCount = uc.Chat.Messages.Count(m =>
+                        m.SentAt > uc.LastReadAt &&
+                        m.SenderID != userId &&
+                        !m.IsDeleted)
+                })
+                .ToListAsync();
+            return rawData.Select(x => (x.Id, x.UnreadCount)).ToList();
+        }
+        #endregion
+        #region Visibility & Archive
+        public async Task ArchiveChatAsync(Guid chatId, Guid userId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            await context.UserChat
+                .Where(ch => ch.ChatID == chatId && ch.UserID == userId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(ch => ch.IsArchive, true)
+                    .SetProperty(ch => ch.ArchivedAt, DateTime.UtcNow));
+        }
+        public async Task ArchivePrivateChatAsync(Guid chatId, Guid userId, Guid contactId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var affected = await context.UserChat
+                .IgnoreQueryFilters()
+                .Where(uc => uc.ChatID == chatId && (uc.UserID == userId || uc.UserID == contactId))
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(uc => uc.IsArchive, true)
+                    .SetProperty(uc => uc.ArchivedAt, DateTime.UtcNow));
 
+            _logger.LogInformation("ArchivePrivateChat: set IsArchive=true for chat {ChatId}. Rows affected: {Count}", chatId, affected);
+        }
+        public async Task UnarchiveChatAsync(Guid chatId, HashSet<Guid> userIds)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            await context.UserChat
+                .Where(uc => uc.ChatID == chatId && userIds.Contains(uc.UserID))
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(uc => uc.IsArchive, false)
+                    .SetProperty(uc => uc.ArchivedAt, (DateTime?)null));
+        }
+        public async Task MarkChatAsDeletedAsync(Guid chatId, Guid userId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            await context.UserChat
+                .Where(uc => uc.ChatID == chatId && uc.UserID == userId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(uc => uc.IsDeleted, true)
+                    .SetProperty(uc => uc.ArchivedAt, DateTime.UtcNow));
+        }
         public async Task SetChatAccessibilityAsync(Guid chatId, bool active, HashSet<Guid>? userIds = null)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -45,14 +134,6 @@ namespace ChatApp.Infrastructure.Persistence
                     .SetProperty(uc => uc.ArchivedAt, DateTime.UtcNow));
             }
         }
-
-
-        public async Task<bool> ExistsAsync(Guid chatId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            return await context.UserChat.AnyAsync(c => c.ChatID == chatId);
-        }
-
         public async Task<bool> IsChatArchivedAsync(Guid chatId, Guid userId)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -61,52 +142,29 @@ namespace ChatApp.Infrastructure.Persistence
                                c.UserID == userId &&
                                c.IsArchive == true);
         }
-
-        public async Task<Guid> GetReceiverUserIdAsync(Guid chatId, Guid userId, CancellationToken token)
+        public async Task<bool> GetChatStatusById(Guid chatId, Guid userId)
         {
             using var context = _contextFactory.CreateDbContext();
             return await context.UserChat
-                .AsNoTracking()
-                .Where(uc => uc.ChatID == chatId && uc.UserID != userId)
-                .Select(uc => uc.UserID)
-                .FirstOrDefaultAsync(token);
+                .Where(uc => uc.ChatID == chatId && uc.UserID == userId)
+                .Select(uc => uc.IsArchive)
+                .FirstOrDefaultAsync();
         }
-
-        public async Task UpdateLastSentMessageAsync(Guid chatId, Guid messageId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var affected = await context.UserChat
-                .Where(uc => uc.ChatID == chatId && uc.IsArchive == false)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(uc => uc.LastMessageID, messageId)
-                    .SetProperty(uc => uc.LastMessageAt, DateTime.UtcNow)
-                );
-            _logger.LogInformation("UpdateLastSentMessageAsync: updated {Count} UserChat rows for ChatID={ChatId}", affected, chatId);
-        }
-
-        public async Task UpdateLastReadMessageAsync(Guid userId, Guid chatId, Guid messageId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            await context.UserChat
-                .Where(uc => uc.UserID == userId && uc.ChatID == chatId)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(uc => uc.LastReadMessageID, messageId)
-                    .SetProperty(uc => uc.LastReadAt, DateTime.UtcNow)
-                );
-        }
-
-        public async Task<int> CountUnreadMessagesAsync(Guid userId, Guid chatId)
+        #endregion
+        #region Queries & Membership
+        public async Task<DateTime?> GetLastMessageDateAsync(Guid userId, Guid chatId)
         {
             using var context = _contextFactory.CreateDbContext();
             return await context.UserChat
-                 .Where(uc => uc.UserID == userId && uc.ChatID == chatId)
-                 .Select(uc => uc.Chat.Messages
-                     .Count(m => m.SentAt > uc.LastReadAt
-                              && m.SenderID != userId
-                              && !m.IsDeleted))
-                 .FirstOrDefaultAsync();
+                .Where(uc => uc.ChatID == chatId && uc.UserID == userId)
+                .Select(uc => (DateTime?)uc.LastMessageAt)
+                .FirstOrDefaultAsync();
         }
-
+        public async Task<bool> ExistsAsync(Guid chatId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return await context.UserChat.AnyAsync(c => c.ChatID == chatId);
+        }
         public async Task<UserChat?> GetUserChatAsync(Guid chatId, Guid userId, CancellationToken token)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -118,7 +176,6 @@ namespace ChatApp.Infrastructure.Persistence
                .Where(c => c.ChatID == chatId && c.UserID == userId)
                .FirstOrDefaultAsync(token);
         }
-
         public async Task<List<UserChat>?> GetAllUserChatsAsync(Guid userId)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -129,7 +186,6 @@ namespace ChatApp.Infrastructure.Persistence
                 .Where(uc => uc.UserID == userId)
                 .ToListAsync();
         }
-
         public async Task<HashSet<Guid>> GetUsersInChatAsync(Guid chatId)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -140,82 +196,18 @@ namespace ChatApp.Infrastructure.Persistence
                 .ToListAsync();
             return userIds.ToHashSet();
         }
-
-        public async Task ArchiveChatAsync(Guid chatId, Guid userId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            await context.UserChat
-                .Where(ch => ch.ChatID == chatId && ch.UserID == userId)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(ch => ch.IsArchive, true)
-                    .SetProperty(ch => ch.ArchivedAt, DateTime.UtcNow));
-        }
-
-        public async Task<DateTime?> GetLastReadAtAsync(Guid userId, Guid chatId)
+        public async Task<Guid> GetReceiverUserIdAsync(Guid chatId, Guid userId, CancellationToken token)
         {
             using var context = _contextFactory.CreateDbContext();
             return await context.UserChat
-                .Where(uc => uc.ChatID == chatId && uc.UserID == userId)
-                .Select(uc => (DateTime?)uc.LastReadAt)
-                .FirstOrDefaultAsync();
+                .AsNoTracking()
+                .Where(uc => uc.ChatID == chatId && uc.UserID != userId)
+                .Select(uc => uc.UserID)
+                .FirstOrDefaultAsync(token);
         }
+        #endregion
 
-        public async Task MarkChatAsDeletedAsync(Guid chatId, Guid userId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            await context.UserChat
-                .Where(uc => uc.ChatID == chatId && uc.UserID == userId)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(uc => uc.IsDeleted, true)
-                    .SetProperty(uc => uc.ArchivedAt, DateTime.UtcNow));
-        }
 
-        public async Task<List<(Guid ChatId, int Count)>> CountAllUnreadMessageCountsAsync(Guid userId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var rawData = await context.UserChat
-                .Where(uc => uc.UserID == userId)
-                .Select(uc => new
-                {
-                    Id = uc.ChatID,
-                    UnreadCount = uc.Chat.Messages.Count(m =>
-                        m.SentAt > uc.LastReadAt &&
-                        m.SenderID != userId &&
-                        !m.IsDeleted)
-                })
-                .ToListAsync();
-            return rawData.Select(x => (x.Id, x.UnreadCount)).ToList();
-        }
-        public async Task UnarchiveChatAsync(Guid chatId, HashSet<Guid> userIds)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            await context.UserChat
-                .Where(uc => uc.ChatID == chatId && userIds.Contains(uc.UserID))
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(uc => uc.IsArchive, false)
-                    .SetProperty(uc => uc.ArchivedAt, (DateTime?)null));
-        }
 
-        public async Task ArchivePrivateChatAsync(Guid chatId, Guid userId, Guid contactId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var affected = await context.UserChat
-                .IgnoreQueryFilters()
-                .Where(uc => uc.ChatID == chatId && (uc.UserID == userId || uc.UserID == contactId))
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(uc => uc.IsArchive, true)
-                    .SetProperty(uc => uc.ArchivedAt, DateTime.UtcNow));
-
-            _logger.LogInformation("ArchivePrivateChat: set IsArchive=true for chat {ChatId}. Rows affected: {Count}", chatId, affected);
-        }
-
-        public async Task<bool> GetChatStatusById(Guid chatId, Guid userId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            return await context.UserChat
-                .Where(uc => uc.ChatID == chatId && uc.UserID == userId)
-                .Select(uc => uc.IsArchive)
-                .FirstOrDefaultAsync();
-        }
     }
 }

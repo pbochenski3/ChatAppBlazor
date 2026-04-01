@@ -133,7 +133,6 @@
         var notifyTask = ShowNotificationAsync(status);
         await Task.WhenAll(chatTask, notifyTask);
     }
-
     private async Task HandleUnifiedReloadAsync(ReloadTarget target)
     {
         await InvokeAsync(async () =>
@@ -156,7 +155,6 @@
             StateHasChanged();
         });
     }
-
     private async Task HandleGlobalSearch(string query)
     {
         _isSearchingGlobal = true;
@@ -164,7 +162,6 @@
         _isSearchingGlobal = false;
         StateHasChanged();
     }
-
     private async Task ShowNotificationAsync(string message, int durationInSeconds = 5)
     {
         _notification = message;
@@ -175,7 +172,6 @@
         _notification = string.Empty;
         await InvokeAsync(StateHasChanged);
     }
-
     private async Task HandleDataReloadAsync(bool reload)
     {
         if (reload)
@@ -185,7 +181,6 @@
             await InvokeAsync(StateHasChanged);
         }
     }
-
     private async Task HandleInviteLoadAsync(bool reload)
     {
         _receivedInvites = await ChatHubService.GetUserInvitesAsync();
@@ -193,7 +188,6 @@
         await InvokeAsync(StateHasChanged);
         _logger.LogInformation("Invite reload triggered for user {Username}", _currentUser.Username);
     }
-
     private async Task HandleSidebarLoadAsync(bool reload)
     {
         try
@@ -251,14 +245,12 @@
          await InvokeAsync(StateHasChanged);
 
     }
-
     private async Task HandleContactInvite(Guid contactId)
     {
         await ChatHubService.SendContactInviteAsync(contactId);
         _foundUsers.RemoveAll(u => u.UserID == contactId);
         _isSearchingGlobal = false;
     }
-
     private async Task HandleContactDelete()
     {
         try
@@ -297,7 +289,6 @@
             _ = ShowNotificationAsync($"{ex.Message}");
         }
     }
-
     private async Task HandleContactStatus(Guid inviteId, bool status)
     {
         try
@@ -310,7 +301,6 @@
             _ = ShowNotificationAsync($"{ex.Message}");
         }
     }
-
     private async Task HandleContactLoad()
     {
         try
@@ -328,7 +318,6 @@
             await InvokeAsync(StateHasChanged);
         }
     }
-
     private async Task HandleReceiveMessageAsync(MessageDTO dto)
     {
         bool isMessageForCurrentChat = AppState.CurrentChat != null && dto.ChatID == AppState.CurrentChat.Identity.ChatID;
@@ -412,7 +401,6 @@
             await HandleSidebarLoadAsync(true);
         }
     }
-
     private async Task HandleSendMessage(string content)
     {
         if (string.IsNullOrWhiteSpace(content) || AppState.CurrentChat == null) return;
@@ -438,7 +426,6 @@
             _ = ShowNotificationAsync("Nie udało się wysłać wiadomości.");
         }
     }
-
     private async Task HandleUserOnGroupLoadAsync(Guid chatId)
     {
         if (AppState.CurrentChat?.Identity.ChatID != chatId)
@@ -455,7 +442,6 @@
             _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", chatId);
         }
     }
-
     private async Task HandleChatLoadAsync(ContactSelectedArgs args)
     {
         bool isSameChat = AppState.CurrentChat?.Identity.ChatID == args.ChatId;
@@ -540,7 +526,6 @@
             }
         }
     }
-
     private async Task HandleCreateGroupChat(HashSet<Guid> usersToAdd)
     {
         if (AppState.CurrentChat != null)
@@ -548,7 +533,6 @@
             await ChatHubService.AddUsersToGroupChatAsync(AppState.CurrentChat.Identity.ChatID, usersToAdd);
         }
     }
-
     private async Task HandleChatUsersLoadAsync()
     {
         if (AppState.CurrentChat != null)
@@ -557,12 +541,10 @@
             await InvokeAsync(StateHasChanged);
         }
     }
-
     private async Task HandleSidebarLock()
     {
         _isPending = !_isPending;
     }
-
     private async Task HandleChatDelete()
     {
         try
@@ -578,7 +560,6 @@
             _logger.LogError(ex, "Error during chat deletion");
         }
     }
-
     public async ValueTask DisposeAsync()
     {
         ChatHubService.OnMessageReceived -= HandleReceiveMessageAsync;
