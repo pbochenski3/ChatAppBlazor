@@ -207,6 +207,7 @@
     }
     private async Task HandleAvatarReloadAsync(string newAvatarUrl,Guid chaningUserId)
     {
+        AppState.CurrentUser.AvatarUrl = newAvatarUrl;
         var userInChat = _usersInChat.FirstOrDefault(u => u.UserID == chaningUserId);
         if (userInChat != null)
         {
