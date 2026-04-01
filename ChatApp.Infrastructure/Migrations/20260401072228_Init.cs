@@ -106,7 +106,7 @@ namespace ChatApp.Infrastructure.Migrations
                     Content = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     SentAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false),
                     ChatID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SenderID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SenderID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
                     IsSystemMessage = table.Column<bool>(type: "bit", nullable: false)

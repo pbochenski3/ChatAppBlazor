@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ChatDbContext))]
-    [Migration("20260325084532_Init")]
+    [Migration("20260401072228_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -139,7 +139,7 @@ namespace ChatApp.Infrastructure.Migrations
                     b.Property<bool>("IsSystemMessage")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("SenderID")
+                    b.Property<Guid?>("SenderID")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("SentAt")
@@ -295,8 +295,7 @@ namespace ChatApp.Infrastructure.Migrations
                     b.HasOne("ChatApp.Domain.Models.User", "Sender")
                         .WithMany("Messages")
                         .HasForeignKey("SenderID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Chat");
 
