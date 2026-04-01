@@ -26,6 +26,20 @@ namespace ChatApp.Infrastructure.Persistence
             await context.Users.AddAsync(user);
             await context.SaveChangesAsync();
         }
+        public async Task<string> GetAvatarUrlAsync(Guid userId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var avatarUrl = await context.Users
+                .Where(u => u.UserID == userId)
+                .Select(u => u.AvatarUrl)
+                .FirstOrDefaultAsync();
+            if (string.IsNullOrEmpty(avatarUrl))
+            {
+                _logger.LogWarning("User with ID {UserId} does not have an avatar URL.", userId);
+                return string.Empty;
+            }
+            return avatarUrl;
+        }
 
         public async Task<User?> GetByUsernameAsync(string username)
         {
@@ -94,6 +108,13 @@ namespace ChatApp.Infrastructure.Persistence
             using var context = _contextFactory.CreateDbContext();
             _logger.LogInformation("Saving changes to the database.");
             await context.SaveChangesAsync();
+        }
+        public async Task UpdateAvatarAsync(Guid userId, string avatarUrl)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            await context.Users
+                .Where(u => u.UserID == userId)
+                .ExecuteUpdateAsync(u => u.SetProperty(p => p.AvatarUrl, avatarUrl));
         }
     }
 }

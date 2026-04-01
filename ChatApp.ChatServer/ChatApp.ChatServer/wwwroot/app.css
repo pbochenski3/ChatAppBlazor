@@ -114,6 +114,28 @@ body {
         transform: scale(0.75);
     }
 }
+.user-info-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 12px;
+}
+
+.user-detail {
+    align-items: center;
+}
+
+.user-icon {
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color var(--transition);
+}
+
+    .user-icon:hover {
+        color: var(--accent);
+        background: var(--accent-dim);
+    }
 
 .sidebar-content {
     flex: 1;
@@ -787,7 +809,7 @@ body {
 .contact-config {
     margin-left: auto;
     cursor: pointer;
-    font-size: 1.1rem;
+    font-size: 1.5rem;
     color: var(--muted);
     transition: color var(--transition);
     padding: 4px;

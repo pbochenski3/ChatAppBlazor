@@ -21,6 +21,7 @@ public class ChatHubService : IAsyncDisposable
     public event Func<ContactSelectedArgs, Task>? OnChatLoad;
     public event Func<ReloadTarget, Task>? OnAppReload;
     public event Func<Guid, Task>? OnUserInChatReload;
+    public event Func<string, Task>? OnAvatarReload;
     public event Func<Guid,string, Task>? OnChatNameChanged;
     public event Func<Guid,string,string, Task>? OnLastMessageChanged;
     public event Action<string, UserDTO>? LoginStatusMessage;
@@ -62,7 +63,6 @@ public class ChatHubService : IAsyncDisposable
         HubConnection.On<bool>("InviteReload", async (_) => await TriggerReload(ReloadTarget.Invite));
         HubConnection.On<bool>("ContactInviteReload", async (_) => await TriggerReload(ReloadTarget.Global));
         HubConnection.On<bool>("ChatClose", async (_) => await TriggerReload(ReloadTarget.Chat));
-        
         HubConnection.On<Guid, bool>("ChatReload", async (id, force) =>
         {
             if (OnChatLoad != null)
@@ -70,7 +70,6 @@ public class ChatHubService : IAsyncDisposable
                 await OnChatLoad.Invoke(new ContactSelectedArgs(id, force));
             }
         });
-
         HubConnection.On<Guid>("UsersInChatReload", async (chatId) =>
         {
             if (OnUserInChatReload != null)
@@ -86,6 +85,8 @@ public class ChatHubService : IAsyncDisposable
         {
             await OnLastMessageChanged.Invoke(chatId,lastSender,lastMessage);
         });
+
+
     }
     private async Task TriggerReload(ReloadTarget target)
     {
@@ -154,10 +155,31 @@ public class ChatHubService : IAsyncDisposable
             HubConnection = null;
         }
     }
+    public async Task<string> GetUserAvatarUrlAsync()
+    {
+        return await HubConnection.InvokeAsync<string>("GetUserAvatarUrlAsync");
+    }
+    public async Task UpdateUserAvatarAsync(MultipartFormDataContent file, string token)
+    {
+        _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        var response = await _httpClient.PostAsync("api/user/updateAvatar", file);
+        if (response.IsSuccessStatusCode)
+        {
+
+            HubConnection?.InvokeAsync("UpdateUserAvatarAsync");
+
+        }
+        else
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception(errorContent);
+        }
+
+
+    }
     public async Task LoginUserAsync(UserDTO dto)
     {
         var response = await _httpClient.PostAsJsonAsync("api/user/login", dto);
-
         if (response.IsSuccessStatusCode)
         {
             var loggedInUser = await response.Content.ReadFromJsonAsync<UserDTO>();

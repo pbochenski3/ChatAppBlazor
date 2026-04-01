@@ -116,6 +116,19 @@ namespace ChatApp.Application.Services
                 IsOnline = user.IsOnline
             };
         }
+        public async Task UpdateUserAvatarAsync(Guid userId,string avatarUrl)
+        {
+            if (string.IsNullOrWhiteSpace(avatarUrl) || !Uri.IsWellFormedUriString(avatarUrl, UriKind.RelativeOrAbsolute))
+            {
+                throw new Exception("Invalid avatar URL.");
+            }
+            await _userRepo.UpdateAvatarAsync(userId, avatarUrl);
+        }
+        public async Task<string> GetAvatarUrlAsync(Guid userId)
+        {
+            return await _userRepo.GetAvatarUrlAsync(userId);
+        }
+
         private string GenerateToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));

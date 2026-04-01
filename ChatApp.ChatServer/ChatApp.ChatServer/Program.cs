@@ -1,5 +1,6 @@
 using ChatApp.ChatServer.Client.Pages;
 using ChatApp.ChatServer.Components;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,8 +15,8 @@ builder.Services.AddAntiforgery(options =>
 });
 
 
-var app = builder.Build();
 
+var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

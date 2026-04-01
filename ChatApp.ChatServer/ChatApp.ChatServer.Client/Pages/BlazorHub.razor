@@ -24,6 +24,7 @@
             OnSearchRequested="HandleGlobalSearch"
             OnContactInvited="HandleContactInvite"
             OnContactSelected="HandleChatLoadAsync"
+            OnProfileOpen="HandleOpenProfile"
             OnInviteAction="@(args => HandleContactStatus(args.InviteId, args.Status))"
             SidebarItem="_sidebarItems"
             UsersList="_foundUsers"
@@ -48,7 +49,10 @@
                 LockSidebar="HandleSidebarLock"
                 OnChatDelete="HandleChatDelete" 
                 OnChatNameChange="HandleChangeChatNameAsync"  />
-                
+        }
+        @if(_isProfileOpen)
+        {
+            <ProfileComponent/>
         }
     </main>
 }
@@ -70,6 +74,7 @@
     private bool _isChatArchived = false;
     private bool _isLoading = true;
     private bool _isSettingsOpen;
+    private bool _isProfileOpen = false;
 
     #endregion
 
@@ -113,7 +118,12 @@
             _ = ShowNotificationAsync($"{ex.Message}");
         }
     }
-
+    private async Task HandleOpenProfile(bool open)
+    {
+        AppState.CurrentChat = null;
+        _isProfileOpen = open;
+        await InvokeAsync(StateHasChanged);
+    }
     private async Task HandleInviteStatusReceivedAsync(string status, Guid contactId)
     {
         CancellationToken token = default;
@@ -235,7 +245,6 @@
             _ = ShowNotificationAsync($"{ex.Message}");
         }
     }
-
     private async Task HandleChatClose(bool close)
     {
         AppState.CurrentChat = null;
@@ -436,6 +445,11 @@
                 return;
             }
         }
+        if(_isProfileOpen)
+        {
+            _isProfileOpen = false;
+        }
+
         _isSettingsOpen = false;
         _chatLoadingCts?.Cancel();
         _chatLoadingCts = new CancellationTokenSource();

@@ -13,6 +13,8 @@ namespace ChatApp.Application.Interfaces.Repository
         Task<User?> GetByIdAsync(Guid id);
         Task<List<User>> GetAllUsersToInviteAsync(Guid currentUserId, string query);
         Task SetUserStatusAsync(Guid id, bool status);
+        Task UpdateAvatarAsync(Guid userId, string avatarUrl);
         Task<HashSet<User>> GetUsersByIdsAsync(HashSet<Guid> ids);
+        Task<string> GetAvatarUrlAsync(Guid userId);
     }
 }

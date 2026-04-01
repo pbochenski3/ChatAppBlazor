@@ -7,21 +7,36 @@ using ChatApp.ChatHub;
 using ChatApp.Domain.Repository;
 using ChatApp.Domain.Repository.Decorators;
 using ChatApp.Infrastructure.Persistence;
+using ChatApp.Infrastructure.Persistence.Decorators;
 using ChatApp.Infrastructure.Providers;
+using ChatApp.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.SignalR;
-using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Cryptography;
 using System.Text;
-using ChatApp.Infrastructure.Persistence.Decorators;
 
 var builder = WebApplication.CreateBuilder(args);
 var JwtSetting = builder.Configuration.GetSection("JwtSettings");
 var key = Encoding.UTF8.GetBytes(JwtSetting["Key"]!);
 var issuer = JwtSetting["Issuer"];
 var audience = JwtSetting["Audience"];
+builder.Services.AddSignalR();
+builder.Services.AddDbContextFactory<ChatDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ChatDatabase")));
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("BlazorAppPolicy", policy =>
+    {
+        policy.WithOrigins("https://localhost:7181") 
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -39,35 +54,22 @@ builder.Services.AddAuthentication(options =>
             ValidAudience = audience,
             IssuerSigningKey = new SymmetricSecurityKey(key)
         };
-options.Events = new JwtBearerEvents
-{
-    OnMessageReceived = context =>
-    {
-        var accessToken = context.Request.Query["access_token"];
-
-        var path = context.HttpContext.Request.Path;
-        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chathub"))
+        options.Events = new JwtBearerEvents
         {
-            context.Token = accessToken;
-        }
-        return Task.CompletedTask;
-    }
-};
-});
-builder.Services.AddSignalR();
-builder.Services.AddDbContextFactory<ChatDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ChatDatabase")));
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.WithOrigins("https://localhost:7181")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chathub"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
-});
-//Messages
+//Messagesne()
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddInfrastructure(builder.Configuration);
 //Users
@@ -98,12 +100,27 @@ builder.Services.AddSignalR(options =>
 {
     options.EnableDetailedErrors = true;
 });
+//FileService
+var storagePath = Path.Combine(Directory.GetCurrentDirectory(), "LocalS3", "Avatars");
+
+if (!Directory.Exists(storagePath))
+{
+    Directory.CreateDirectory(storagePath);
+}
+builder.Services.AddScoped<IFileService>(sp => new LocalFileService(storagePath));
 
 builder.Services.AddControllers();
 var app = builder.Build();
-app.MapControllers();
-app.UseCors();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(storagePath),
+    RequestPath = "/cdn/avatars"
+});
+app.UseCors("BlazorAppPolicy");
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
 app.MapHub<ChatHub>("/chathub");
 
 app.Run();

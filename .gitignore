@@ -416,3 +416,5 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+#Local S3
+ChatApp.ChatHub/LocalS3/

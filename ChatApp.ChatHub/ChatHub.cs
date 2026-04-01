@@ -25,6 +25,7 @@ namespace ChatApp.ChatHub
         private readonly IUserChatService _userChatService;
         private readonly IChatReadStatusService _readStatusService;
         private readonly ISidebarService _sidebarService;
+        private readonly IFileService _fileService;
         private readonly ILogger<ChatHub> _logger;
 
         protected Guid UserId => Guid.TryParse(Context.UserIdentifier, out var parseId) ? parseId : Guid.Empty;
@@ -39,7 +40,8 @@ namespace ChatApp.ChatHub
             IGroupChatService groupChatService,
             IUserChatService userChatService,
             IChatReadStatusService readStatusService,
-            ISidebarService sidebarService)
+            ISidebarService sidebarService,
+            IFileService fileService)
         {
             _logger = logger;
             _messageService = messageService;
@@ -52,6 +54,7 @@ namespace ChatApp.ChatHub
             _userChatService = userChatService;
             _readStatusService = readStatusService;
             _sidebarService = sidebarService;
+            _fileService = fileService;
         }
 
         public override Task OnConnectedAsync()
@@ -155,7 +158,14 @@ namespace ChatApp.ChatHub
                 await Clients.Caller.SendAsync("ReceiveStatus", "An error occurred while processing the delete action.");
             }
         }
-
+        public async Task<string> GetUserAvatarUrlAsync()
+        {
+            return await _userService.GetAvatarUrlAsync(UserId);
+        }
+        public async Task UpdateUserAvatarAsync()
+        {
+            await Clients.Caller.SendAsync("AvatarReload",true);
+        }
         public async Task ChangeChatNameAsync(Guid chatId, string chatName)
         {
             try

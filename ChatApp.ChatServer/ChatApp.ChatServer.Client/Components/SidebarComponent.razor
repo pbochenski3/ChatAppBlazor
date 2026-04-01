@@ -2,8 +2,9 @@
 @inject AppStateService AppState
 <aside class="sidebar">
     <div class="sidebar-header">
-        <div class="user-ifno">
-            <p class="user-profile">Witaj,@(AppState?.CurrentUser?.Username ?? String.Empty)</p>
+        <div class="user-info-wrapper">
+            <p class="user-detail">Witaj,@(AppState?.CurrentUser?.Username ?? String.Empty)</p>
+            <p class="user-icon" title="openProfile "onclick="@OpenProfile">👤</p>
         </div>
         <div class="nav-tabs">
             <button class="@(currentView == View.Contacts ? "active" : "")" @onclick="() => currentView = View.Contacts">
@@ -163,6 +164,7 @@
     [Parameter] public EventCallback<ContactSelectedArgs> OnContactSelected { get; set; }
     [Parameter] public EventCallback<Guid> OnContactInvited { get; set; }
     [Parameter] public EventCallback<(Guid InviteId,bool Status)> OnInviteAction { get; set; }
+    [Parameter] public EventCallback<bool> OnProfileOpen { get; set; }
     [Parameter] public List<UserChatDTO> SidebarItem { get; set; } = new List<UserChatDTO>();
     [Parameter] public List<UserDTO> UsersList { get; set; } = new List<UserDTO>();
     [Parameter] public List<InviteDTO> InvitesList { get; set; } = new List<InviteDTO>();
@@ -203,6 +205,10 @@
     private async Task HandleInviteResponse(Guid InviteId,bool Response)
     {
         await OnInviteAction.InvokeAsync((InviteId,Response));
+    }
+    private async Task OpenProfile()
+    {
+        await OnProfileOpen.InvokeAsync(true);
     }
     private async Task SendInvite(Guid targetUserId)
     {
