@@ -1,16 +1,18 @@
 ﻿@inject AppStateService AppStateService
 @inject ChatHubService ChatHubService
 @inject ILogger<ProfileComponent> Logger
-<h3>ProfileComponent</h3>
 <div class="profile-wrapper">
-    <img src="@AppStateService.CurrentUser.AvatarUrl" alt="avatar">
-    <p>>@AppStateService.CurrentUser.Username</p>
+    <div class="avatar-wrapper">
+        <img src="@AppStateService.CurrentUser.AvatarUrl" alt="avatar" />
+        <span class="online-badge"></span>
+    </div>
+    <p class="profile-username">@AppStateService.CurrentUser.Username</p>
+    <p class="profile-role">Użytkownik</p>
+    <div class="profile-divider"></div>
     <div class="avatar-upload-container">
-        <InputFile id="avatar-upload"
-                   OnChange="OnInputFileChange"
-                   style="display: none;"
-                   accept=".jpg,.jpeg,.png" />
-        <label for="avatar-upload" class="user-profile-cion">
+        <InputFile id="avatar-upload" OnChange="OnInputFileChange"
+                   style="display:none;" accept=".jpg,.jpeg,.png" />
+        <label for="avatar-upload" class="user-profile-icon">
             <p class="user-icon">Wybierz plik</p>
         </label>
         @if (selectedFile != null)
@@ -31,40 +33,42 @@
     public async Task OnInputFileChange(InputFileChangeEventArgs e)
     {
         selectedFile = e.File;
-    if (selectedFile != null)
-    {
-        selectedFileName = selectedFile.Name;
-    }
-      
+        if (selectedFile != null)
+        {
+            selectedFileName = selectedFile.Name;
+        }
+
     }
     public async Task UploadStoredAvatar()
     {
         if (selectedFile == null) return;
         isUploading = true;
         try
-    {
-        using var content = new MultipartFormDataContent();
-        
-     
-        var fileStream = selectedFile.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5);
-        var streamContent = new StreamContent(fileStream);
-
-        content.Add(streamContent, "file", selectedFile.Name);
-
-        await ChatHubService.UpdateUserAvatarAsync(content,AppStateService.CurrentUser.Token);
-        var newAvatarUrl = await ChatHubService.GetUserAvatarUrlAsync();
-        AppStateService.CurrentUser.AvatarUrl = newAvatarUrl;
-        await InvokeAsync(StateHasChanged);
+        {
+            using var content = new MultipartFormDataContent();
 
 
-    }
-    catch (Exception ex)
-    {
+            var fileStream = selectedFile.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5);
+            var streamContent = new StreamContent(fileStream);
+
+            content.Add(streamContent, "file", selectedFile.Name);
+
+            await ChatHubService.UpdateUserAvatarAsync(content,AppStateService.CurrentUser.Token);
+            var newAvatarUrl = await ChatHubService.GetUserAvatarUrlAsync();
+            AppStateService.CurrentUser.AvatarUrl = newAvatarUrl;
+            await InvokeAsync(StateHasChanged);
+
+
+        }
+        catch (Exception ex)
+        {
             throw new Exception("Nie można zaktualizować avatara", ex);
+        }
+        finally
+        {
+            selectedFile = null;
+            selectedFileName = null;
+            isUploading = false;
+        }
     }
-    finally
-    {
-        isUploading = false;
-    }
-}
 }
