@@ -27,7 +27,8 @@ namespace ChatApp.Application.Services.Chats
             var usersWithHistory = await _chatRepo.GetExistingUsersInChat(chatId, userIdsToAdd);
             if (usersWithHistory != null && usersWithHistory.Any())
             {
-                await _userChatRepo.RestoreGroupChatForUsersAsync(chatId, usersWithHistory);
+                // restore (unarchive) existing users' entries
+                await _userChatRepo.SetChatAccessibilityAsync(chatId, true, usersWithHistory);
                 var usersWithoutHistory = userIdsToAdd.Where(id => !usersWithHistory.Contains(id)).ToHashSet();
                 if (usersWithoutHistory.Any())
                 {

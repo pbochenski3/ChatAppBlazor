@@ -32,15 +32,6 @@ namespace ChatApp.Infrastructure.Persistence
                              && ch.IsGroup == true);
         }
 
-        public async Task UnarchiveChatAsync(Guid chatId, HashSet<Guid> userIds)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            await context.UserChat
-                .Where(uc => uc.ChatID == chatId && userIds.Contains(uc.UserID))
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(uc => uc.IsArchive, false)
-                    .SetProperty(uc => uc.ArchivedAt, (DateTime?)null));
-        }
 
         public async Task AddUserGroupToDb(Guid chatId, HashSet<Guid> userIdsToAdd)
         {
@@ -117,27 +108,6 @@ namespace ChatApp.Infrastructure.Persistence
             }
         }
 
-        public async Task ArchivePrivateChatAsync(Guid chatId, Guid userId, Guid contactId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var affected = await context.UserChat
-                .IgnoreQueryFilters()
-                .Where(uc => uc.ChatID == chatId && (uc.UserID == userId || uc.UserID == contactId))
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(uc => uc.IsArchive, true)
-                    .SetProperty(uc => uc.ArchivedAt, DateTime.UtcNow));
-
-            _logger.LogInformation("ArchivePrivateChat: set IsArchive=true for chat {ChatId}. Rows affected: {Count}", chatId, affected);
-        }
-
-        public async Task<bool> GetChatStatusById(Guid chatId, Guid userId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            return await context.UserChat
-                .Where(uc => uc.ChatID == chatId && uc.UserID == userId)
-                .Select(uc => uc.IsArchive)
-                .FirstOrDefaultAsync();
-        }
 
         public async Task<HashSet<Guid>> GetExistingUsersInChat(Guid chatId, HashSet<Guid> userIdsToCheck)
         {
@@ -164,6 +134,15 @@ namespace ChatApp.Infrastructure.Persistence
                         .SetProperty(ch => ch.IsDeleted, true)
                         .SetProperty(ch => ch.DeletedAt, DateTime.UtcNow));
             }
+        }
+
+        public async Task UpdateChatNameAsync(Guid chatId, string chatName)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            await context.Chats
+                .Where(c => c.ChatID == chatId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(c => c.ChatName, chatName));
         }
     }
 }

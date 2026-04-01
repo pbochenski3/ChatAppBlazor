@@ -15,11 +15,13 @@ namespace ChatApp.Application.Services.Chats
     {
         private readonly IUserChatRepository _userChatRepo;
         private readonly IMessageRepository _messageRepo;
+        private readonly IChatRepository _chatRepo;
 
-        public UserChatService(IUserChatRepository userChatRepo, IMessageRepository messageRepo)
+        public UserChatService(IUserChatRepository userChatRepo, IMessageRepository messageRepo,IChatRepository chatRepo)
         {
             _userChatRepo = userChatRepo;
             _messageRepo = messageRepo;
+            _chatRepo = chatRepo;
         }
 
         public async Task<List<UserChatDTO>> GetUserChatListAsync(Guid userId)
@@ -107,7 +109,8 @@ namespace ChatApp.Application.Services.Chats
         }
         public async Task UpdateChatNameAsync(Guid chatId, string chatName)
         {
-            await _userChatRepo.UpdateChatNameAsync(chatId, chatName);
+            // Chat name belongs to Chat entity, update via chat repository
+            await _chatRepo.UpdateChatNameAsync(chatId, chatName);
         }
     }
 }

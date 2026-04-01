@@ -70,7 +70,7 @@ namespace ChatApp.Application.Services.Chats
             }
             else
             {
-                await _userChatRepo.RestoreChatAsync(chat.ChatID);
+                await _userChatRepo.SetChatAccessibilityAsync(chat.ChatID, true);
             }
         }
 

@@ -15,13 +15,15 @@ namespace ChatApp.Application.Services
         private readonly IUserRepository _userRepo;
         private readonly IContactRepository _contactRepo;
         private readonly IChatRepository _chatRepo;
+        private readonly ChatApp.Domain.Repository.IUserChatRepository _userChatRepo;
 
-        public ContactService(IContactRepository contactRepo, IMessageRepository messageRepo, IUserRepository userRepo, IChatRepository chatRepo)
+        public ContactService(IContactRepository contactRepo, IMessageRepository messageRepo, IUserRepository userRepo, IChatRepository chatRepo, ChatApp.Domain.Repository.IUserChatRepository userChatRepo)
         {
             _messageRepo = messageRepo;
             _userRepo = userRepo;
             _chatRepo = chatRepo;
             _contactRepo = contactRepo;
+            _userChatRepo = userChatRepo;
         }
 
         public async Task<ContactDTO?> GetContactByIdAsync(Guid contactUserId, Guid userId)
@@ -95,7 +97,7 @@ namespace ChatApp.Application.Services
         public async Task RemoveContactAsync(Guid contactUserId, Guid userId, Guid chatId)
         {
             await _contactRepo.DeleteContactAsync(contactUserId, userId);
-            await _chatRepo.ArchivePrivateChatAsync(chatId, userId, contactUserId);
+            await _userChatRepo.ArchivePrivateChatAsync(chatId, userId, contactUserId);
         }
     }
 }
