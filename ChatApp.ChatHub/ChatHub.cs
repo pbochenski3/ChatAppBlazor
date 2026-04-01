@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using System.Runtime.InteropServices;
 using System.Xml;
+using ChatApp.Application.DTO.Chats;
+using ChatApp.Application.Interfaces.Chats;
 
 namespace ChatApp.ChatHub
 {

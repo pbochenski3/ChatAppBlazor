@@ -1,12 +1,12 @@
 using ChatApp.Application.DTO;
-using ChatApp.Application.Interfaces;
+using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Domain.Repository;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace ChatApp.Application.Services
+namespace ChatApp.Application.Services.Chats
 {
     public class ChatService : IChatService
     {

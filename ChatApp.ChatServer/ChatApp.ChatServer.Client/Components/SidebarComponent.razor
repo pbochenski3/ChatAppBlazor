@@ -1,4 +1,6 @@
+@using ChatApp.Application.DTO.Chats
 @using ChatApp.Application.Interfaces
+@using ChatApp.Application.DTO.Chats
 @inject AppStateService AppState
 <aside class="sidebar">
     <div class="sidebar-header">
@@ -39,25 +41,25 @@
                     {
                         @foreach (var chat in FilteredSidebar)
                         {
-                            <div class="contact-item @(SelectedContactId == chat.ChatID ? "active" : "")"
-                                 @onclick="async () => await SelectContact(chat.ChatID)">
+                            <div class="contact-item @(SelectedContactId == chat.Identity.ChatID ? "active" : "")"
+                                 @onclick="async () => await SelectContact(chat.Identity.ChatID)">
                                 <div class="contact-avatar-container">
-                                    <img src="@chat.AvatarUrl" class="contact-img" alt="avatar" />
+                                    <img src="@chat.Identity.AvatarUrl" class="contact-img" alt="avatar" />
                                 </div>
                                 <div class="contact-info">
-                                    <p class="contact-name">@chat.ChatName</p>
-                                    @if(chat.LastMessageContent != null)
+                                    <p class="contact-name">@chat.Identity.ChatName</p>
+                                    @if(chat.LastMessage.LastMessageContent != null)
                                     {
                                     <p class="contact-name">
-                                        @((chat.LastMessageSender == AppState.CurrentUser.Username)
-                                                                ? $"Ty: {chat.LastMessageContent}"
-                                                                : $"{chat.LastMessageSender}: {chat.LastMessageContent}")
+                                        @((chat.LastMessage.LastMessageSender == AppState.CurrentUser.Username)
+                                                                ? $"Ty: {chat.LastMessage.LastMessageContent}"
+                                                                : $"{chat.LastMessage.LastMessageSender}: {chat.LastMessage.LastMessageContent}")
                                     </p>
                                         
                                     }
-                                    @if(chat.UnreadMessageCount > 0)
+                                    @if(chat.State.UnreadMessageCount > 0)
                                     {
-                                        <p class="contact-name">@chat.UnreadMessageCount nowe wiadomości!</p>
+                                        <p class="contact-name">@chat.State.UnreadMessageCount nowe wiadomości!</p>
                                     }
                                 </div>
                             </div>
@@ -185,7 +187,7 @@
     }
     private IEnumerable<UserChatDTO> FilteredSidebar =>
         SidebarItem?.Where(c => string.IsNullOrWhiteSpace(searchTerm) ||
-                               c.ChatName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                               c.Identity.ChatName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
         ?? Enumerable.Empty<UserChatDTO>();
     private async Task SelectContact(Guid contactId)
     {

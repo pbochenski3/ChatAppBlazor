@@ -1,5 +1,6 @@
 @page "/hub"
 @using ChatApp.Application
+@using ChatApp.Application.DTO.Chats
 @using Microsoft.AspNetCore.SignalR.Client
 @using ChatApp.ChatServer.Client.Components
 @inject IConfiguration Configuration
@@ -218,34 +219,34 @@
             userInChat.AvatarUrl = newAvatarUrl;
         }
 
-        if (AppState.CurrentChat != null && AppState.CurrentChat.IsGroup == false)
+        if (AppState.CurrentChat != null && AppState.CurrentChat.Identity.IsGroup == false)
         {
             var other = _usersInChat.FirstOrDefault(u => u.UserID != _currentUser.UserID);
             if (other != null && other.UserID == chaningUserId)
             {
-                AppState.CurrentChat.AvatarUrl = newAvatarUrl;
+                AppState.CurrentChat.Identity.AvatarUrl = newAvatarUrl;
             }
         }
         if (_sidebarItems != null && _sidebarItems.Any())
         {
-           var item =  _sidebarItems.FirstOrDefault(sb => !sb.IsGroup && sb.OtherUserId == chaningUserId);
-           if(item != null)
-           {
-               item.AvatarUrl = newAvatarUrl;
+            var item = _sidebarItems.FirstOrDefault(sb => !sb.Identity.IsGroup && sb.Identity.OtherUserId == chaningUserId);
+            if (item != null)
+            {
+                item.Identity.AvatarUrl = newAvatarUrl;
             }
         }
         await InvokeAsync(StateHasChanged);
     }
     private async Task HandleChatNameReloadAsync(Guid chatId, string newChatName)
     {
-        var chat = _sidebarItems.FirstOrDefault(c => c.ChatID == chatId);
+        var chat = _sidebarItems.FirstOrDefault(c => c.Identity.ChatID == chatId);
         if (chat != null)
         {
-            chat.ChatName = newChatName;
+            chat.Identity.ChatName = newChatName;
         }
-        if(AppState.CurrentChat != null && AppState.CurrentChat.ChatID == chatId)
+        if(AppState.CurrentChat != null && AppState.CurrentChat.Identity.ChatID == chatId)
         {
-            AppState.CurrentChat.ChatName = newChatName;
+            AppState.CurrentChat.Identity.ChatName = newChatName;
         }
          await InvokeAsync(StateHasChanged);
 
@@ -264,7 +265,7 @@
         {
             if (AppState.CurrentChat != null)
             {
-                await ChatHubService.RemoveContactAsync(AppState.CurrentChat.ChatID);
+                await ChatHubService.RemoveContactAsync(AppState.CurrentChat.Identity.ChatID);
             }
         }
         catch (Exception ex)
@@ -279,7 +280,7 @@
     }
     private async Task HandleChangeChatNameAsync(string chatName)
     {
-        await ChatHubService.ChangeChatNameAsync(AppState.CurrentChat.ChatID, chatName);
+        await ChatHubService.ChangeChatNameAsync(AppState.CurrentChat.Identity.ChatID, chatName);
     }
     private async Task HandleChatLeave()
     {
@@ -287,7 +288,7 @@
         {
             if (AppState.CurrentChat != null)
             {
-                await ChatHubService.LeaveChatGroupAsync(AppState.CurrentChat.ChatID);
+                await ChatHubService.LeaveChatGroupAsync(AppState.CurrentChat.Identity.ChatID);
             }
         }
         catch (Exception ex)
@@ -330,7 +331,7 @@
 
     private async Task HandleReceiveMessageAsync(MessageDTO dto)
     {
-        bool isMessageForCurrentChat = AppState.CurrentChat != null && dto.ChatID == AppState.CurrentChat.ChatID;
+        bool isMessageForCurrentChat = AppState.CurrentChat != null && dto.ChatID == AppState.CurrentChat.Identity.ChatID;
         if (isMessageForCurrentChat)
         {
             if (_receivedMessages.Any(m => m.MessageID == dto.MessageID))
@@ -373,36 +374,36 @@
     }
     private async Task HandleSidebarMessageReloadAsync(Guid chatId, string sender,string content)
     {
-        var itemsToUpdate = _sidebarItems.FirstOrDefault(sb => sb.ChatID == chatId);
+        var itemsToUpdate = _sidebarItems.FirstOrDefault(sb => sb.Identity.ChatID == chatId);
         if (itemsToUpdate != null)
         {
-            itemsToUpdate.LastMessageContent = content;
-            itemsToUpdate.LastMessageSender = sender;
+            itemsToUpdate.LastMessage.LastMessageContent = content;
+            itemsToUpdate.LastMessage.LastMessageSender = sender;
         }
-          
+
         await InvokeAsync(StateHasChanged);
 
     }
     private async Task HandleCounterUpdateAsync(Guid chatId, bool clean)
     {
-        var index = _sidebarItems.FindIndex(sb => sb.ChatID == chatId);
+        var index = _sidebarItems.FindIndex(sb => sb.Identity.ChatID == chatId);
 
         if (index != -1)
         {
             if (clean)
             {
-                _sidebarItems[index].UnreadMessageCount = 0;
+                _sidebarItems[index].State.UnreadMessageCount = 0;
                 _logger.LogInformation("Counter cleared for: {ChatId}", chatId);
             }
             else
             {
                 var updatedItem = _sidebarItems[index];
-                updatedItem.UnreadMessageCount += 1;
+                updatedItem.State.UnreadMessageCount += 1;
 
                 _sidebarItems.RemoveAt(index);
                 _sidebarItems.Insert(0, updatedItem);
 
-                _logger.LogInformation("Counter increased for: {ChatId}. Current: {Count}", chatId, updatedItem.UnreadMessageCount);
+                _logger.LogInformation("Counter increased for: {ChatId}. Current: {Count}", chatId, updatedItem.State.UnreadMessageCount);
             }
             await InvokeAsync(StateHasChanged);
         }
@@ -416,11 +417,11 @@
     {
         if (string.IsNullOrWhiteSpace(content) || AppState.CurrentChat == null) return;
 
-        var newMessage = new MessageDTO
+            var newMessage = new MessageDTO
         {
             Content = content,
             SenderUsername = _currentUser.Username,
-            ChatID = AppState.CurrentChat.ChatID,
+                ChatID = AppState.CurrentChat.Identity.ChatID,
             SenderID = _currentUser.UserID, 
             SentAt = DateTime.UtcNow,
             MessageID = Guid.CreateVersion7()
@@ -428,7 +429,7 @@
 
         try
         {
-            await ChatHubService.SendMessageAsync(newMessage, AppState.CurrentChat.ChatID);
+            await ChatHubService.SendMessageAsync(newMessage, AppState.CurrentChat.Identity.ChatID);
         }
         catch (Exception ex)
         {
@@ -440,7 +441,7 @@
 
     private async Task HandleUserOnGroupLoadAsync(Guid chatId)
     {
-        if (AppState.CurrentChat?.ChatID != chatId)
+        if (AppState.CurrentChat?.Identity.ChatID != chatId)
         {
             return;
         }
@@ -457,7 +458,7 @@
 
     private async Task HandleChatLoadAsync(ContactSelectedArgs args)
     {
-        bool isSameChat = AppState.CurrentChat?.ChatID == args.ChatId;
+        bool isSameChat = AppState.CurrentChat?.Identity.ChatID == args.ChatId;
 
         if (args.Force)
         {
@@ -500,25 +501,25 @@
 
             try
             {
-                _usersInChat = await ChatHubService.GetChatUsersAsync(chatInformation.ChatID);
+                _usersInChat = await ChatHubService.GetChatUsersAsync(chatInformation.Identity.ChatID);
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", args.ChatId);
             }
 
-            _receivedMessages = await ChatHubService.GetChatHistoryAsync(chatInformation.ChatID, token);
+            _receivedMessages = await ChatHubService.GetChatHistoryAsync(chatInformation.Identity.ChatID, token);
             token.ThrowIfCancellationRequested();
 
             AppState.CurrentChat = chatInformation;
-            _isChatArchived = chatInformation.IsArchive;
-            _isChatLocked = chatInformation.IsArchive;
+            _isChatArchived = chatInformation.State.IsArchive;
+            _isChatLocked = chatInformation.State.IsArchive;
 
-            if (!chatInformation.IsArchive)
+            if (!chatInformation.State.IsArchive)
             {
-                await ChatHubService.JoinChatGroupSignalAsync(chatInformation.ChatID);
-                await ChatHubService.MarkChatMessagesAsReadAsync(chatInformation.ChatID, token);
-                await HandleCounterUpdateAsync(chatInformation.ChatID, true);
+                await ChatHubService.JoinChatGroupSignalAsync(chatInformation.Identity.ChatID);
+                await ChatHubService.MarkChatMessagesAsReadAsync(chatInformation.Identity.ChatID, token);
+                await HandleCounterUpdateAsync(chatInformation.Identity.ChatID, true);
             }
 
         }
@@ -544,7 +545,7 @@
     {
         if (AppState.CurrentChat != null)
         {
-            await ChatHubService.AddUsersToGroupChatAsync(AppState.CurrentChat.ChatID, usersToAdd);
+            await ChatHubService.AddUsersToGroupChatAsync(AppState.CurrentChat.Identity.ChatID, usersToAdd);
         }
     }
 
@@ -552,7 +553,7 @@
     {
         if (AppState.CurrentChat != null)
         {
-            await ChatHubService.GetChatUsersAsync(AppState.CurrentChat.ChatID);
+            await ChatHubService.GetChatUsersAsync(AppState.CurrentChat.Identity.ChatID);
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -568,7 +569,7 @@
         {
             if (AppState.CurrentChat != null)
             {
-                await ChatHubService.DeleteChatAsync(AppState.CurrentChat.ChatID);
+                await ChatHubService.DeleteChatAsync(AppState.CurrentChat.Identity.ChatID);
                 await ShowNotificationAsync("Czat został usunięty!");
             }
         }

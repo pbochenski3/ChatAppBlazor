@@ -1,8 +1,10 @@
 using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces;
+using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
 using ChatApp.Application.Services;
+using ChatApp.Application.Services.Chats;
 using ChatApp.ChatHub;
 using ChatApp.Domain.Repository;
 using ChatApp.Domain.Repository.Decorators;

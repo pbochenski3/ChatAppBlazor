@@ -1,11 +1,11 @@
-using ChatApp.Application.Interfaces.Service;
+using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Domain.Repository;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ChatApp.Application.Services
+namespace ChatApp.Application.Services.Chats
 {
     public class ChatReadStatusService : IChatReadStatusService
     {

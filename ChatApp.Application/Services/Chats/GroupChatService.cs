@@ -1,5 +1,5 @@
+using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Repository;
-using ChatApp.Application.Interfaces.Service;
 using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
 using System;
@@ -9,7 +9,7 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using static System.Net.WebRequestMethods;
 
-namespace ChatApp.Application.Services
+namespace ChatApp.Application.Services.Chats
 {
     public class GroupChatService : IGroupChatService
     {

@@ -1,4 +1,5 @@
 using ChatApp.Application.DTO;
+using ChatApp.Application.DTO.Chats;
 using ChatApp.ChatServer.Client.Services;
 using ChatApp.Domain.Models;
 using Microsoft.AspNetCore.SignalR.Client;

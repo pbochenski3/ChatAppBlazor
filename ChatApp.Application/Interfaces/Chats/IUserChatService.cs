@@ -1,10 +1,10 @@
-using ChatApp.Application.DTO;
+using ChatApp.Application.DTO.Chats;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ChatApp.Application.Interfaces.Service
+namespace ChatApp.Application.Interfaces.Chats
 {
     public interface IUserChatService
     {

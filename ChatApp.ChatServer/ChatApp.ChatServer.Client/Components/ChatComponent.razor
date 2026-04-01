@@ -14,11 +14,11 @@
         <div class="top-bar">
             <div class="user-profile-top">
                 <div class="avatar-wrapper-top">       
-                    <img src="@AppState.CurrentChat.AvatarUrl" class="user-avatar" alt="Avatar" />
+                    <img src="@AppState.CurrentChat.Identity.AvatarUrl" class="user-avatar" alt="Avatar" />
                     <div class="status-dot online"></div>
                 </div>
                 <div class="user-info-text-top">
-                    <span class="user-name">@AppState.CurrentChat.ChatName</span>
+                    <span class="user-name">@AppState.CurrentChat.Identity.ChatName</span>
                 </div>
             </div>
             <div class="contact-config" @onclick="ToggleSettings">⚙️</div>
@@ -87,7 +87,7 @@
                         <button class="btn-secondary" @onclick="() => _currentView = View.Users">Uczestnicy</button>
                         <button class="btn-secondary" @onclick="async () => { _currentView = View.AddUsers; await LoadContactsAsync(); }">Dodaj osoby</button>
 
-                        @if (!AppState.CurrentChat.IsGroup)
+                        @if (!AppState.CurrentChat.Identity.IsGroup)
                         {
                             <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Usuwanie", "Czy na pewno?", HandleContactDeleteAsync)'>Usuń kontakt</button>
                         }

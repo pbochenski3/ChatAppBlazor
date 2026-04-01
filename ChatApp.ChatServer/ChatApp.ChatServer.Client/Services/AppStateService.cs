@@ -1,4 +1,5 @@
 ﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO.Chats;
 using Microsoft.AspNetCore.Components;
 
 

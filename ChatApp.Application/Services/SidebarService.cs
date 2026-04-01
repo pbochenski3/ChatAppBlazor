@@ -1,6 +1,6 @@
-using ChatApp.Application.DTO;
+using ChatApp.Application.DTO.Chats;
 using ChatApp.Application.Interfaces;
-using ChatApp.Application.Interfaces.Service;
+using ChatApp.Application.Interfaces.Chats;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,15 +35,31 @@ namespace ChatApp.Application.Services
 
                 var sidebarItems = chats.Select(c => new UserChatDTO
                 {
-                    ChatID = c.ChatID,
-                    UserID = userId,
-                    ChatName = c.ChatName,
-                    IsArchive = c.IsArchive,
-                    AvatarUrl = c.AvatarUrl,
-                    LastMessageContent = c.LastMessageContent, 
-                    LastMessageSender = c.LastMessageSender,
-                    OtherUserId = c.OtherUserId,
-                    UnreadMessageCount = counterDict.GetValueOrDefault(c.ChatID, 0),
+                    Identity = new ChatIdentityDTO
+                    {
+                        ChatID = c.Identity.ChatID,
+                        ChatName = c.Identity.ChatName,
+                        AvatarUrl = c.Identity.AvatarUrl,
+                        IsGroup = c.Identity.IsGroup,
+                        UserID = c.Identity.UserID,
+                        OtherUserId = c.Identity.OtherUserId
+                    },
+                    State = new ChatStateDTO
+                    {
+                        IsArchive = c.State.IsArchive,
+                        IsAdmin = c.State.IsAdmin,
+                        IsDeleted = c.State.IsDeleted,
+                        LastReadMessageID = c.State.LastReadMessageID,
+                        LastReadAt = c.State.LastReadAt,
+                        UnreadMessageCount = counterDict.GetValueOrDefault(c.Identity.ChatID, 0)
+                    },
+                    LastMessage = new LastMessageDTO
+                    {
+                        LastMessageID = c.LastMessage.LastMessageID,
+                        LastMessageContent = c.LastMessage.LastMessageContent,
+                        LastMessageSender = c.LastMessage.LastMessageSender,
+                        LastMessageAt = c.LastMessage.LastMessageAt
+                    }
                 }).ToList();
 
                 return sidebarItems;
