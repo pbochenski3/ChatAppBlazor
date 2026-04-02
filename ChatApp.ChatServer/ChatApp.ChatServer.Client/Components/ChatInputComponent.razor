@@ -1,0 +1,52 @@
+﻿@inject ChatStateService ChatService
+
+<div class="message-input-area @(IsArchive ? "archived-status" : "")">
+    @if (!IsArchive)
+    {
+        <div class="input-group">
+            <input type="text"
+                   class="form-control"
+                   placeholder="Napisz wiadomość..."
+                   disabled="@IsLocked"
+                   @bind="_messageContent"
+                   @bind:event="oninput"
+                   @onkeydown="HandleKeyDownAsync" />
+
+            <button class="btn-primary"
+                    disabled="@(IsLocked || string.IsNullOrWhiteSpace(_messageContent))"
+                    @onclick="SubmitInternalAsync">
+                Wyślij
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="archived-message">
+            🔒 Czat jest zarchiwizowany. Możliwość pisania została zablokowana.
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public bool IsLocked { get; set; } = false;
+    [Parameter] public bool IsArchive { get; set; } = false;
+
+    private string _messageContent = string.Empty;
+
+    private async Task HandleKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !IsLocked && !string.IsNullOrWhiteSpace(_messageContent))
+        {
+            await SubmitInternalAsync();
+        }
+    }
+
+    private async Task SubmitInternalAsync()
+    {
+        if(!string.IsNullOrWhiteSpace(_messageContent))
+        {
+            await ChatService.RequestSendMessageAsync(_messageContent);
+            _messageContent = string.Empty;
+        }
+    }
+}

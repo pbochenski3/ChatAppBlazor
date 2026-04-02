@@ -7,6 +7,7 @@
 @inject NavigationManager NavManager
 @inject ChatHubService ChatHubService
 @inject AppStateService AppState
+@inject ChatStateService ChatService
 @implements IAsyncDisposable
 @inject ILogger<BlazorHub> _logger
 
@@ -37,7 +38,6 @@
         {
             <ChatComponent 
                 @bind-IsSettingsOpen="_isSettingsOpen"
-                OnSendMessage="HandleSendMessage"
                 OnDeleteContact="HandleContactDelete"
                 Messages="_receivedMessages"
                 IsLocked="_isChatLocked"
@@ -127,6 +127,7 @@
         ChatHubService.OnLastMessageChanged += HandleSidebarMessageReloadAsync;
         ChatHubService.OnAvatarReload += HandleAvatarReloadAsync;
         ChatHubService.OnGroupAvatarReload += HandleGroupAvatarReloadAsync;
+        ChatService.OnMessageRequested += HandleSendMessage;
     }
     private void UnSubscribeToEvent()
     {
@@ -139,6 +140,8 @@
         ChatHubService.OnLastMessageChanged -= HandleSidebarMessageReloadAsync;
         ChatHubService.OnAvatarReload -= HandleAvatarReloadAsync;
         ChatHubService.OnGroupAvatarReload -= HandleGroupAvatarReloadAsync;
+        ChatService.OnMessageRequested -= HandleSendMessage;
+
     }
     private async Task HandleOpenProfile(bool open)
     {

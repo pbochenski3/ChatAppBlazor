@@ -15,6 +15,6 @@ namespace ChatApp.ChatServer.Client.Services
         {
             CurrentUser = null;
             Message = "You have been logged out.";
-        }
+        } 
     }
 }

@@ -45,32 +45,9 @@
                 </div>
             </div>
 
-            <div class="message-input-area @(IsArchive ? "archived-status" : "")">
-                @if (!IsArchive)
-                {
-                    <div class="input-group">
-                        <input type="text"
-                               class="form-control"
-                               placeholder="Napisz wiadomość..."
-                               disabled="@IsLocked"
-                               @bind="_messageContent"
-                               @bind:event="oninput"
-                               @onkeydown="HandleKeyDownAsync" />
-
-                        <button class="btn-primary"
-                                disabled="@(IsLocked || string.IsNullOrWhiteSpace(_messageContent))"
-                                @onclick="HandleInternalSubmitAsync">
-                            Wyślij
-                        </button>
-                    </div>
-                }
-                else
-                {
-                    <div class="archived-message">
-                        🔒 Czat jest zarchiwizowany. Możliwość pisania została zablokowana.
-                    </div>
-                }
-            </div>
+            <ChatInputComponent 
+                IsLocked="IsLocked" 
+                IsArchive="IsArchive" />
 
         </div>
     </div>
@@ -172,7 +149,6 @@
     #region Parameters
     [Parameter] public EventCallback OnAddUserTriggered { get; set; }
     [Parameter] public EventCallback<HashSet<Guid>> OnAddUserClick { get; set; }
-    [Parameter] public EventCallback<string> OnSendMessage { get; set; }
     [Parameter] public EventCallback OnDeleteContact { get; set; }
     [Parameter] public EventCallback OnChatLeave { get; set; }
     [Parameter] public EventCallback OnChatDelete { get; set; }
@@ -192,7 +168,6 @@
 
     #region Private Fields
     private string _contactSearchTerm = string.Empty;
-    private string _messageContent = string.Empty;
     private string newChatName = string.Empty;
     private bool _showConfirm = false;
     private string _confirmTitle = string.Empty;
@@ -214,14 +189,6 @@
         _onConfirmAction = action;
         _showConfirm = true;
         StateHasChanged();
-    }
-
-    private async Task HandleKeyDownAsync(KeyboardEventArgs keyClick)
-    {
-        if (keyClick.Key == "Enter")
-        {
-            await HandleInternalSubmitAsync();
-        }
     }
 
     private IEnumerable<ContactDTO> FilteredContacts =>
@@ -280,16 +247,6 @@
     {
         IsSettingsOpen = false;
         await OnChatDelete.InvokeAsync();
-    }
-
-    private async Task HandleInternalSubmitAsync()
-    {
-        if (!string.IsNullOrWhiteSpace(_messageContent) && !IsArchive)
-        {
-            var messageToSend = _messageContent;
-            _messageContent = string.Empty;
-            await OnSendMessage.InvokeAsync(messageToSend);
-        }
     }
 
     private async Task HandleConfirmAsync(bool result)
