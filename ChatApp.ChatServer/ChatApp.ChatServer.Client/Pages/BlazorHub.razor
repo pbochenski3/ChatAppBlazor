@@ -7,7 +7,7 @@
 @inject NavigationManager NavManager
 @inject ChatHubService ChatHubService
 @inject AppStateService AppState
-@inject ChatStateService ChatService
+@inject ChatSettingsService SettingsService
 @implements IAsyncDisposable
 @inject ILogger<BlazorHub> _logger
 
@@ -37,19 +37,10 @@
         @if (AppState.CurrentChat != null)
         {
             <ChatComponent 
-                @bind-IsSettingsOpen="_isSettingsOpen"
-                OnDeleteContact="HandleContactDelete"
                 Messages="_receivedMessages"
                 IsLocked="_isChatLocked"
                 IsArchive="_isChatArchived"
-                OnAddUserTriggered="HandleContactLoad"
-                OnAddUserClick="HandleCreateGroupChat"
-                OnChatLeave="HandleChatLeave"
-                UserContacts="_receivedContacts"
-                ExistingUsers="_usersInChat"
-                LockSidebar="HandleSidebarLock"
-                OnChatDelete="HandleChatDelete" 
-                OnChatNameChange="HandleChangeChatNameAsync"  />
+                />
         }
         @if(_isProfileOpen)
         {
@@ -69,16 +60,13 @@
     private UserDTO _currentUser = new UserDTO();
     private List<MessageDTO> _receivedMessages = new List<MessageDTO>();
     private List<InviteDTO> _receivedInvites = new List<InviteDTO>();
-    private List<ContactDTO> _receivedContacts = new List<ContactDTO>();
     private List<UserDTO> _foundUsers = new List<UserDTO>();
-    private HashSet<UserDTO> _usersInChat = new HashSet<UserDTO>();
     private List<UserChatDTO> _sidebarItems = new List<UserChatDTO>();
     private bool _isSearchingGlobal = false;
     private bool _isPending;
     private bool _isChatLocked = true;
     private bool _isChatArchived = false;
     private bool _isLoading = true;
-    private bool _isSettingsOpen;
     private bool _isProfileOpen = false;
 
     #endregion
@@ -127,7 +115,15 @@
         ChatHubService.OnLastMessageChanged += HandleSidebarMessageReloadAsync;
         ChatHubService.OnAvatarReload += HandleAvatarReloadAsync;
         ChatHubService.OnGroupAvatarReload += HandleGroupAvatarReloadAsync;
-        ChatService.OnMessageRequested += HandleSendMessage;
+        //ChatState
+        SettingsService.OnMessageRequested += HandleSendMessage;
+        SettingsService.OnChatNameChangeRequested += HandleChangeChatNameAsync;
+        SettingsService.OnContactDeleteRequested += HandleContactDelete;
+        SettingsService.OnCreateGroupChatRequested += HandleCreateGroupChat;
+        SettingsService.OnContactLoadRequested +=HandleContactLoad;
+        SettingsService.OnChatLeaveRequested += HandleChatLeave;
+        SettingsService.OnChatDeleteRequested += HandleChatDelete;
+
     }
     private void UnSubscribeToEvent()
     {
@@ -140,7 +136,19 @@
         ChatHubService.OnLastMessageChanged -= HandleSidebarMessageReloadAsync;
         ChatHubService.OnAvatarReload -= HandleAvatarReloadAsync;
         ChatHubService.OnGroupAvatarReload -= HandleGroupAvatarReloadAsync;
-        ChatService.OnMessageRequested -= HandleSendMessage;
+        //ChatState
+        SettingsService.OnMessageRequested -= HandleSendMessage;
+        SettingsService.OnChatNameChangeRequested -= HandleChangeChatNameAsync;
+        SettingsService.OnContactDeleteRequested -= HandleContactDelete;
+        SettingsService.OnCreateGroupChatRequested -= HandleCreateGroupChat;
+        SettingsService.OnContactLoadRequested -= HandleContactLoad;
+        SettingsService.OnChatLeaveRequested -= HandleChatLeave;
+        SettingsService.OnChatDeleteRequested -= HandleChatDelete;
+
+
+
+
+
 
     }
     private async Task HandleOpenProfile(bool open)
@@ -244,7 +252,7 @@
     private async Task HandleAvatarReloadAsync(string newAvatarUrl,Guid userId)
     {
         AppState.CurrentUser.AvatarUrl = newAvatarUrl;
-        var userInChat = _usersInChat.FirstOrDefault(u => u.UserID == userId);
+        var userInChat = SettingsService.UsersInChat.FirstOrDefault(u => u.UserID == userId);
         if (userInChat != null)
         {
             userInChat.AvatarUrl = newAvatarUrl;
@@ -338,8 +346,8 @@
     {
         try
         {
-            _isSettingsOpen = true;
-            _receivedContacts = await ChatHubService.GetContactListAsync();
+            SettingsService.IsSettingsOpen = true;
+            SettingsService.ReceivedContacts = await ChatHubService.GetContactListAsync();
             _logger.LogInformation("Contacts loaded");
         }
         catch (Exception ex)
@@ -467,7 +475,7 @@
         }
         try
         {
-            _usersInChat = await ChatHubService.GetChatUsersAsync(chatId);
+            SettingsService.UsersInChat = await ChatHubService.GetChatUsersAsync(chatId);
             await InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
@@ -498,7 +506,7 @@
             _isProfileOpen = false;
         }
 
-        _isSettingsOpen = false;
+        SettingsService.IsSettingsOpen = false;
         _chatLoadingCts?.Cancel();
         _chatLoadingCts = new CancellationTokenSource();
         var token = _chatLoadingCts.Token;
@@ -520,7 +528,7 @@
 
             try
             {
-                _usersInChat = await ChatHubService.GetChatUsersAsync(chatInformation.Identity.ChatID);
+                SettingsService.UsersInChat = await ChatHubService.GetChatUsersAsync(chatInformation.Identity.ChatID);
             }
             catch (Exception ex)
             {
@@ -532,6 +540,7 @@
 
             AppState.CurrentChat = chatInformation;
             _isChatArchived = chatInformation.State.IsArchive;
+            SettingsService.IsArchive = chatInformation.State.IsArchive;
             _isChatLocked = chatInformation.State.IsArchive;
 
             if (!chatInformation.State.IsArchive)
@@ -571,7 +580,6 @@
         if (AppState.CurrentChat != null)
         {
             await ChatHubService.GetChatUsersAsync(AppState.CurrentChat.Identity.ChatID);
-            await InvokeAsync(StateHasChanged);
         }
     }
     private async Task HandleSidebarLock()

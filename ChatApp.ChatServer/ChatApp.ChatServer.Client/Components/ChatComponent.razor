@@ -1,7 +1,9 @@
 @inject IJSRuntime JSRuntime
 @inject AppStateService AppState
+@inject ChatSettingsService SettingsService
+@implements IDisposable;
 
-<div class="chat-main-wrapper @(IsSettingsOpen ? "show-settings" : "")">
+<div class="chat-main-wrapper @(SettingsService.IsSettingsOpen ? "show-settings" : "")">
 
     @if (_showConfirm)
     {
@@ -21,7 +23,7 @@
                     <span class="user-name">@AppState.CurrentChat.Identity.ChatName</span>
                 </div>
             </div>
-            <div class="contact-config" @onclick="ToggleSettings">⚙️</div>
+            <div class="contact-config" @onclick="SettingsService.ToggleSettings">⚙️</div>
         </div>
 
         <div class="chat-body">
@@ -44,209 +46,36 @@
                     }
                 </div>
             </div>
-
             <ChatInputComponent 
                 IsLocked="IsLocked" 
                 IsArchive="IsArchive" />
-
         </div>
     </div>
-
-    <div class="contact-settings-panel">
-        <div class="settings-content">
-            @switch (_currentView)
-            {
-                case View.Settings:
-                    <div class="sidebar-header"><h3>Ustawienia</h3></div>
-                    if (!IsArchive)
-                    {
-                        <button class="btn-secondary" @onclick="() => _currentView = View.ChangeName">Zmień nazwe czatu</button>
-                        <button class="btn-secondary" @onclick="() => _currentView = View.Users">Uczestnicy</button>
-                        <button class="btn-secondary" @onclick="async () => { _currentView = View.AddUsers; await LoadContactsAsync(); }">Dodaj osoby</button>
-
-
-                        @if (!AppState.CurrentChat.Identity.IsGroup)
-                        {
-                           
-                            <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Usuwanie", "Czy na pewno?", HandleContactDeleteAsync)'>Usuń kontakt</button>
-                        }
-                        else
-                        {
-                            <button class="btn-secondary" @onclick="() => _currentView = View.ChangePhoto">Zmień zdjecie grupy</button>
-                            <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Opuszczanie", "Czy na pewno?", HandleChatLeaveAsync)'>Opuść czat</button>
-                        }
-                    }
-                    @if(IsArchive)
-                    {
-                        <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Usuwanie", "Czy na pewno chcesz usunąć? Ta zmiana jest nieodwracalna!", HandleChatDeleteAsync)'>Usuń czat</button>
-                    }
-                    break;
-                case View.AddUsers:
-                    <div class="sidebar-header"><h3>Dodaj osoby</h3></div>
-                    <div class="search-container">
-                        <input type="text" class="form-control search-input" placeholder="Szukaj..."
-                               @bind="_contactSearchTerm" @bind:event="oninput" />
-                    </div>
-                    <div class="search-results">
-                        @if (FilteredContacts != null && FilteredContacts.Any())
-                        {
-                            @foreach (var user in FilteredContacts)
-                            {
-                                bool isSelected = ContactsToAdd.Contains(user.ContactUserID);
-                                <div class="search-result-item @(isSelected ? "selected" : "")"
-                                     @onclick="async () => await AddUserToSelectionAsync(user.ContactUserID)">
-                                    <div class="user-search-info">
-                                        <img src="@user.AvatarUrl" class="user-avatar" />
-                                        <span>@user.Username</span>
-                                    </div>
-                                </div>
-                            }
-                        }
-                    </div>
-                    @if(ContactsToAdd != null && ContactsToAdd.Any())
-                    {
-                        <button class="btn-add-action" @onclick="async () => { _currentView = View.Settings; await CreateGroupAsync(ContactsToAdd); }">Zatwierdź</button>
-                    }
-                    <button class="btn-add-action" @onclick="() => _currentView = View.Settings">Cofnij</button>
-                    break;
-
-                case View.Users:
-                    <div class="sidebar-header"><h3>Uczestnicy</h3></div>
-                    @foreach (var user in ExistingUsers)
-                    {
-                        <div class="search-result-item">
-                            <div class="user-search-info">
-                                <img src="@user.AvatarUrl" class="user-avatar" />
-                                <span>@user.Username</span>
-                            </div>
-                        </div>
-                    }
-                    <button class="btn-add-action" @onclick="() => _currentView = View.Settings">Cofnij</button>
-                    break;
-                case View.ChangeName:
-                    <div class="sidebar-header"><h3>Zmień nazwę czatu</h3></div>
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Nowa nazwa czatu..."
-                               @bind="newChatName" />
-                    </div>
-                        <button class="btn-primary" @onclick="async () => { _currentView = View.Settings; await HandleChatNameChangeAsync(newChatName); }">Zatwierdź</button>
-                        <button class="btn-secondary" @onclick="() => _currentView = View.Settings">Cofnij</button>
-                    break;
-                case View.ChangePhoto:
-                    <div class="sidebar-header"><h3>Zmień zdjęcie grupy</h3></div>
-                    <ImageComponent
-                        AvatarUrl="@AppState.CurrentChat.Identity.AvatarUrl"
-                        Name="@AppState.CurrentChat.Identity.ChatName"
-                        LabelRole="Grupa"
-                        IsGroup="true"/>
-                    break;
-            }
-        </div>
-    </div>
+    <ChatSettingsComponent/>
 </div>
 
 @code {
-    #region Parameters
-    [Parameter] public EventCallback OnAddUserTriggered { get; set; }
-    [Parameter] public EventCallback<HashSet<Guid>> OnAddUserClick { get; set; }
-    [Parameter] public EventCallback OnDeleteContact { get; set; }
-    [Parameter] public EventCallback OnChatLeave { get; set; }
-    [Parameter] public EventCallback OnChatDelete { get; set; }
-    [Parameter] public EventCallback<string> OnChatNameChange { get; set; }
-    [Parameter] public EventCallback<bool> LockSidebar { get; set; }
-    [Parameter] public EventCallback<bool> IsSettingsOpenChanged { get; set; }
-
     [Parameter] public List<MessageDTO> Messages { get; set; } = new();
-    [Parameter] public List<ContactDTO> UserContacts { get; set; } = new();
-    [Parameter] public HashSet<Guid> ContactsToAdd { get; set; } = new();
-    [Parameter] public HashSet<UserDTO> ExistingUsers { get; set; } = new();
     [Parameter] public bool IsLocked { get; set; }
     [Parameter] public bool IsArchive { get; set; }
-    [Parameter] public bool IsSettingsOpen { get; set; }
-  
-    #endregion
 
-    #region Private Fields
-    private string _contactSearchTerm = string.Empty;
-    private string newChatName = string.Empty;
     private bool _showConfirm = false;
     private string _confirmTitle = string.Empty;
     private string _confirmMessage = string.Empty;
     private Func<Task>? _onConfirmAction;
-    private enum View { Settings, AddUsers, Users,ChangeName,ChangePhoto }
-    private View _currentView = View.Settings;
-    #endregion
 
-    private void ToggleSettings() {
-        IsSettingsOpen = !IsSettingsOpen;
-        _currentView = View.Settings;
+    protected override async Task OnInitializedAsync()
+    {
+        SettingsService.OnConfirmationActionRequested += OpenConfirmDialog;
     }
-
-    private void OpenConfirmDialog(string title, string message, Func<Task> action)
+    private Task OpenConfirmDialog(string title, string message, Func<Task> action)
     {
         _confirmTitle = title;
         _confirmMessage = message;
         _onConfirmAction = action;
         _showConfirm = true;
         StateHasChanged();
-    }
-
-    private IEnumerable<ContactDTO> FilteredContacts =>
-        UserContacts?.Where(c =>
-            (string.IsNullOrWhiteSpace(_contactSearchTerm) ||
-             c.Username.Contains(_contactSearchTerm, StringComparison.OrdinalIgnoreCase))
-            &&
-            !ExistingUsers.Any(u => u.UserID == c.ContactUserID)
-        ) ?? Enumerable.Empty<ContactDTO>();
-
-    private async Task AddUserToSelectionAsync(Guid contactId)
-    {
-        if (ContactsToAdd.Contains(contactId))
-        {
-            ContactsToAdd.Remove(contactId);
-        }
-        else
-        {
-            ContactsToAdd.Add(contactId);
-        }
-        await Task.CompletedTask;
-    }
-
-    private async Task CreateGroupAsync(HashSet<Guid> usersToAdd)
-    {
-        await OnAddUserClick.InvokeAsync(usersToAdd);
-        ContactsToAdd.Clear();
-    }
-
-    private async Task LoadContactsAsync()
-    {
-        await OnAddUserTriggered.InvokeAsync();
-    }
-    private async Task HandleChatNameChangeAsync(string name)
-    {
-        if (!string.IsNullOrWhiteSpace(name))
-        {
-            _currentView = View.Settings;
-            await OnChatNameChange.InvokeAsync(name);
-        }
-    }
-
-    private async Task HandleContactDeleteAsync()
-    {
-        _currentView = View.Settings;
-        await OnDeleteContact.InvokeAsync();
-    }
-
-    private async Task HandleChatLeaveAsync()
-    {
-        IsSettingsOpen = false;
-        await OnChatLeave.InvokeAsync();
-    }
-
-    private async Task HandleChatDeleteAsync()
-    {
-        IsSettingsOpen = false;
-        await OnChatDelete.InvokeAsync();
+        return Task.CompletedTask;
     }
 
     private async Task HandleConfirmAsync(bool result)
@@ -255,12 +84,17 @@
         if (result && _onConfirmAction != null)
         {
             await _onConfirmAction.Invoke();
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
+
         }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await JSRuntime.InvokeVoidAsync("scrollToBottom", "chat-window");
+    }
+    public void Dispose()
+    {
+        SettingsService.OnConfirmationActionRequested -= OpenConfirmDialog;
     }
 }
