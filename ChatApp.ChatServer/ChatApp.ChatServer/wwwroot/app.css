@@ -1391,7 +1391,7 @@ body {
     width: 100%;
     padding: 0.55rem 1rem;
     border-radius: var(--radius-md);
-    border: 1px dashed var(--border-hover);
+    border: 1px solid var(--border-hover);
     background: var(--accent-dim);
     color: var(--accent);
     font-size: 0.8rem;
