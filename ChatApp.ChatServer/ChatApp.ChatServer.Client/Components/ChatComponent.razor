@@ -87,12 +87,15 @@
                         <button class="btn-secondary" @onclick="() => _currentView = View.Users">Uczestnicy</button>
                         <button class="btn-secondary" @onclick="async () => { _currentView = View.AddUsers; await LoadContactsAsync(); }">Dodaj osoby</button>
 
+
                         @if (!AppState.CurrentChat.Identity.IsGroup)
                         {
+                           
                             <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Usuwanie", "Czy na pewno?", HandleContactDeleteAsync)'>Usuń kontakt</button>
                         }
                         else
                         {
+                            <button class="btn-secondary" @onclick="() => _currentView = View.ChangePhoto">Zmień zdjecie grupy</button>
                             <button class="btn-secondary btn-delete" @onclick='() => OpenConfirmDialog("Opuszczanie", "Czy na pewno?", HandleChatLeaveAsync)'>Opuść czat</button>
                         }
                     }
@@ -152,6 +155,14 @@
                         <button class="btn-primary" @onclick="async () => { _currentView = View.Settings; await HandleChatNameChangeAsync(newChatName); }">Zatwierdź</button>
                         <button class="btn-secondary" @onclick="() => _currentView = View.Settings">Cofnij</button>
                     break;
+                case View.ChangePhoto:
+                    <div class="sidebar-header"><h3>Zmień zdjęcie grupy</h3></div>
+                    <ImageComponent
+                        AvatarUrl="@AppState.CurrentChat.Identity.AvatarUrl"
+                        Name="@AppState.CurrentChat.Identity.ChatName"
+                        LabelRole="Grupa"
+                        IsGroup="true"/>
+                    break;
             }
         </div>
     </div>
@@ -187,11 +198,14 @@
     private string _confirmTitle = string.Empty;
     private string _confirmMessage = string.Empty;
     private Func<Task>? _onConfirmAction;
-    private enum View { Settings, AddUsers, Users,ChangeName }
+    private enum View { Settings, AddUsers, Users,ChangeName,ChangePhoto }
     private View _currentView = View.Settings;
     #endregion
 
-    private void ToggleSettings() => IsSettingsOpen = !IsSettingsOpen;
+    private void ToggleSettings() {
+        IsSettingsOpen = !IsSettingsOpen;
+        _currentView = View.Settings;
+    }
 
     private void OpenConfirmDialog(string title, string message, Func<Task> action)
     {

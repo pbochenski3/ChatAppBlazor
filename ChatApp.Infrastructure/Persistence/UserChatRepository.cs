@@ -186,7 +186,7 @@ namespace ChatApp.Infrastructure.Persistence
                 .Where(uc => uc.UserID == userId)
                 .ToListAsync();
         }
-        public async Task<HashSet<Guid>> GetUsersInChatAsync(Guid chatId)
+        public async Task<HashSet<Guid>> GetUsersInChatIdAsync(Guid chatId)
         {
             using var context = _contextFactory.CreateDbContext();
             var userIds = await context.UserChat

@@ -1,9 +1,13 @@
 using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces;
+using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Service;
+using ChatApp.Application.Services;
 using ChatApp.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -14,44 +18,17 @@ namespace ChatApp.ChatHub.Controllers
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly IUserService _userService;
+        private readonly IHubContext<ChatHub> _hubContext;
         private readonly IFileService _fileService;
+        private readonly IContactService _contactService;
+        private readonly IUserService _userService;
 
-        public UserController(IUserService userService, IFileService fileService)
+        public UserController(IFileService fileService,IHubContext<ChatHub> hubContext,IContactService contactService,IUserService userService)
         {
-            _userService = userService;
+            _hubContext = hubContext;
             _fileService = fileService;
-        }
-
-        [HttpPost("login")]
-        public async Task<IActionResult> LoginUserAsync([FromBody] UserDTO loginDto)
-        {
-            try
-            {
-                var user = await _userService.LoginUserAsync(loginDto);
-                if (user == null)
-                    return Unauthorized("Błędny login lub hasło");
-
-                return Ok(user);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost("register")]
-        public async Task<IActionResult> RegisterUserAsync([FromBody] UserDTO dto)
-        {
-            try
-            {
-                await _userService.RegisterUserAsync(dto);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            _contactService = contactService;
+            _userService = userService;
         }
         [Authorize]
         [HttpPost("updateAvatar")]
@@ -68,9 +45,12 @@ namespace ChatApp.ChatHub.Controllers
                 using var stream = file.OpenReadStream();
                 string avatarUrl = await _fileService.SaveUserAvatarAsync(stream, extension);
                 await _userService.UpdateUserAvatarAsync(userGuid, avatarUrl);
-
+                var contacts = await _contactService.GetUserContactsAsync(userGuid);
+                var contactsToNofitify = contacts.Select(c => c.ContactUserID.ToString()).ToList();
+                var allRecipients = contactsToNofitify.Append(userGuid.ToString()).ToList();
+                await _hubContext.Clients.Users(allRecipients).SendAsync("ContactAvatarReload", avatarUrl, userGuid);
                 return Ok();
-            }
+                    }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);

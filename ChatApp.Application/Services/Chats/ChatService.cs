@@ -18,13 +18,20 @@ namespace ChatApp.Application.Services.Chats
             _chatRepo = chatRepo;
             _userChatRepo = userChatRepo;
         }
-
-
-        public async Task<HashSet<Guid>> GetChatUsersIdsAsync(Guid chatId)
+        public async Task UpdateGroupAvatarUrl(Guid chatId,string avatarUrl)
         {
-            return await _userChatRepo.GetUsersInChatAsync(chatId);
+        
+            await _chatRepo.UpdateGroupAvatarUrl(chatId, avatarUrl);
         }
 
+        public async Task<HashSet<Guid>> GetUsersInChatIdAsync(Guid chatId)
+        {
+            return await _userChatRepo.GetUsersInChatIdAsync(chatId);
+        }
+        public async Task<string> GetGroupAvatarUrlAsync(Guid chatId)
+        {
+             return await _chatRepo.GetGroupAvatarUrlAsync(chatId);
+        }
         public async Task DeleteChatAsync(Guid chatId, Guid userId)
         {
             await _userChatRepo.MarkChatAsDeletedAsync(chatId, userId);

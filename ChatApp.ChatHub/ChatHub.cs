@@ -112,7 +112,7 @@ namespace ChatApp.ChatHub
             await _readStatusService.SaveLastSentMessageIdAsync(dto.ChatID, dto.MessageID);
             await _messageService.SaveMessageAsync(dto);
             await Clients.Group(chatId.ToString()).SendAsync("ReceiveMessage", dto);
-            var chat = await _chatService.GetChatUsersIdsAsync(chatId);
+            var chat = await _chatService.GetUsersInChatIdAsync(chatId);
             var participants = chat.Select(id => id.ToString()).ToList();
             await Clients.Users(participants).SendAsync("UpdateLastMessage", dto.ChatID,dto.SenderUsername,dto.Content);
 
@@ -124,7 +124,7 @@ namespace ChatApp.ChatHub
         }
         public async Task<HashSet<UserDTO>> GetChatUsersAsync(Guid chatId)
         {
-            var userIds = await _chatService.GetChatUsersIdsAsync(chatId);
+            var userIds = await _chatService.GetUsersInChatIdAsync(chatId);
             return await _userService.GetUsersByIdsAsync(userIds);
         }
         public async Task RemoveContactAsync(Guid chatId)
@@ -164,19 +164,12 @@ namespace ChatApp.ChatHub
         {
             return await _userService.GetAvatarUrlAsync(UserId);
         }
-        public async Task UpdateUserAvatarAsync()
-        {
-            var contacts = await _contactService.GetUserContactsAsync(UserId);
-            var contactIds = contacts.Select(c => c.ContactUserID.ToString()).ToList();
-            var avatarUrl = await _userService.GetAvatarUrlAsync(UserId);
-            await Clients.Users(contactIds).SendAsync("AvatarReload", avatarUrl,UserId);
-        }
         public async Task ChangeChatNameAsync(Guid chatId, string chatName)
         {
             try
             {
                 await _userChatService.UpdateChatNameAsync(chatId, chatName);
-                var chat = await _chatService.GetChatUsersIdsAsync(chatId);
+                var chat = await _chatService.GetUsersInChatIdAsync(chatId);
                 var participants = chat.Select(id => id.ToString()).ToList();
                 var admin = await _userService.GetUserByIdAsync(UserId);
 
@@ -325,7 +318,7 @@ namespace ChatApp.ChatHub
         }
         public async Task<HashSet<Guid>> GetChatUsersIdsAsync(Guid chatId)
         {
-            return await _chatService.GetChatUsersIdsAsync(chatId);
+            return await _chatService.GetUsersInChatIdAsync(chatId);
         }
         public async Task LeaveChatGroupAsync(Guid chatId)
         {

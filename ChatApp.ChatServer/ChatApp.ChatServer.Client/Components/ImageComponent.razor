@@ -1,0 +1,126 @@
+﻿@using ChatApp.Application.DTO.Chats
+@inject AppStateService AppStateService
+@inject ChatHubService ChatHubService
+@inject ILogger<ImageComponent> Logger
+<div class="profile-wrapper">
+    <div class="avatar-wrapper">
+        @if (TempAvatarUrl != string.Empty)
+        {
+        <img src="@TempAvatarUrl" alt="avatarTemp" />
+        }
+        else
+        {
+            <img src="@AvatarUrl" alt="avatar" />
+        }
+        <span class="online-badge"></span>
+    </div>
+    <p class="profile-username">@Name</p>
+    <p class="profile-role">@LabelRole</p>
+    <div class="profile-divider"></div>
+    <div class="avatar-upload-container">
+        <InputFile id="avatar-upload" OnChange="OnInputFileChange"
+                   style="display:none;" accept=".jpg,.jpeg,.png" />
+        <label for="avatar-upload" disabled="@isUploading" class="user-profile-icon">
+            <p class="user-icon">Wybierz plik</p>
+        </label>
+        @if (selectedFile != null)
+        {
+            <button disabled="@isUploading" class="btn-upload" @onclick="HandleSaveClick">
+                Zapisz zmiany
+            </button>
+            <span class="file-name">Wybrano: @selectedFile.Name</span>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string AvatarUrl { get; set; } = string.Empty;
+    [Parameter] public string Name { get; set; } = string.Empty;
+    [Parameter] public string LabelRole { get; set; } = string.Empty;
+    [Parameter] public bool IsGroup { get; set; } = false;
+    private IBrowserFile? selectedFile;
+    private bool isUploading = false;
+    private const string UploadFieldName = "file";
+    public enum PhotoType {Private,Group};
+    private string TempAvatarUrl { get; set; } = string.Empty;
+    public async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            var extension = Path.GetExtension(file.Name).ToLower();
+
+            if (!allowedExtensions.Contains(extension))
+            {
+                file = null;
+                return;
+            }
+            selectedFile = file;
+            try
+            {
+                var resizedFile = await file.RequestImageFileAsync(extension, 250, 250);
+                using var stream = resizedFile.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5);
+                using var ms = new MemoryStream();
+                await stream.CopyToAsync(ms);
+                var base64 = Convert.ToBase64String(ms.ToArray());
+                TempAvatarUrl = $"data:{file.ContentType};base64,{base64}";
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Błąd podczas przetwarzania obrazu.");
+            }
+            finally
+            {
+                StateHasChanged();
+            }
+        }
+    }
+    private async Task HandleSaveClick()
+    {
+        if (selectedFile == null) return;
+        try
+        {
+            isUploading = true;
+            var fileData = await GetFileData();
+            using var content = new MultipartFormDataContent();
+            content.Add(new ByteArrayContent(fileData), UploadFieldName, selectedFile.Name);
+
+            if(IsGroup)
+            {
+                await ChatHubService.UploadGroupAvatar(content,
+                    AppStateService.CurrentUser.Token,
+                    AppStateService.CurrentChat.Identity.ChatID);
+            }
+            else
+            {
+                await ChatHubService.UploadUserAvatar(content,
+                    AppStateService.CurrentUser.Token);
+            }
+            TempAvatarUrl = string.Empty;
+            selectedFile = null;
+            
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Błąd podczas przesyłania obrazu.");
+            isUploading = false;
+        }
+        finally
+        {
+            isUploading = false;
+            StateHasChanged();
+        }
+    }
+    public async Task<byte[]> GetFileData()
+    {
+        if (selectedFile == null)
+        {
+            throw new InvalidOperationException("Nie wybrano pliku do przesłania.");
+        }
+        using var stream = selectedFile.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5);
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        return ms.ToArray();
+        }
+    }

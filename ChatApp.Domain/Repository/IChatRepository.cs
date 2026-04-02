@@ -16,5 +16,7 @@ namespace ChatApp.Application.Interfaces.Repository
         Task<HashSet<Guid>> GetExistingUsersInChat(Guid chatId, HashSet<Guid> userIdsToCheck);
         Task TryDeleteChatIfEmptyAsync(Guid chatId);
         Task UpdateChatNameAsync(Guid chatId, string chatName);
+        Task UpdateGroupAvatarUrl(Guid chatId, string avatarUrl);
+        Task<string> GetGroupAvatarUrlAsync(Guid chatId);
     }
 }

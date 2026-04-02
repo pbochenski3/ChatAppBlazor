@@ -53,7 +53,11 @@
         }
         @if(_isProfileOpen)
         {
-            <ProfileComponent/>
+            <ImageComponent
+                AvatarUrl="@AppState.CurrentUser.AvatarUrl"
+                Name="@AppState.CurrentUser.Username"
+                LabelRole="Użytkownik"
+                IsGroup="false"/>
         }
     </main>
 }
@@ -96,8 +100,24 @@
             _ = ShowNotificationAsync(_notification);
         }
 
-        var startHubTask = ChatHubService.StartAsync();
-
+        try
+        {
+            await ChatHubService.StartAsync();
+            SubscribeToEvent();
+            await HandleDataReloadAsync(true);
+            _isLoading = false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during initialization");
+            _ = ShowNotificationAsync($"{ex.Message}");
+            AppState.CurrentUser = null;
+            NavManager.NavigateTo("/");
+            return;
+        }
+    }
+    private void SubscribeToEvent()
+    {
         ChatHubService.OnAppReload += HandleUnifiedReloadAsync;
         ChatHubService.OnMessageReceived += HandleReceiveMessageAsync;
         ChatHubService.InviteStatusMessage += HandleInviteStatusReceivedAsync;
@@ -106,19 +126,19 @@
         ChatHubService.OnChatNameChanged += HandleChatNameReloadAsync;
         ChatHubService.OnLastMessageChanged += HandleSidebarMessageReloadAsync;
         ChatHubService.OnAvatarReload += HandleAvatarReloadAsync;
-
-        var dataReloadTask = HandleDataReloadAsync(true);
-
-        try
-        {
-            await Task.WhenAll(startHubTask, dataReloadTask);
-            _isLoading = false;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during initialization");
-            _ = ShowNotificationAsync($"{ex.Message}");
-        }
+        ChatHubService.OnGroupAvatarReload += HandleGroupAvatarReloadAsync;
+    }
+    private void UnSubscribeToEvent()
+    {
+        ChatHubService.OnAppReload -= HandleUnifiedReloadAsync;
+        ChatHubService.OnMessageReceived -= HandleReceiveMessageAsync;
+        ChatHubService.InviteStatusMessage -= HandleInviteStatusReceivedAsync;
+        ChatHubService.OnChatLoad -= HandleChatLoadAsync;
+        ChatHubService.OnUserInChatReload -= HandleUserOnGroupLoadAsync;
+        ChatHubService.OnChatNameChanged -= HandleChatNameReloadAsync;
+        ChatHubService.OnLastMessageChanged -= HandleSidebarMessageReloadAsync;
+        ChatHubService.OnAvatarReload -= HandleAvatarReloadAsync;
+        ChatHubService.OnGroupAvatarReload -= HandleGroupAvatarReloadAsync;
     }
     private async Task HandleOpenProfile(bool open)
     {
@@ -205,26 +225,35 @@
             await InvokeAsync(StateHasChanged);
         }
     }
-    private async Task HandleAvatarReloadAsync(string newAvatarUrl,Guid chaningUserId)
+    private async Task HandleGroupAvatarReloadAsync(string newAvatarUrl, Guid chatId)
+    {
+        var chatToUpdate = _sidebarItems.FirstOrDefault(sb => sb.Identity.ChatID == chatId);
+        if (chatToUpdate != null)
+        {
+            chatToUpdate.Identity.AvatarUrl = newAvatarUrl;
+        }
+        if (AppState.CurrentChat != null && AppState.CurrentChat.Identity.ChatID == chatId)
+        {
+            AppState.CurrentChat.Identity.AvatarUrl = newAvatarUrl;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+    private async Task HandleAvatarReloadAsync(string newAvatarUrl,Guid userId)
     {
         AppState.CurrentUser.AvatarUrl = newAvatarUrl;
-        var userInChat = _usersInChat.FirstOrDefault(u => u.UserID == chaningUserId);
+        var userInChat = _usersInChat.FirstOrDefault(u => u.UserID == userId);
         if (userInChat != null)
         {
             userInChat.AvatarUrl = newAvatarUrl;
         }
-
-        if (AppState.CurrentChat != null && AppState.CurrentChat.Identity.IsGroup == false)
+        if(AppState.CurrentUser.UserID == userId)
         {
-            var other = _usersInChat.FirstOrDefault(u => u.UserID != _currentUser.UserID);
-            if (other != null && other.UserID == chaningUserId)
-            {
-                AppState.CurrentChat.Identity.AvatarUrl = newAvatarUrl;
-            }
+            AppState.CurrentUser.AvatarUrl = newAvatarUrl;
         }
+
         if (_sidebarItems != null && _sidebarItems.Any())
         {
-            var item = _sidebarItems.FirstOrDefault(sb => !sb.Identity.IsGroup && sb.Identity.OtherUserId == chaningUserId);
+            var item = _sidebarItems.FirstOrDefault(sb => !sb.Identity.IsGroup && sb.Identity.OtherUserId == userId);
             if (item != null)
             {
                 item.Identity.AvatarUrl = newAvatarUrl;
@@ -563,13 +592,6 @@
     }
     public async ValueTask DisposeAsync()
     {
-        ChatHubService.OnMessageReceived -= HandleReceiveMessageAsync;
-        ChatHubService.InviteStatusMessage -= HandleInviteStatusReceivedAsync;
-        ChatHubService.OnAppReload -= HandleUnifiedReloadAsync;
-        ChatHubService.OnChatLoad -= HandleChatLoadAsync;
-        ChatHubService.OnUserInChatReload -= HandleUserOnGroupLoadAsync;
-        ChatHubService.OnChatNameChanged -= HandleChatNameReloadAsync;
-        ChatHubService.OnAvatarReload -= HandleAvatarReloadAsync;
-        ChatHubService.OnLastMessageChanged -= HandleSidebarMessageReloadAsync;
+        UnSubscribeToEvent();
     }
 }

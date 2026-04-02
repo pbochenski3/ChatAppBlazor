@@ -8,24 +8,28 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
+using static ChatApp.ChatServer.Client.Components.ImageComponent;
 
 public class ChatHubService : IAsyncDisposable
 {
     public HubConnection? HubConnection { get; private set; }
-    public event Func<MessageDTO, Task>? OnMessageReceived;
     public event Action<string>? RegisterStatusMessage;
     public event Action<string>? OnContactDelete;
+    public event Action<string, UserDTO>? LoginStatusMessage;
+    public event Func<MessageDTO, Task>? OnMessageReceived;
     public event Func<string, Guid, Task>? InviteStatusMessage;
     public event Func<ContactSelectedArgs, Task>? OnChatLoad;
     public event Func<ReloadTarget, Task>? OnAppReload;
     public event Func<Guid, Task>? OnUserInChatReload;
     public event Func<string,Guid, Task>? OnAvatarReload;
+    public event Func<string,Guid, Task>? OnGroupAvatarReload;
     public event Func<Guid,string, Task>? OnChatNameChanged;
     public event Func<Guid,string,string, Task>? OnLastMessageChanged;
-    public event Action<string, UserDTO>? LoginStatusMessage;
 
     private readonly AppStateService _appStateService;
     private readonly string _baseHubUrl;
@@ -86,14 +90,14 @@ public class ChatHubService : IAsyncDisposable
         {
             await OnLastMessageChanged.Invoke(chatId,lastSender,lastMessage);
         });
-        HubConnection.On<string,Guid>("AvatarReload", async (avatarUrl,changignUserId) =>
+        HubConnection.On<string,Guid>("ContactAvatarReload", async (avatarUrl,userId) =>
         {
-            if (OnAvatarReload != null)
-            {
-                await OnAvatarReload.Invoke(avatarUrl, changignUserId);
-            }
+            await (OnAvatarReload?.Invoke(avatarUrl, userId) ?? Task.CompletedTask);
         });
-
+        HubConnection.On<string, Guid>("GroupAvatarReload", async (avatarUrl, chatId) =>
+        {
+            await (OnGroupAvatarReload?.Invoke(avatarUrl, chatId) ?? Task.CompletedTask);
+        });
 
     }
     private async Task TriggerReload(ReloadTarget target)
@@ -167,27 +171,26 @@ public class ChatHubService : IAsyncDisposable
     {
         return await HubConnection.InvokeAsync<string>("GetUserAvatarUrlAsync");
     }
-    public async Task UpdateUserAvatarAsync(MultipartFormDataContent file, string token)
+    public Task UploadUserAvatar(MultipartFormDataContent content, string token)
+    => SendInternal("api/user/updateAvatar", content, token);
+
+    public Task UploadGroupAvatar(MultipartFormDataContent content, string token, Guid chatId)
+        => SendInternal($"api/chat/updateGroupAvatar?chatId={chatId}", content, token);
+
+    private async Task SendInternal(string url, MultipartFormDataContent content, string token)
     {
-        _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-        var response = await _httpClient.PostAsync("api/user/updateAvatar", file);
-        if (response.IsSuccessStatusCode)
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var response = await _httpClient.PostAsync(url, content);
+
+        if (!response.IsSuccessStatusCode)
         {
-
-            HubConnection?.InvokeAsync("UpdateUserAvatarAsync");
-
+            var error = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Upload failed: {error}");
         }
-        else
-        {
-            var errorContent = await response.Content.ReadAsStringAsync();
-            throw new Exception(errorContent);
-        }
-
-
     }
     public async Task LoginUserAsync(UserDTO dto)
     {
-        var response = await _httpClient.PostAsJsonAsync("api/user/login", dto);
+        var response = await _httpClient.PostAsJsonAsync("api/auth/login", dto);
         if (response.IsSuccessStatusCode)
         {
             var loggedInUser = await response.Content.ReadFromJsonAsync<UserDTO>();
@@ -224,7 +227,7 @@ public class ChatHubService : IAsyncDisposable
             throw new ArgumentException("Username is already oucppied.");
         };
         
-        var response = await _httpClient.PostAsJsonAsync("api/user/register", dto);
+        var response = await _httpClient.PostAsJsonAsync("api/auth/register", dto);
         if (response.IsSuccessStatusCode)
         {
             RegisterStatusMessage?.Invoke("User registered successfully.");

@@ -32,7 +32,14 @@ namespace ChatApp.Infrastructure.Persistence
                              && ch.IsGroup == true);
         }
 
-
+        public async Task UpdateGroupAvatarUrl(Guid chatId, string avatarUrl)
+        {
+            using var context = _contextFactory.CreateDbContext();
+           await context.Chats
+                .Where(ch => ch.IsGroup && ch.ChatID == chatId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(ch => ch.AvatarUrl, avatarUrl));
+        }
         public async Task AddUserGroupToDb(Guid chatId, HashSet<Guid> userIdsToAdd)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -108,7 +115,15 @@ namespace ChatApp.Infrastructure.Persistence
             }
         }
 
-
+        public async Task<string> GetGroupAvatarUrlAsync(Guid chatId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Chats
+                .AsNoTracking()
+                .Where(c => c.ChatID == chatId && c.IsGroup)
+                .Select(c => c.AvatarUrl)
+                .FirstOrDefaultAsync() ?? "https://localhost:7255/cdn/avatars/default-group-avatar.png";
+        }
         public async Task<HashSet<Guid>> GetExistingUsersInChat(Guid chatId, HashSet<Guid> userIdsToCheck)
         {
             using var context = _contextFactory.CreateDbContext();

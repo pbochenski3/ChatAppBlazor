@@ -43,7 +43,7 @@ namespace ChatApp.Application.Services.Chats
 
         public async Task<Guid> CreateGroupChatAsync(Guid existingChatId, HashSet<Guid> userIdsToAdd)
         {
-            var usersInGroup = await _userChatRepo.GetUsersInChatAsync(existingChatId);
+            var usersInGroup = await _userChatRepo.GetUsersInChatIdAsync(existingChatId);
             usersInGroup.UnionWith(userIdsToAdd);
             if(usersInGroup.Count < 3)
             {
