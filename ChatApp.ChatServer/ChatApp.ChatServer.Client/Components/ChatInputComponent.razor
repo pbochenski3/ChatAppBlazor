@@ -11,8 +11,8 @@
                    @bind="_messageContent"
                    @bind:event="oninput"
                    @onkeydown="HandleKeyDownAsync" />
-
-            <button class="btn-primary"
+            <EmojiComponent OnEmojiSelect="HandleAddEmojiToInput" />
+                    <button class="btn-primary"
                     disabled="@(IsLocked || string.IsNullOrWhiteSpace(_messageContent))"
                     @onclick="SubmitInternalAsync">
                 Wyślij
@@ -48,5 +48,9 @@
             await ChatService.RequestSendMessageAsync(_messageContent);
             _messageContent = string.Empty;
         }
+    }
+    private void HandleAddEmojiToInput(string emoji)
+    {
+        _messageContent += " " + emoji;
     }
 }

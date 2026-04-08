@@ -147,7 +147,7 @@
     {
         await SettingsService.RequestLoadContactsAsync();
         _currentView = View.AddUsers;
- 
+
     }
 
     private async Task HandleChatLeaveAsync()
@@ -162,5 +162,4 @@
         await SettingsService.RequestChatDeleteAsync();
 
     }
-   
 }
