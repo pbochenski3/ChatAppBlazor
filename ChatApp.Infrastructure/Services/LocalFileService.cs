@@ -36,9 +36,9 @@ namespace ChatApp.Infrastructure.Services
             var uriBuilder = new UriBuilder("https", "localhost", 7255, $"{prefix}/{fileName}");
             return uriBuilder.ToString();
         }
-        public async Task<string> SaveChatImage(Stream fileStream, string extension,Guid chatId)
+        public async Task<string> SaveChatImage(Stream fileStream, string extension,Guid chatId,Guid userId)
         {
-            var chatFolder = Path.Combine(_storagePath,"ChatImages", chatId.ToString());
+            var chatFolder = Path.Combine(_storagePath,"ChatImages", chatId.ToString(), userId.ToString());
             if(!Directory.Exists(chatFolder))
             {
                 Directory.CreateDirectory(chatFolder);
@@ -49,7 +49,7 @@ namespace ChatApp.Infrastructure.Services
             {
                 await fileStream.CopyToAsync(destinationStream);
             }
-            var uriBuilder = new UriBuilder("https", "localhost", 7255, $"cdn/ChatImages/{chatId}/{fileName}");
+            var uriBuilder = new UriBuilder("https", "localhost", 7255, $"cdn/ChatImages/{chatId}/{userId}/{fileName}");
             return uriBuilder.ToString();
         }
     }
