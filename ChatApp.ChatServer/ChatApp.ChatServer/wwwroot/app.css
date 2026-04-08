@@ -117,25 +117,33 @@ body {
 .user-info-wrapper {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     width: 100%;
     gap: 12px;
+    margin-bottom: 16px;
 }
+.user-avatar-logged {
+    width: clamp(36px, 4vw, 48px);
+    height: clamp(36px, 4vw, 48px);
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--accent-ring);
+    background: var(--surface2);
+    padding: 1px;
+    transition: border-color var(--transition), border-width 0.2s;
+}
+
+    .user-avatar-logged:hover {
+        border: 2px solid var(--border);
+        border-color: var(--accent);
+        cursor: pointer;
+    }
 
 .user-detail {
+    display: flex;
     align-items: center;
+    font-size: 16px;
 }
 
-.user-icon {
-    font-size: 1.5rem;
-    cursor: pointer;
-    transition: color var(--transition);
-}
-
-    .user-icon:hover {
-        color: var(--accent);
-        background: var(--accent-dim);
-    }
 
 .sidebar-content {
     flex: 1;

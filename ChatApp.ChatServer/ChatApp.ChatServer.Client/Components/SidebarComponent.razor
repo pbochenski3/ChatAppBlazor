@@ -5,8 +5,8 @@
 <aside class="sidebar">
     <div class="sidebar-header">
         <div class="user-info-wrapper">
-            <p class="user-detail">Witaj,@(AppState?.CurrentUser?.Username ?? String.Empty)</p>
-            <p class="user-icon" title="openProfile "onclick="@OpenProfile">👤</p>
+            <img src="@(AppState?.CurrentUser?.AvatarUrl ?? String.Empty)" class="user-avatar-logged" onclick="@OpenProfile">
+            <div class="user-detail">Witaj @(AppState?.CurrentUser?.Username ?? String.Empty)</div>
         </div>
         <div class="nav-tabs">
             <button class="@(currentView == View.Contacts ? "active" : "")" @onclick="() => currentView = View.Contacts">
