@@ -1507,4 +1507,11 @@ cursor:pointer;
     background: #444;
     border-radius: 10px;
 }
+/* =========================================
+   Chat Image
+   ========================================= */
+.chat-photo-icon {
+    font-size: 24px;
+    cursor: pointer;
+}
 

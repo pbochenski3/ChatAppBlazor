@@ -117,7 +117,6 @@
         ChatHubService.OnAvatarReload += HandleAvatarReloadAsync;
         ChatHubService.OnGroupAvatarReload += HandleGroupAvatarReloadAsync;
         //ChatState
-        SettingsService.OnMessageRequested += HandleSendMessage;
         SettingsService.OnChatNameChangeRequested += HandleChangeChatNameAsync;
         SettingsService.OnContactDeleteRequested += HandleContactDelete;
         SettingsService.OnCreateGroupChatRequested += HandleCreateGroupChat;
@@ -138,18 +137,12 @@
         ChatHubService.OnAvatarReload -= HandleAvatarReloadAsync;
         ChatHubService.OnGroupAvatarReload -= HandleGroupAvatarReloadAsync;
         //ChatState
-        SettingsService.OnMessageRequested -= HandleSendMessage;
         SettingsService.OnChatNameChangeRequested -= HandleChangeChatNameAsync;
         SettingsService.OnContactDeleteRequested -= HandleContactDelete;
         SettingsService.OnCreateGroupChatRequested -= HandleCreateGroupChat;
         SettingsService.OnContactLoadRequested -= HandleContactLoad;
         SettingsService.OnChatLeaveRequested -= HandleChatLeave;
         SettingsService.OnChatDeleteRequested -= HandleChatDelete;
-
-
-
-
-
 
     }
     private async Task HandleOpenProfile(bool open)
@@ -441,32 +434,6 @@
         else if (!clean)
         {
             await HandleSidebarLoadAsync(true);
-        }
-    }
-    private async Task HandleSendMessage(string content)
-    {
-        if (string.IsNullOrWhiteSpace(content) || AppState.CurrentChat == null) return;
-
-            var newMessage = new MessageDTO
-        {
-            Content = content,
-            SenderUsername = _currentUser.Username,
-                ChatID = AppState.CurrentChat.Identity.ChatID,
-            SenderID = _currentUser.UserID, 
-            SentAt = DateTime.UtcNow,
-            MessageID = Guid.CreateVersion7(),
-            MessageType = MessageType.Text
-        };
-
-        try
-        {
-            await ChatHubService.SendMessageAsync(newMessage, AppState.CurrentChat.Identity.ChatID);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during sending message");
-            _receivedMessages.Remove(newMessage);
-            _ = ShowNotificationAsync("Nie udało się wysłać wiadomości.");
         }
     }
     private async Task HandleUserOnGroupLoadAsync(Guid chatId)

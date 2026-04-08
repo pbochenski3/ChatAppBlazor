@@ -34,12 +34,16 @@
                     {
                         @foreach (var msg in Messages)
                         {
-                            var isMine = msg.SenderUsername == AppState.CurrentUser.Username;
-                            <div class="message @(msg.MessageType == MessageType.System ? "system" : "") @(isMine ? "mine" : "")">
-                                @if (msg.MessageType != MessageType.System && !isMine)
+                            <div @key="msg.MessageID"
+                            class="message 
+                            @(IsSystem(msg) ? "system" : "") 
+                            @(IsMyMessage(msg) ? "mine" : "")">
+                                @if (!IsSystem(msg) && !IsMyMessage(msg))
                                 {
                                 <span class="message-time">[@msg.SentAt.ToString("HH:mm")]</span>
                                 <span class="message-user">@msg.SenderUsername:</span>
+                                @HasImage(msg.imageUrl)
+                                <img src="@msg.imageUrl" class="chat-image"/>
                                 }
                                     <span class="message-content">@msg.Content</span>
                                 </div>
@@ -78,7 +82,6 @@
         StateHasChanged();
         return Task.CompletedTask;
     }
-
     private async Task HandleConfirmAsync(bool result)
     {
         _showConfirm = false;
@@ -89,11 +92,13 @@
 
         }
     }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await JSRuntime.InvokeVoidAsync("scrollToBottom", "chat-window");
     }
+    private bool IsMyMessage(MessageDTO msg) => msg.SenderUsername == AppState.CurrentUser?.Username;
+    private bool IsSystem(MessageDTO msg) => msg.MessageType == MessageType.System;
+    private bool HasImage(string msg) => !string.IsNullOrWhiteSpace(msg);
     public void Dispose()
     {
         SettingsService.OnConfirmationActionRequested -= OpenConfirmDialog;

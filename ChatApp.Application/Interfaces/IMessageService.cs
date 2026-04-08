@@ -10,5 +10,6 @@ namespace ChatApp.Application.Interfaces.Service
     {
         Task SaveMessageAsync(MessageDTO messageDto);
         Task<List<MessageDTO>> GetChatHistoryAsync(Guid userId, Guid chatId, CancellationToken token);
+    
     }
 }

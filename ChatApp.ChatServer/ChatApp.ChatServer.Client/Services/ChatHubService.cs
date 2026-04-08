@@ -122,17 +122,6 @@ public class ChatHubService : IAsyncDisposable
         if (HubConnection == null) return 0;
         return await HubConnection.InvokeAsync<int>("GetUnreadMessageCountAsync", chatId);
     }
-    public async Task SendMessageAsync(MessageDTO message, Guid chatId)
-    {
-        if (message == null || string.IsNullOrWhiteSpace(message.Content))
-        {
-            throw new ArgumentException("Message content cannot be empty.");
-        }
-        if (HubConnection is not null && HubConnection.State == HubConnectionState.Connected)
-        {
-            await HubConnection.InvokeAsync("SendMessageAsync", message, chatId);
-        }
-    }
     public async Task JoinChatGroupSignalAsync(Guid chatId)
     {
         if (HubConnection == null) return;

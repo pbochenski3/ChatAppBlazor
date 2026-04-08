@@ -1,4 +1,10 @@
-﻿@inject ChatSettingsService ChatService
+﻿@using ChatApp.Domain.Enums
+@using System.Net.Http.Headers
+@inject ChatSettingsService ChatService
+@inject AppStateService AppState
+@inject ChatHubService ChatHubService
+@inject HttpClient HttpClient
+@inject ImageService ImageService
 
 <div class="message-input-area @(IsArchive ? "archived-status" : "")">
     @if (!IsArchive)
@@ -11,10 +17,12 @@
                    @bind="_messageContent"
                    @bind:event="oninput"
                    @onkeydown="HandleKeyDownAsync" />
-            <EmojiComponent OnEmojiSelect="HandleAddEmojiToInput" />
+            <ChatImageComponent/>
+            <EmojiComponent
+                OnEmojiSelect="HandleAddEmojiToInput" />
                     <button class="btn-primary"
                     disabled="@(IsLocked || string.IsNullOrWhiteSpace(_messageContent))"
-                    @onclick="SubmitInternalAsync">
+                    @onclick="HandleSendMessage">
                 Wyślij
             </button>
         </div>
@@ -32,25 +40,64 @@
     [Parameter] public bool IsArchive { get; set; } = false;
 
     private string _messageContent = string.Empty;
-
+    private string _imageUrl = string.Empty;
     private async Task HandleKeyDownAsync(KeyboardEventArgs e)
     {
         if (e.Key == "Enter" && !IsLocked && !string.IsNullOrWhiteSpace(_messageContent))
         {
-            await SubmitInternalAsync();
+            await HandleSendMessage();
         }
     }
 
-    private async Task SubmitInternalAsync()
-    {
-        if(!string.IsNullOrWhiteSpace(_messageContent))
-        {
-            await ChatService.RequestSendMessageAsync(_messageContent);
-            _messageContent = string.Empty;
-        }
-    }
+
     private void HandleAddEmojiToInput(string emoji)
     {
         _messageContent += " " + emoji;
+    }
+    private async Task HandleSendMessage()
+    {
+        var contentToSend = _messageContent;
+        var chatId = AppState.CurrentChat.Identity.ChatID;
+        _messageContent = string.Empty;
+        if (string.IsNullOrWhiteSpace(contentToSend) && string.IsNullOrEmpty(ImageService.TempImageUrl)) return;
+        if (AppState.CurrentChat == null) return;
+
+        var newMessage = new MessageDTO
+        {
+            Content = contentToSend,
+            SenderUsername = AppState.CurrentUser.Username,
+            ChatID = chatId,
+            SenderID = AppState.CurrentUser.UserID,
+            SentAt = DateTime.UtcNow,
+            MessageID = Guid.CreateVersion7(),
+            MessageType = MessageType.Text
+        };
+
+        try
+        {
+            HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AppState.CurrentUser.Token);
+            if(ImageService.TempImageUrl != null)
+            {
+                var imageUrl = await ImageService.UploadImageAsync(AppState.CurrentUser.Token, UploadType.ChatImage, newMessage.ChatID);
+                newMessage.imageUrl = imageUrl;
+                ImageService.TempImageUrl = string.Empty;
+                newMessage.MessageType = MessageType.Image;
+            }
+            var response = await HttpClient.PostAsJsonAsync("api/chat/sendMessage", newMessage);
+            if (!response.IsSuccessStatusCode)
+            {
+                _messageContent = contentToSend;
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception(error);
+            }
+            await InvokeAsync(StateHasChanged);
+
+        }
+        catch (Exception ex)
+        {
+            // _logger.LogError(ex, "Error during sending message");
+            // _receivedMessages.Remove(newMessage);
+            // _ = ShowNotificationAsync("Nie udało się wysłać wiadomości.");
+        }
     }
 }

@@ -4,6 +4,8 @@ using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Service;
 using ChatApp.Application.Services.Chats;
 using ChatApp.Domain.Enums;
+using ChatApp.Domain.Shared;
+using ChatApp.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -20,17 +22,38 @@ namespace ChatApp.ChatHub.Controllers
         private readonly IChatService _chatService;
         private readonly IMessageService _messageService;
         private readonly IFileService _fileService;
+        private readonly IChatReadStatusService _readStatusService;
 
-        public ChatController(IChatService chatService, IHubContext<ChatHub> hubContext, IFileService fileService,IMessageService messageService)
+        public ChatController(IChatService chatService, IHubContext<ChatHub> hubContext, IFileService fileService,IMessageService messageService,IChatReadStatusService readStatusService)
         {
             _chatService = chatService;
             _messageService = messageService;
             _hubContext = hubContext;
             _fileService = fileService;
+            _readStatusService = readStatusService;
+        }
+        [Authorize]
+        [HttpPost("sendMessage")]
+        public async Task<IActionResult> SendChatMessageAsync([FromBody] MessageDTO dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
+            {
+                return Unauthorized();
+            }
+            if (dto.ChatID == Guid.Empty) return BadRequest();
+
+            await _readStatusService.SaveLastSentMessageIdAsync(dto.ChatID, dto.MessageID);
+            await _messageService.SaveMessageAsync(dto);
+            await _hubContext.Clients.Group(dto.ChatID.ToString()).SendAsync("ReceiveMessage", dto);
+            var chat = await _chatService.GetUsersInChatIdAsync(dto.ChatID);
+            var participants = chat.Select(id => id.ToString()).ToList();
+            await _hubContext.Clients.Users(participants).SendAsync("UpdateLastMessage", dto.ChatID, dto.SenderUsername, dto.Content);
+            return Ok();
         }
         [Authorize]
         [HttpPost("saveChatImage")]
-        public async Task<IActionResult> SaveChatImageAsync(IFormFile file, [FromQuery] Guid chatId,MessageDTO dto)
+        public async Task<IActionResult> SaveChatImageAsync(IFormFile file, [FromQuery] Guid chatId)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
@@ -41,13 +64,9 @@ namespace ChatApp.ChatHub.Controllers
             try
             {
                 string imageUrl = await SaveImageAsync(file, UploadType.ChatImage, chatId, userGuid);
-                dto.imageUrl = imageUrl;
-                await _messageService.SaveMessageAsync(dto);
-                await _hubContext.Clients.Group(chatId.ToString()).SendAsync("ReceiveMessage", dto);
-                var chat = await _chatService.GetUsersInChatIdAsync(chatId);
-                var participants = chat.Select(id => id.ToString()).ToList();
-                await _hubContext.Clients.Users(participants).SendAsync("UpdateLastMessage", dto.ChatID, dto.SenderUsername, dto.Content);
-                return Ok();
+                var response = new FileResponse { Url = imageUrl };
+
+                return Ok(response);
             }
             catch (Exception ex)
             {

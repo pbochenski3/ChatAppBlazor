@@ -108,17 +108,6 @@ namespace ChatApp.ChatHub
         {
             return await _contactService.GetContactByIdAsync(contactId, UserId);
         }
-        public async Task SendMessageAsync(MessageDTO dto, Guid chatId)
-        {
-            await _readStatusService.SaveLastSentMessageIdAsync(dto.ChatID, dto.MessageID);
-            await _messageService.SaveMessageAsync(dto);
-            await Clients.Group(chatId.ToString()).SendAsync("ReceiveMessage", dto);
-            var chat = await _chatService.GetUsersInChatIdAsync(chatId);
-            var participants = chat.Select(id => id.ToString()).ToList();
-            await Clients.Users(participants).SendAsync("UpdateLastMessage", dto.ChatID,dto.SenderUsername,dto.Content);
-
-
-        }
         public async Task JoinChatGroupSignalAsync(Guid chatId)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, chatId.ToString());

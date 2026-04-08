@@ -1,6 +1,7 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 
 
 namespace ChatApp.ChatServer.Client.Services
@@ -15,6 +16,6 @@ namespace ChatApp.ChatServer.Client.Services
         {
             CurrentUser = null;
             Message = "You have been logged out.";
-        } 
+        }
     }
 }

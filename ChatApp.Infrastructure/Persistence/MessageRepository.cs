@@ -63,5 +63,15 @@ namespace ChatApp.Infrastructure.Persistence
                 .OrderBy(m => m.SentAt)
                 .ToListAsync(token);
         }
+        public async Task UpdateImageUrlAsync(Guid messageId, string url)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            await context.Messages
+                .Where(m => m.MessageID == messageId)
+                .ExecuteUpdateAsync(s => s
+                .SetProperty(m => m.imageUrl, url));
+
+        }
+    }   
+ 
     }
-}
