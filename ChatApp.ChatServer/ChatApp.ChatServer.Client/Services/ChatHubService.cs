@@ -171,23 +171,6 @@ public class ChatHubService : IAsyncDisposable
     {
         return await HubConnection.InvokeAsync<string>("GetUserAvatarUrlAsync");
     }
-    public Task UploadUserAvatar(MultipartFormDataContent content, string token)
-    => SendInternal("api/user/updateAvatar", content, token);
-
-    public Task UploadGroupAvatar(MultipartFormDataContent content, string token, Guid chatId)
-        => SendInternal($"api/chat/updateGroupAvatar?chatId={chatId}", content, token);
-
-    private async Task SendInternal(string url, MultipartFormDataContent content, string token)
-    {
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        var response = await _httpClient.PostAsync(url, content);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var error = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Upload failed: {error}");
-        }
-    }
     public async Task LoginUserAsync(UserDTO dto)
     {
         var response = await _httpClient.PostAsJsonAsync("api/auth/login", dto);

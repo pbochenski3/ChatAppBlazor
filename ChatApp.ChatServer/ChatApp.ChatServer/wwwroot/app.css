@@ -1385,6 +1385,13 @@ body {
     align-items: center;
     gap: 0.625rem;
 }
+.group-avatar-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.625rem;
+}
 
 .user-profile-icon {
     display: block;

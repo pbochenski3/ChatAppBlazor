@@ -82,11 +82,13 @@
                 break;
             case View.ChangePhoto:
                 <div class="sidebar-header"><h3>Zmień zdjęcie grupy</h3></div>
+                <div class="group-avatar-container">
                 <ImageComponent AvatarUrl="@AppState.CurrentChat.Identity.AvatarUrl"
                                 Name="@AppState.CurrentChat.Identity.ChatName"
                                 LabelRole="Grupa"
                                 IsGroup="true" />
                 <button class="btn-secondary" @onclick="() => _currentView = View.Settings">Cofnij</button>
+                </div>
 
                 break;
         }
