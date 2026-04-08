@@ -103,11 +103,13 @@ builder.Services.AddSignalR(options =>
     options.EnableDetailedErrors = true;
 });
 //FileService
-var storagePath = Path.Combine(Directory.GetCurrentDirectory(), "LocalS3", "Avatars");
+var storagePath = Path.Combine(Directory.GetCurrentDirectory(), "LocalS3");
 
-if (!Directory.Exists(storagePath))
+string[] subFolders = { "Avatars", "GroupAvatars", "ChatImages" };
+foreach (var folder in subFolders)
 {
-    Directory.CreateDirectory(storagePath);
+    var path = Path.Combine(storagePath, folder);
+    if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 }
 builder.Services.AddScoped<IFileService>(sp => new LocalFileService(storagePath));
 
@@ -116,8 +118,9 @@ var app = builder.Build();
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(storagePath),
-    RequestPath = "/cdn/avatars"
+    RequestPath = "/cdn"
 });
+
 app.UseCors("BlazorAppPolicy");
 app.UseRouting();
 app.UseAuthentication();

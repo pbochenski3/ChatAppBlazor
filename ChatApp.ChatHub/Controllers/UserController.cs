@@ -3,6 +3,7 @@ using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Service;
 using ChatApp.Application.Services;
+using ChatApp.Domain.Enums;
 using ChatApp.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -43,7 +44,7 @@ namespace ChatApp.ChatHub.Controllers
             {
                 var extension = Path.GetExtension(file.FileName).ToLower();
                 using var stream = file.OpenReadStream();
-                string avatarUrl = await _fileService.SaveUserAvatarAsync(stream, extension);
+                string avatarUrl = await _fileService.SaveAvatar(stream, extension,UploadType.UserAvatar);
                 await _userService.UpdateUserAvatarAsync(userGuid, avatarUrl);
                 var contacts = await _contactService.GetUserContactsAsync(userGuid);
                 var contactsToNofitify = contacts.Select(c => c.ContactUserID.ToString()).ToList();
