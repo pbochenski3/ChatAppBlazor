@@ -1,5 +1,6 @@
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Repository;
+using ChatApp.Domain.Enums;
 using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
 using System;
@@ -64,7 +65,7 @@ namespace ChatApp.Application.Services.Chats
                     ChatID = newChat.ChatID,
                     Content = "Ten czat nie ma jeszcze wiadomości! Przywitaj się!",
                     SentAt = DateTime.UtcNow,
-                    IsSystemMessage = true,
+                    MessageType = MessageType.System
                 };
                 await _messageRepo.AddMessageAsync(systemMessage);
             }

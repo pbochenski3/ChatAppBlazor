@@ -1,4 +1,5 @@
-﻿using ChatApp.Domain.Models;
+﻿using ChatApp.Domain.Enums;
+using ChatApp.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,6 +15,6 @@ namespace ChatApp.Application.DTO
         public Guid ReceiverId { get; set; }
         public string SenderUsername { get; set; } = string.Empty;
         public Guid ChatID { get; set; }
-        public bool IsSystemMessage { get; set; } = false;
+        public MessageType MessageType { get; set; }
     }
 }

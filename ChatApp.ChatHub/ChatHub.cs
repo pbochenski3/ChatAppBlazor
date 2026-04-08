@@ -1,17 +1,18 @@
 using ChatApp.Application.DTO;
+using ChatApp.Application.DTO.Chats;
 using ChatApp.Application.Interfaces;
+using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Service;
+using ChatApp.Domain.Enums;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using System.Runtime.InteropServices;
 using System.Xml;
-using ChatApp.Application.DTO.Chats;
-using ChatApp.Application.Interfaces.Chats;
 
 namespace ChatApp.ChatHub
 {
@@ -179,7 +180,7 @@ namespace ChatApp.ChatHub
                     MessageID = Guid.CreateVersion7(),
                     Content = $"{admin.Username} zmienił nazwe czatu na {chatName}.",
                     SenderUsername = "SYSTEM",
-                    IsSystemMessage = true,
+                    MessageType = MessageType.System,
                     SentAt = DateTime.UtcNow,
                 };
 
@@ -294,7 +295,7 @@ namespace ChatApp.ChatHub
                 MessageID = Guid.CreateVersion7(),
                 Content = $"{admin?.Username} dodał użytkowników: {joinedNames} do czatu.",
                 SenderUsername = "SYSTEM",
-                IsSystemMessage = true,
+                MessageType = MessageType.System,
                 SentAt = DateTime.UtcNow,
             };
 
@@ -339,7 +340,7 @@ namespace ChatApp.ChatHub
                 ChatID = chatId,
                 MessageID = Guid.CreateVersion7(),
                 Content = $"{user.Username} opuścił czat!",
-                IsSystemMessage = true,
+                MessageType = MessageType.System,
                 SenderUsername = "SYSTEM",
                 SentAt = DateTime.UtcNow,
             };

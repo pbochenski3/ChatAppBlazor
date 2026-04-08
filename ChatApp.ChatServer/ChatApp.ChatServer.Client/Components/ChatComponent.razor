@@ -1,3 +1,4 @@
+@using ChatApp.Domain.Enums
 @inject IJSRuntime JSRuntime
 @inject AppStateService AppState
 @inject ChatSettingsService SettingsService
@@ -34,8 +35,8 @@
                         @foreach (var msg in Messages)
                         {
                             var isMine = msg.SenderUsername == AppState.CurrentUser.Username;
-                            <div class="message @(msg.IsSystemMessage ? "system" : "") @(isMine ? "mine" : "")">
-                                @if (!msg.IsSystemMessage && !isMine)
+                            <div class="message @(msg.MessageType == MessageType.System ? "system" : "") @(isMine ? "mine" : "")">
+                                @if (msg.MessageType != MessageType.System && !isMine)
                                 {
                                 <span class="message-time">[@msg.SentAt.ToString("HH:mm")]</span>
                                 <span class="message-user">@msg.SenderUsername:</span>

@@ -2,6 +2,7 @@ using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
+using ChatApp.Domain.Enums;
 using ChatApp.Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -40,7 +41,7 @@ namespace ChatApp.Application.Services
                 ChatID = messageDto.ChatID,
                 MessageID = messageDto.MessageID,
                 SentAt = messageDto.SentAt,
-                IsSystemMessage = messageDto.IsSystemMessage,
+                MessageType = messageDto.MessageType,
             };
             await _messageRepo.AddMessageAsync(message);
         }
@@ -68,9 +69,9 @@ namespace ChatApp.Application.Services
                 Content = m.Content,
                 SentAt = m.SentAt,
                 SenderID = m.SenderID,
-                SenderUsername = m.IsSystemMessage ? "SYSTEM" : (m.Sender?.Username ?? "Unknown"),
+                SenderUsername = m.MessageType == MessageType.System ? "SYSTEM" : (m.Sender?.Username ?? "Unknown"),
                 ChatID = m.ChatID,
-                IsSystemMessage = m.IsSystemMessage,
+                MessageType = m.MessageType,
             }).ToList();
         }
     }

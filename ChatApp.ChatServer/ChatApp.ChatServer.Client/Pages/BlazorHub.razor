@@ -1,6 +1,7 @@
 @page "/hub"
 @using ChatApp.Application
 @using ChatApp.Application.DTO.Chats
+@using ChatApp.Domain.Enums
 @using Microsoft.AspNetCore.SignalR.Client
 @using ChatApp.ChatServer.Client.Components
 @inject IConfiguration Configuration
@@ -453,7 +454,8 @@
                 ChatID = AppState.CurrentChat.Identity.ChatID,
             SenderID = _currentUser.UserID, 
             SentAt = DateTime.UtcNow,
-            MessageID = Guid.CreateVersion7()
+            MessageID = Guid.CreateVersion7(),
+            MessageType = MessageType.Text
         };
 
         try

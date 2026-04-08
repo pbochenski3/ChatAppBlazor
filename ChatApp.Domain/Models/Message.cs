@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ChatApp.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -15,6 +16,6 @@ namespace ChatApp.Domain.Models
         public User Sender { get; set; } = null!;
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
-        public bool IsSystemMessage { get; set; } = false;
+        public MessageType MessageType { get; set; }
     }
 }
