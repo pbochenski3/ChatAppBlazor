@@ -36,8 +36,11 @@ namespace ChatApp.Infrastructure.Services
             var uriBuilder = new UriBuilder("https", "localhost", 7255, $"{prefix}/{fileName}");
             return uriBuilder.ToString();
         }
-        public async Task<string> SaveChatImage(Stream fileStream, string extension,Guid chatId,Guid userId)
+        public async Task<string> SaveChatImage(Stream fileStream, string extension,Guid? chatId,Guid? userId)
         {
+            if (chatId == null || userId == null)
+                throw new Exception("chatId or userId missing");
+
             var chatFolder = Path.Combine(_storagePath,"ChatImages", chatId.ToString(), userId.ToString());
             if(!Directory.Exists(chatFolder))
             {

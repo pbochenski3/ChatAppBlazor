@@ -8,6 +8,6 @@ namespace ChatApp.Application.Interfaces
     public interface IFileService
     {
         Task<string> SaveAvatar(Stream fileStream, string extension,UploadType type);
-        Task<string> SaveChatImage(Stream fileStream, string extension, Guid chatId,Guid userId);
+        Task<string> SaveChatImage(Stream fileStream, string extension, Guid? chatId,Guid? userId);
     }
 }

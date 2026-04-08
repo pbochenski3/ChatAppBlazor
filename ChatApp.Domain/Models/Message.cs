@@ -9,6 +9,7 @@ namespace ChatApp.Domain.Models
     {
         public Guid MessageID { get; set; }
         public string Content { get; set; } = null!;
+        public string imageUrl { get; set; } = string.Empty;
         public DateTime SentAt { get; set; }
         public Guid ChatID { get; set; }
         public  Chat Chat { get; set; } = null!;

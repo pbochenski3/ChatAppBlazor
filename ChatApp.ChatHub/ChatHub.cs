@@ -303,18 +303,14 @@ namespace ChatApp.ChatHub
 
             var usersToNotify = usersToAdd.Select(id => id.ToString()).ToList();
 
-            // Odświeżenie sidebaru u wszystkich
             await Clients.Group(chatId.ToString()).SendAsync("SideBarReload", true);
             await Clients.Users(usersToNotify).SendAsync("SideBarReload", true);
             await Clients.Group(targetChatId.ToString()).SendAsync("SideBarReload", true);
 
-            // Powiadomienie o nowej wiadomości systemowej w nowej grupie
             await Clients.Group(targetChatId.ToString()).SendAsync("ReceiveMessage", systemMessage);
 
-            // Odświeżenie stanu czatu u nowo dodanych osób
             await Clients.Users(usersToNotify).SendAsync("ChatReload", targetChatId, true);
 
-            // Odświeżenie listy użytkowników
             await Clients.Group(targetChatId.ToString()).SendAsync("UsersInChatReload", targetChatId);
         }
         public async Task<HashSet<Guid>> GetChatUsersIdsAsync(Guid chatId)

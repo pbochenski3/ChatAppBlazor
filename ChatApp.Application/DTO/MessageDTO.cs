@@ -10,6 +10,7 @@ namespace ChatApp.Application.DTO
     {
         public Guid MessageID { get; set; }
         public string Content { get; set; } = string.Empty;
+        public string imageUrl { get; set; } = string.Empty;
         public DateTime SentAt { get; set; } = DateTime.UtcNow;
         public Guid? SenderID { get; set; }
         public Guid ReceiverId { get; set; }
