@@ -19,7 +19,7 @@
     <div class="profile-divider"></div>
     <div class="avatar-upload-container">
         <InputFile id="avatar-upload" OnChange="OnInputFileChange"
-                   style="display:none;" accept=".jpg,.jpeg,.png" />
+                   style="display:none;" accept=".jpg,.jpeg,.png,.jfif" />
         <label for="avatar-upload" disabled="@isUploading" class="user-profile-icon">
             <p class="user-icon">Wybierz plik</p>
         </label>
@@ -48,7 +48,7 @@
         var file = e.File;
         if (file != null)
         {
-            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".jfif" };
             var extension = Path.GetExtension(file.Name).ToLower();
 
             if (!allowedExtensions.Contains(extension))
