@@ -69,6 +69,7 @@
             NavManager.NavigateTo("/");
             return;
         }
+        await ChatHubService.StartAsync();
 
         _currentUser = AppState.CurrentUser;
         _notification = AppState.Message;

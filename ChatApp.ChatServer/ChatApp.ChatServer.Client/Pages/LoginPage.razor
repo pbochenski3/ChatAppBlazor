@@ -75,13 +75,6 @@
     private void HandleLoginNotification(string message, UserDTO user)
     {
         _notification = message;
-        if (message.Equals("Success"))
-        {
-            AppState.Message = "Logged in successfully!";
-            AppState.CurrentUser = user;
-            _loginModel = new UserDTO();
-            NavManager.NavigateTo("/hub");
-        }
         _isProcessing = false;
         InvokeAsync(StateHasChanged);
     }
@@ -93,16 +86,20 @@
         StateHasChanged();
         try
         {
-            await ChatHubService.LoginUserAsync(_loginModel);
+            _isProcessing = true;
+            var response = await _httpClient.PostAsJsonAsync("api/auth/login", _loginModel);
+            if(response.IsSuccessStatusCode)
+            {
+                AppState.CurrentUser = await response.Content.ReadFromJsonAsync<UserDTO>();
+                _loginModel = new UserDTO();
+                AppState.Message = "Logged in successfully!";
+                NavManager.NavigateTo("/hub");
+            }
+
         }
         catch (Exception ex)
         {
             _notification = $"{ex.Message}";
-        }
-        finally
-        {
-            _isProcessing = false;
-            await InvokeAsync(StateHasChanged);
         }
     }
 

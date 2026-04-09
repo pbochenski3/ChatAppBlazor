@@ -24,7 +24,6 @@ namespace ChatApp.ChatHub.Controllers
                 var user = await _userService.LoginUserAsync(loginDto);
                 if (user == null)
                     return Unauthorized("Błędny login lub hasło");
-
                 return Ok(user);
             }
             catch (Exception ex)
