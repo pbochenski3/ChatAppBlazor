@@ -268,7 +268,7 @@
         {
             AppState.CurrentChat.Identity.ChatName = newChatName;
         }
-         await InvokeAsync(StateHasChanged);
+        await InvokeAsync(StateHasChanged);
 
     }
     private async Task HandleContactInvite(Guid contactId)
@@ -502,6 +502,7 @@
             _isChatArchived = chatInformation.State.IsArchive;
             ChatService.IsArchive = chatInformation.State.IsArchive;
             _isChatLocked = chatInformation.State.IsArchive;
+            await AppState.SetChatAsync(chatInformation);
 
             if (!chatInformation.State.IsArchive)
             {

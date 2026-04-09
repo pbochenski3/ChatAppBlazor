@@ -67,6 +67,10 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (AppState.CurrentUser != null)
+        {
+            NavManager.NavigateTo("/hub");
+        }
         _notification = AppState.Message;
         AppState.Message = null;
         ChatHubService.LoginStatusMessage += HandleLoginNotification;
@@ -90,10 +94,18 @@
             var response = await _httpClient.PostAsJsonAsync("api/auth/login", _loginModel);
             if(response.IsSuccessStatusCode)
             {
-                AppState.CurrentUser = await response.Content.ReadFromJsonAsync<UserDTO>();
-                _loginModel = new UserDTO();
-                AppState.Message = "Logged in successfully!";
-                NavManager.NavigateTo("/hub");
+                var user = await response.Content.ReadFromJsonAsync<UserDTO>();
+                if(user != null)
+                {
+                    await AppState.SetUserAsync(user);
+                    _loginModel = new UserDTO();
+                    AppState.Message = "Logged in successfully!";
+                    NavManager.NavigateTo("/hub");
+                }
+                else
+                {
+                    _notification = "Invalid login attempt.";
+                }
             }
 
         }

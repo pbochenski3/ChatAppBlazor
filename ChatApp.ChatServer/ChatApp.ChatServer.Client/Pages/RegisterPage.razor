@@ -67,6 +67,10 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (AppState.CurrentUser != null)
+        {
+            NavManager.NavigateTo("/hub");
+        }
         ChatHubService.RegisterStatusMessage += HandleRegisterNotification;
     }
 
