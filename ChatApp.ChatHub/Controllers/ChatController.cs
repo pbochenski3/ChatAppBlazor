@@ -20,46 +20,15 @@ namespace ChatApp.ChatHub.Controllers
     {
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly IChatService _chatService;
-        private readonly IMessageService _messageService;
         private readonly IFileService _fileService;
-        private readonly IChatReadStatusService _readStatusService;
 
-        public ChatController(IChatService chatService, IHubContext<ChatHub> hubContext, IFileService fileService,IMessageService messageService,IChatReadStatusService readStatusService)
+        public ChatController(IChatService chatService, IHubContext<ChatHub> hubContext, IFileService fileService)
         {
             _chatService = chatService;
-            _messageService = messageService;
             _hubContext = hubContext;
             _fileService = fileService;
-            _readStatusService = readStatusService;
         }
-        [Authorize]
-        [HttpPost("sendMessage")]
-        public async Task<IActionResult> SendChatMessageAsync([FromBody] MessageDTO dto)
-        {
-            try
-            {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
-                {
-                    return Unauthorized();
-                }
-                if (dto.ChatID == Guid.Empty) return BadRequest();
-
-                await _messageService.SaveMessageAsync(dto);
-                await _readStatusService.SaveLastSentMessageIdAsync(dto.ChatID, dto.MessageID);
-                await _hubContext.Clients.Group(dto.ChatID.ToString()).SendAsync("ReceiveMessage", dto);
-                var chat = await _chatService.GetUsersInChatIdAsync(dto.ChatID);
-                var participants = chat.Select(id => id.ToString()).ToList();
-                await _hubContext.Clients.Users(participants).SendAsync("UpdateLastMessage", dto.ChatID, dto.SenderUsername, dto.Content);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                {
-                    return BadRequest(ex.Message);
-                }
-            }
-        }
+      
         [Authorize]
         [HttpPost("saveChatImage")]
         public async Task<IActionResult> SaveChatImageAsync(IFormFile file, [FromQuery] Guid chatId)

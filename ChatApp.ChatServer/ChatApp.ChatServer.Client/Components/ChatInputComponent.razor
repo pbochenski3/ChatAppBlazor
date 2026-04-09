@@ -134,7 +134,7 @@
                 _tempImageUrl = string.Empty;
                 newMessage.MessageType = MessageType.Image;
             }
-            var response = await _httpClient.PostAsJsonAsync("api/chat/sendMessage", newMessage);
+            var response = await _httpClient.PostAsJsonAsync("api/message/sendMessage", newMessage);
             if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync();
