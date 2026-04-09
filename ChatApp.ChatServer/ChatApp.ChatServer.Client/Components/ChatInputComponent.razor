@@ -1,7 +1,7 @@
 ﻿@using ChatApp.Domain.Enums
 @using System.Net.Http.Headers
-@inject AppStateService AppState
-@inject ImageService ImageService
+@inject AppStateService _appStateService
+@inject ImageService _imageService
 @inject HttpClient _httpClient
 @inject ILogger<ChatInputComponent> _logger
 
@@ -76,9 +76,9 @@
     {
         try
         {
-            _sendedPhoto = await ImageService.GetBrowserFileAsync(e);
+            _sendedPhoto = await _imageService.GetBrowserFileAsync(e);
             if (_sendedPhoto == null) return;
-            var base64 = await ImageService.GetImageStringAsync(_sendedPhoto);
+            var base64 = await _imageService.GetImageStringAsync(_sendedPhoto);
             _tempImageUrl = $"data:{_sendedPhoto.ContentType};base64,{base64}";
 
         }
@@ -98,17 +98,17 @@
     private async Task HandleSendMessage()
     {
         var contentToSend = _messageContent;
-        if (AppState.CurrentChat == null) return;
-        var chatId = AppState.CurrentChat.Identity.ChatID;
+        if (_appStateService.CurrentChat == null) return;
+        var chatId = _appStateService.CurrentChat.Identity.ChatID;
         if (string.IsNullOrWhiteSpace(contentToSend) && _sendedPhoto == null) return;
 
-        var newMessage = new MessageDTO
+            var newMessage = new MessageDTO
         {
             Content = contentToSend ?? string.Empty,
             imageUrl = string.Empty,
-            SenderUsername = AppState.CurrentUser.Username,
+                SenderUsername = _appStateService.CurrentUser.Username,
             ChatID = chatId,
-            SenderID = AppState.CurrentUser.UserID,
+                SenderID = _appStateService.CurrentUser.UserID,
             SentAt = DateTime.UtcNow,
             MessageID = Guid.CreateVersion7(),
             MessageType = MessageType.Text
@@ -116,17 +116,17 @@
 
         try
         {
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AppState.CurrentUser?.Token);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _appStateService.CurrentUser?.Token);
             if(_sendedPhoto != null)
             {
                 _isUploading = true;
-                byte[] fileData = await ImageService.GetFileDataAsync(_sendedPhoto);
-                var imageUrl = await ImageService
+                byte[] fileData = await _imageService.GetFileDataAsync(_sendedPhoto);
+                var imageUrl = await _imageService
                 .UploadImageAsync
                 (
                     fileData,
                     _sendedPhoto.Name,
-                    AppState.CurrentUser.Token,
+                    _appStateService.CurrentUser.Token,
                     UploadType.ChatImage,
                     chatId
                 );

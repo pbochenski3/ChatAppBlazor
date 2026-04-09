@@ -1,5 +1,5 @@
 ﻿@inherits LayoutComponentBase
-@if(AppState.IsInitialized)
+@if (_appStateService.IsInitialized)
 {
 @Body
 }
@@ -7,6 +7,6 @@
 {
     protected override async Task OnInitializedAsync()
     {
-        await AppState.LoadSessionAsync();
+        await _appStateService.LoadSessionAsync();
     }
 }

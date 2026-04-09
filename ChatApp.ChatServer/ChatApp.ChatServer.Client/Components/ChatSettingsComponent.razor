@@ -1,32 +1,32 @@
-﻿@inject AppStateService AppState
-@inject ChatSettingsService SettingsService
+﻿@inject AppStateService _appStateService
+@inject ChatSettingsService _chatSettingsService
 <div class="contact-settings-panel">
     <div class="settings-content">
         @switch (_currentView)
         {
             case View.Settings:
                 <div class="sidebar-header"><h3>Ustawienia</h3></div>
-                if (!SettingsService.IsArchive)
+                if (!_chatSettingsService.IsArchive)
                 {
                     <button class="btn-secondary" @onclick="() => _currentView = View.ChangeName">Zmień nazwe czatu</button>
                     <button class="btn-secondary" @onclick="() => _currentView = View.Users">Uczestnicy</button>
                     <button class="btn-secondary" @onclick="LoadContactsAsync">Dodaj osoby</button>
 
 
-                    @if (!AppState.CurrentChat.Identity.IsGroup)
+                    @if (!_appStateService.CurrentChat.Identity.IsGroup)
                     {
 
-                        <button class="btn-secondary btn-delete" @onclick='() => SettingsService.RequestConfirmationActionAsync("Usuwanie", "Czy na pewno?", HandleContactDeleteAsync)'>Usuń kontakt</button>
+                        <button class="btn-secondary btn-delete" @onclick='() => _chatSettingsService.RequestConfirmationActionAsync("Usuwanie", "Czy na pewno?", HandleContactDeleteAsync)'>Usuń kontakt</button>
                     }
                     else
                     {
                         <button class="btn-secondary" @onclick="() => _currentView = View.ChangePhoto">Zmień zdjecie grupy</button>
-                        <button class="btn-secondary btn-delete" @onclick='() => SettingsService.RequestConfirmationActionAsync("Opuszczanie", "Czy na pewno?", HandleChatLeaveAsync)'>Opuść czat</button>
+                        <button class="btn-secondary btn-delete" @onclick='() => _chatSettingsService.RequestConfirmationActionAsync("Opuszczanie", "Czy na pewno?", HandleChatLeaveAsync)'>Opuść czat</button>
                     }
                 }
-                @if (SettingsService.IsArchive)
+                @if (_chatSettingsService.IsArchive)
                 {
-                    <button class="btn-secondary btn-delete" @onclick='() => SettingsService.RequestConfirmationActionAsync("Usuwanie", "Czy na pewno chcesz usunąć? Ta zmiana jest nieodwracalna!", HandleChatDeleteAsync)'>Usuń czat</button>
+                    <button class="btn-secondary btn-delete" @onclick='() => _chatSettingsService.RequestConfirmationActionAsync("Usuwanie", "Czy na pewno chcesz usunąć? Ta zmiana jest nieodwracalna!", HandleChatDeleteAsync)'>Usuń czat</button>
                 }
                 break;
             case View.AddUsers:
@@ -83,8 +83,8 @@
             case View.ChangePhoto:
                 <div class="sidebar-header"><h3>Zmień zdjęcie grupy</h3></div>
                 <div class="group-avatar-container">
-                <ImageComponent AvatarUrl="@AppState.CurrentChat.Identity.AvatarUrl"
-                                Name="@AppState.CurrentChat.Identity.ChatName"
+                <ImageComponent AvatarUrl="@_appStateService.CurrentChat.Identity.AvatarUrl"
+                                    Name="@_appStateService.CurrentChat.Identity.ChatName"
                                 LabelRole="Grupa"
                                 IsGroup="true" />
                 <button class="btn-secondary" @onclick="() => _currentView = View.Settings">Cofnij</button>
@@ -96,8 +96,8 @@
 </div>
 
 @code {
-    public List<ContactDTO> UserContacts => SettingsService.ReceivedContacts;
-    public HashSet<UserDTO> ExistingUsers => SettingsService.UsersInChat;
+        public List<ContactDTO> UserContacts => _chatSettingsService.ReceivedContacts;
+    public HashSet<UserDTO> ExistingUsers => _chatSettingsService.UsersInChat;
     public HashSet<Guid> ContactsToAdd { get; set; } = new();
 
     private enum View { Settings, AddUsers, Users, ChangeName, ChangePhoto }
@@ -126,7 +126,7 @@
     private async Task CreateGroupAsync(HashSet<Guid> usersToAdd)
     {
         _currentView = View.Settings;
-        await SettingsService.RequestCreateGroupChatAsync(usersToAdd);
+        await _chatSettingsService.RequestCreateGroupChatAsync(usersToAdd);
         ContactsToAdd.Clear();
     }
     private async Task HandleChatNameChangeAsync(string name)
@@ -134,7 +134,7 @@
         if (!string.IsNullOrWhiteSpace(name))
         {
             _currentView = View.Settings;
-            await SettingsService.RequestChatNameChangeAsync(name);
+            await _chatSettingsService.RequestChatNameChangeAsync(name);
 
         }
     }
@@ -142,12 +142,12 @@
     private async Task HandleContactDeleteAsync()
     {
         _currentView = View.Settings;
-        await SettingsService.RequestContactDeleteChangeAsync();
+        await _chatSettingsService.RequestContactDeleteChangeAsync();
 
     }
     private async Task LoadContactsAsync()
     {
-        await SettingsService.RequestLoadContactsAsync();
+        await _chatSettingsService.RequestLoadContactsAsync();
         _currentView = View.AddUsers;
 
     }
@@ -155,13 +155,13 @@
     private async Task HandleChatLeaveAsync()
     {
         //IsSettingsOpen = false;
-        await SettingsService.RequestChatLeaveAsync();
+        await _chatSettingsService.RequestChatLeaveAsync();
     }
 
     private async Task HandleChatDeleteAsync()
     {
         //IsSettingsOpen = false;
-        await SettingsService.RequestChatDeleteAsync();
+        await _chatSettingsService.RequestChatDeleteAsync();
 
     }
 }

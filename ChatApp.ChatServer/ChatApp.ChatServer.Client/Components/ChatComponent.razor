@@ -1,7 +1,7 @@
 @using ChatApp.Domain.Enums
 @implements IDisposable;
 
-<div class="chat-main-wrapper @(ChatService.IsSettingsOpen ? "show-settings" : "")">
+<div class="chat-main-wrapper @(_chatSettingsService.IsSettingsOpen ? "show-settings" : "")">
 
     @if (_showConfirm)
     {
@@ -14,14 +14,14 @@
         <div class="top-bar">
             <div class="user-profile-top">
                 <div class="avatar-wrapper-top">       
-                    <img src="@AppState.CurrentChat.Identity.AvatarUrl" class="user-avatar" alt="Avatar" />
+                    <img src="@_appStateService.CurrentChat.Identity.AvatarUrl" class="user-avatar" alt="Avatar" />
                     <div class="status-dot online"></div>
                 </div>
                 <div class="user-info-text-top">
-                    <span class="user-name">@AppState.CurrentChat.Identity.ChatName</span>
+                    <span class="user-name">@_appStateService.CurrentChat.Identity.ChatName</span>
                 </div>
             </div>
-            <div class="contact-config" @onclick="ChatService.ToggleSettings">⚙️</div>
+            <div class="contact-config" @onclick="_chatSettingsService.ToggleSettings">⚙️</div>
         </div>
 
         <div class="chat-body">
@@ -77,7 +77,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        ChatService.OnConfirmationActionRequested += OpenConfirmDialog;
+        _chatSettingsService.OnConfirmationActionRequested += OpenConfirmDialog;
     }
     private Task OpenConfirmDialog(string title, string message, Func<Task> action)
     {
@@ -102,12 +102,12 @@
     {
         await JSRuntime.InvokeVoidAsync("scrollToBottom", "chat-window");
     }
-    private bool IsMyMessage(MessageDTO msg) => msg.SenderUsername == AppState.CurrentUser?.Username;
+    private bool IsMyMessage(MessageDTO msg) => msg.SenderUsername == _appStateService.CurrentUser?.Username;
     private bool IsSystem(MessageDTO msg) => msg.MessageType == MessageType.System;
     private bool HasImage(string msg) => !string.IsNullOrWhiteSpace(msg);
     private bool HasText(string msg) => !string.IsNullOrWhiteSpace(msg);
     public void Dispose()
     {
-        ChatService.OnConfirmationActionRequested -= OpenConfirmDialog;
+        _chatSettingsService.OnConfirmationActionRequested -= OpenConfirmDialog;
     }
 }

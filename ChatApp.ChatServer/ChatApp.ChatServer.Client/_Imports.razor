@@ -17,11 +17,12 @@
 @using ChatApp.ChatServer.Client.Components
 
 @inject IConfiguration Configuration
-@inject ChatSettingsService ChatService
-@inject AppStateService AppState
-@inject ChatHubService ChatHubService
-@inject ImageService ImageService
+@inject ChatSettingsService _chatSettingsService
+@inject AppStateService _appStateService
+@inject ChatHubService _chatHubService
+@inject ImageService _imageService
 @inject HttpClient _httpClient
-@inject NavigationManager NavManager
+@inject NavigationManager _navManager
+@inject AuthService _authService
 @inject IConfiguration Configuration
 @inject IJSRuntime JSRuntime
