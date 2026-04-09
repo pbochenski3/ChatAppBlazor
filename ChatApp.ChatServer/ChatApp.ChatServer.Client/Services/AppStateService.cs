@@ -1,5 +1,6 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
+using ChatApp.Application.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
@@ -8,7 +9,7 @@ using System.Text.Json;
 
 namespace ChatApp.ChatServer.Client.Services
 {
-    public class AppStateService
+    public class AppStateService : ITokenProvider
     {
         private readonly IJSRuntime _js;
         private const string UserKey = "current_user_session";
@@ -36,6 +37,21 @@ namespace ChatApp.ChatServer.Client.Services
             }
             ;
             IsInitialized = true;
+        }
+        public async Task<string?> GetToken()
+        {
+            if (CurrentUser != null) return CurrentUser.Token;
+            var userJson = await _js.InvokeAsync<string?>("localStorage.getItem", UserKey);
+            if(!string.IsNullOrEmpty(userJson))
+            {
+                try
+                {
+                    CurrentUser = JsonSerializer.Deserialize<UserDTO>(userJson);
+                    return CurrentUser?.Token;
+                }
+                catch { return null; }
+            }
+            return null;
         }
         public async Task SetUserAsync(UserDTO user)
         {
