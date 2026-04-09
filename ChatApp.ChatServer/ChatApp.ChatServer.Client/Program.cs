@@ -9,6 +9,7 @@ builder.Services.AddScoped<ImageService>();
 builder.Services.AddScoped(sp => new HttpClient
 {
     BaseAddress = new Uri("https://localhost:7255")
+
 });
 
 await builder.Build().RunAsync();

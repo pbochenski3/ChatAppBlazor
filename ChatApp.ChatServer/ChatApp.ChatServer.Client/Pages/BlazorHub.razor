@@ -173,7 +173,7 @@
     private async Task HandleGlobalSearch(string query)
     {
         _isSearchingGlobal = true;
-        _foundUsers = await _httpClient.GetFromJsonAsync<List<UserDTO>>($"api/user?query={query}");
+        _foundUsers = await _httpClient.GetFromJsonAsync<List<UserDTO>>($"api/user/to-invite?query={query}");
         _isSearchingGlobal = false;
         StateHasChanged();
     }

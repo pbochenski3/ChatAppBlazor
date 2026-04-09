@@ -29,8 +29,7 @@ namespace ChatApp.ChatHub.Controllers
             _fileService = fileService;
         }
       
-        [Authorize]
-        [HttpPost("saveChatImage")]
+        [HttpPost("chatImage")]
         public async Task<IActionResult> SaveChatImageAsync(IFormFile file, [FromQuery] Guid chatId)
         {
             var userId = CurrentUserId;
@@ -47,8 +46,7 @@ namespace ChatApp.ChatHub.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [Authorize]
-        [HttpPost("updateGroupAvatar")]
+        [HttpPost("groupAvatar")]
         public async Task<IActionResult> UploadGroupAvatarAsync(IFormFile file, [FromQuery] Guid chatId)
         {
             var userId = CurrentUserId;

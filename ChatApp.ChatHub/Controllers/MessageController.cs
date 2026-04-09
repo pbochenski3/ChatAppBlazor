@@ -40,7 +40,7 @@ namespace ChatApp.ChatHub.Controllers
         //    await _readStatusService.MarkChatMessagesAsReadAsync(userGuid, chatId,ct);
         //}
         [Authorize]
-        [HttpPost("sendMessage")]
+        [HttpPost]
         public async Task<IActionResult> SendChatMessageAsync([FromBody] MessageDTO dto)
         {
             try

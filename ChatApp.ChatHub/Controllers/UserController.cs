@@ -31,16 +31,14 @@ namespace ChatApp.ChatHub.Controllers
             _contactService = contactService;
             _userService = userService;
         }
-        [Authorize]
-        [HttpGet]
+        [HttpGet("to-invite")]
         public async Task<IActionResult> GetUsersToInviteAsync([FromQuery] string query)
         {
             var userId = CurrentUserId;
             var usersToInvite = await _userService.GetUsersToInviteAsync(userId, query);
             return Ok(usersToInvite);
         }
-        [Authorize]
-        [HttpPost("Avatar")]
+        [HttpPost("avatar")]
         public async Task<IActionResult> UploadAvatarAsync(IFormFile file)
         {
             var userId = CurrentUserId;

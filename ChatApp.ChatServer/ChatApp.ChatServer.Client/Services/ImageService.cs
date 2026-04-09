@@ -60,9 +60,9 @@ namespace ChatApp.ChatServer.Client.Services
 
             var url = type switch
             {
-                UploadType.UserAvatar => "api/user/updateAvatar",
-                UploadType.GroupAvatar => $"api/chat/updateGroupAvatar?chatId={targetId}",
-                UploadType.ChatImage => $"api/chat/saveChatImage?chatId={targetId}",
+                UploadType.UserAvatar => "api/user/Avatar",
+                UploadType.GroupAvatar => $"api/chat/groupAvatar?chatId={targetId}",
+                UploadType.ChatImage => $"api/chat/chatImage?chatId={targetId}",
             };
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var response = await _httpClient.PostAsync(url, content);
