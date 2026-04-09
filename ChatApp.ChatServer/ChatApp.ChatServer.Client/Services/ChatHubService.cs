@@ -107,11 +107,6 @@ public class ChatHubService : IAsyncDisposable
         if (HubConnection == null) return;
         await HubConnection.InvokeAsync("MarkChatMessagesAsReadAsync", chatId, token);
     }
-    public async Task<int> GetUnreadMessageCountAsync(Guid chatId)
-    {
-        if (HubConnection == null) return 0;
-        return await HubConnection.InvokeAsync<int>("GetUnreadMessageCountAsync", chatId);
-    }
     public async Task JoinChatGroupSignalAsync(Guid chatId)
     {
         if (HubConnection == null) return;
@@ -238,11 +233,7 @@ public class ChatHubService : IAsyncDisposable
         if (HubConnection == null) return null;
         return await HubConnection.InvokeAsync<ContactDTO?>("GetContactByIdAsync", contactId);
     }
-    public async Task<List<UserDTO>> GetUsersToInviteAsync(string query)
-    {
-        if (HubConnection == null) return new List<UserDTO>();
-        return await HubConnection.InvokeAsync<List<UserDTO>>("GetUsersToInviteAsync", query);
-    }
+
     public async Task SendContactInviteAsync(Guid receiverId)
     {
         if (HubConnection == null) return;

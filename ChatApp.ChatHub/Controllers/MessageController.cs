@@ -4,6 +4,7 @@ using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Service;
 using ChatApp.Application.Services;
 using ChatApp.Application.Services.Chats;
+using ChatApp.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -27,6 +28,17 @@ namespace ChatApp.ChatHub.Controllers
             _readStatusService = readStatusService;
             _chatService = chatService;
         }
+        //[Authorize]
+        //[HttpGet]
+        //public async Task<IActionResult> GetUnreadMessageCountAsync(Guid chatId, CancellationToken c)
+        //{
+        //    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //    if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
+        //    {
+        //        return Unauthorized();
+        //    }
+        //    await _readStatusService.MarkChatMessagesAsReadAsync(userGuid, chatId,ct);
+        //}
         [Authorize]
         [HttpPost("sendMessage")]
         public async Task<IActionResult> SendChatMessageAsync([FromBody] MessageDTO dto)

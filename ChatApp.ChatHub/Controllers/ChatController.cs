@@ -16,7 +16,7 @@ namespace ChatApp.ChatHub.Controllers
     [ApiController]
     [Route("api/[controller]")]
 
-    public class ChatController : ControllerBase
+    public class ChatController : AppControllerBase
     {
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly IChatService _chatService;
@@ -33,15 +33,11 @@ namespace ChatApp.ChatHub.Controllers
         [HttpPost("saveChatImage")]
         public async Task<IActionResult> SaveChatImageAsync(IFormFile file, [FromQuery] Guid chatId)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
-            {
-                return Unauthorized();
-            }
+            var userId = CurrentUserId;
             if (chatId == Guid.Empty) return BadRequest();
             try
             {
-                string imageUrl = await SaveImageAsync(file, UploadType.ChatImage, chatId, userGuid);
+                string imageUrl = await SaveImageAsync(file, UploadType.ChatImage, chatId, userId);
                 var response = new FileResponse { Url = imageUrl };
 
                 return Ok(response);
@@ -55,11 +51,7 @@ namespace ChatApp.ChatHub.Controllers
         [HttpPost("updateGroupAvatar")]
         public async Task<IActionResult> UploadGroupAvatarAsync(IFormFile file, [FromQuery] Guid chatId)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
-            {
-                return Unauthorized();
-            }
+            var userId = CurrentUserId;
             if (chatId == Guid.Empty) return BadRequest();
             try
             {

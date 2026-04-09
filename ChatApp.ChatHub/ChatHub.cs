@@ -76,10 +76,7 @@ namespace ChatApp.ChatHub
         {
             return await _chatService.IsGroupChatExistingAsync(chatId, UserId);
         }
-        public async Task<int> GetUnreadMessageCountAsync(Guid chatId)
-        {
-            return await _readStatusService.GetUnreadMessageCountAsync(UserId, chatId);
-        }
+  
         public async Task SendContactInviteAsync(Guid receiverId)
         {
             try
@@ -95,10 +92,6 @@ namespace ChatApp.ChatHub
             {
                 await Clients.Caller.SendAsync("ReceiveStatus", "An error occurred while trying to send the invite.");
             }
-        }
-        public async Task<List<UserDTO>> GetUsersToInviteAsync(string query)
-        {
-            return await _userService.GetUsersToInviteAsync(UserId, query);
         }
         public async Task<List<ContactDTO>> GetUserContactsAsync()
         {
