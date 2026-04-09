@@ -8,14 +8,16 @@
 <div class="message-input-area @(IsArchive ? "archived-status" : "")">
     @if (!IsArchive)
     {
+    @if (!string.IsNullOrWhiteSpace(_tempImageUrl))
+    {
+        <div class="chat-preview-container">
+            <div class="preview-wrapper">
+                <img src="@_tempImageUrl" class="preview-image" />
+                <button type="button" class="btn-remove-preview" @onclick="ClearSelectedPhoto">✕</button>
+            </div>
+        </div>
+        }
         <div class="input-group">
-            @if (!string.IsNullOrWhiteSpace(_tempImageUrl))
-            {
-                <div class="chat-image-container">
-                    <img src="@_tempImageUrl" class="chat-image" />
-                    <button class="btn-remove-img" @onclick="ClearSelectedPhoto">✕</button>
-                </div>
-            }
             <input type="text"
                     @key="_inputFileKey"
                    class="form-control"

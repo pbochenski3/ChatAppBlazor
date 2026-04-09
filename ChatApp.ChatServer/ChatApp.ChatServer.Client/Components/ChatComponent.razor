@@ -40,14 +40,21 @@
                             @(IsMyMessage(msg) ? "mine" : "")">
                                 @if (!IsSystem(msg) && !IsMyMessage(msg))
                                 {
+                                <div class="message-info">
                                 <span class="message-time">[@msg.SentAt.ToString("HH:mm")]</span>
                                 <span class="message-user">@msg.SenderUsername:</span>
+                                </div>
                                 }
+                                <div class="message-body">
                                 @if (HasImage(msg.imageUrl))
                                 {
                                     <img src="@msg.imageUrl" class="chat-image" />
                                 }
+                                @if(HasText(msg.Content))
+                                {
                                     <span class="message-content">@msg.Content</span>
+                                }
+                                </div>
                                 </div>
                         }
                     }
@@ -101,6 +108,7 @@
     private bool IsMyMessage(MessageDTO msg) => msg.SenderUsername == AppState.CurrentUser?.Username;
     private bool IsSystem(MessageDTO msg) => msg.MessageType == MessageType.System;
     private bool HasImage(string msg) => !string.IsNullOrWhiteSpace(msg);
+    private bool HasText(string msg) => !string.IsNullOrWhiteSpace(msg);
     public void Dispose()
     {
         SettingsService.OnConfirmationActionRequested -= OpenConfirmDialog;
