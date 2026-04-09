@@ -29,7 +29,7 @@ namespace ChatApp.Application.Services
 
         public async Task SaveMessageAsync(MessageDTO messageDto)
         {
-            if (string.IsNullOrWhiteSpace(messageDto.Content))
+            if (string.IsNullOrWhiteSpace(messageDto.Content) && string.IsNullOrWhiteSpace(messageDto.imageUrl))
             {
                 throw new Exception("Message content cannot be empty");
             }

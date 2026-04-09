@@ -1,19 +1,9 @@
 using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
 using ChatApp.ChatServer.Client.Services;
-using ChatApp.Domain.Models;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Reflection.Metadata;
-using System.Threading;
-using System.Threading.Tasks;
-using static ChatApp.ChatServer.Client.Components.ImageComponent;
+
 
 public class ChatHubService : IAsyncDisposable
 {

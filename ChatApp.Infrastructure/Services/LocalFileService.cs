@@ -8,6 +8,7 @@ namespace ChatApp.Infrastructure.Services
 {
     public class LocalFileService : IFileService
     {
+
         private readonly string _storagePath;
         public LocalFileService(string storagePath )
         {
@@ -25,7 +26,7 @@ namespace ChatApp.Infrastructure.Services
                 UploadType.GroupAvatar => "cdn/GroupAvatars",
             };
             var fileName = $"{Guid.NewGuid()}{extension}";
-            var fullPath = Path.Combine(_storagePath, fileName);
+            var fullPath = Path.Combine(_storagePath,prefix,fileName);
 
           
             using (var destinationStream = new FileStream(fullPath, FileMode.Create, FileAccess.Write))
