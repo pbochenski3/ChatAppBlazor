@@ -8,7 +8,7 @@ namespace ChatApp.Infrastructure.Services
 {
     public class LocalFileService : IFileService
     {
-
+        private readonly string _baseUrl = "https://localhost:7255";
         private readonly string _storagePath;
         public LocalFileService(string storagePath )
         {
@@ -20,41 +20,34 @@ namespace ChatApp.Infrastructure.Services
         }
         public async Task<string> SaveAvatar(Stream fileStream, string extension,UploadType type)
         {
-            var prefix = type switch
-            {
-                UploadType.UserAvatar => "cdn/Avatars",
-                UploadType.GroupAvatar => "cdn/GroupAvatars",
-            };
-            var fileName = $"{Guid.NewGuid()}{extension}";
-            var fullPath = Path.Combine(_storagePath,prefix,fileName);
+            string folderName = type == UploadType.UserAvatar ? "Avatars" : "GroupAvatars";
+            string fileName = $"{Guid.NewGuid()}{extension}";
+            string directoryPath = Path.Combine(_storagePath, folderName);
+            string fullPath = Path.Combine(directoryPath, fileName);
+            Directory.CreateDirectory(directoryPath);
 
           
             using (var destinationStream = new FileStream(fullPath, FileMode.Create, FileAccess.Write))
             {
                 await fileStream.CopyToAsync(destinationStream);
             }
-            
-            var uriBuilder = new UriBuilder("https", "localhost", 7255, $"{prefix}/{fileName}");
-            return uriBuilder.ToString();
+            return $"{_baseUrl}/cdn/{folderName}/{fileName}";
         }
         public async Task<string> SaveChatImage(Stream fileStream, string extension,Guid? chatId,Guid? userId)
         {
             if (chatId == null || userId == null)
                 throw new Exception("chatId or userId missing");
-
-            var chatFolder = Path.Combine(_storagePath,"ChatImages", chatId.ToString(), userId.ToString());
-            if(!Directory.Exists(chatFolder))
-            {
-                Directory.CreateDirectory(chatFolder);
-            }
-            var fileName = $"{Guid.NewGuid()}{extension}";
-            var fullPath = Path.Combine(chatFolder, fileName);
-            using (var destinationStream = new FileStream(fullPath, FileMode.Create, FileAccess.Write))
+            string subPath = Path.Combine("ChatImages", chatId.ToString(), userId.ToString());
+            string directoryPath = Path.Combine(_storagePath, subPath);
+            string fileName = $"{Guid.NewGuid()}{extension}";
+            string fullPath = Path.Combine(directoryPath, fileName);
+            
+            Directory.CreateDirectory(directoryPath);
+            using (var destinationStream = new FileStream(fullPath, FileMode.Create))
             {
                 await fileStream.CopyToAsync(destinationStream);
             }
-            var uriBuilder = new UriBuilder("https", "localhost", 7255, $"cdn/ChatImages/{chatId}/{userId}/{fileName}");
-            return uriBuilder.ToString();
+            return $"{_baseUrl}/cdn/ChatImages/{chatId}/{userId}/{fileName}";
         }
     }
 }

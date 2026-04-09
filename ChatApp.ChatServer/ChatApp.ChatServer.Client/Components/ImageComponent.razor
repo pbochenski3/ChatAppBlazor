@@ -6,9 +6,9 @@
 @inject ILogger<ImageComponent> Logger
 <div class="profile-wrapper">
     <div class="avatar-wrapper">
-        @if (TempAvatarUrl != string.Empty)
+        @if (_tempAvatarUrl != string.Empty)
         {
-            <img src="@TempAvatarUrl" alt="avatarTemp" />
+            <img src="@_tempAvatarUrl" alt="avatarTemp" />
         }
         else
         {
@@ -25,7 +25,7 @@
         <label for="avatar-upload" disabled="@isUploading" class="user-profile-icon">
             <p class="user-icon">Wybierz plik</p>
         </label>
-        @if (selectedFile != null)
+        @if (selectedFile != null )
         {
             <button disabled="@isUploading" class="btn-upload" @onclick="HandleSaveClick">
                 @(isUploading ? "Przesyłanie..." : "Zapisz zmiany")
@@ -43,14 +43,15 @@
     private IBrowserFile? selectedFile;
     private bool isUploading = false;
     public enum PhotoType { Private, Group };
-    private string TempAvatarUrl { get; set; } = string.Empty;
+    private string _tempAvatarUrl { get; set; } = string.Empty;
+    private Guid _uploadKey = Guid.NewGuid();
     public async Task OnInputFileChange(InputFileChangeEventArgs e)
     {
         try
         {
             selectedFile = await ImageService.GetBrowserFileAsync(e);
             var base64 = await ImageService.GetImageStringAsync(selectedFile);
-            TempAvatarUrl = $"data:{selectedFile.ContentType};base64,{base64}";
+            _tempAvatarUrl = $"data:{selectedFile.ContentType};base64,{base64}";
         }
         catch (Exception ex)
         {
@@ -84,7 +85,6 @@
             uploadType,
             targetId
         );
-            selectedFile = null;
 
         }
         catch (Exception ex)
@@ -94,8 +94,9 @@
         }
         finally
         {
+            selectedFile = null;
             isUploading = false;
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
     }
 }
