@@ -9,24 +9,31 @@
     @if (!IsArchive)
     {
         <div class="input-group">
+            @if (!string.IsNullOrWhiteSpace(_tempImageUrl))
+            {
+                <div class="chat-image-container">
+                    <img src="@_tempImageUrl" class="chat-image" />
+                    <button class="btn-remove-img" @onclick="ClearSelectedPhoto">✕</button>
+                </div>
+            }
             <input type="text"
+                    @key="_inputFileKey"
                    class="form-control"
                    placeholder="Napisz wiadomość..."
                    disabled="@IsLocked"
                    @bind="_messageContent"
                    @bind:event="oninput"
                    @onkeydown="HandleKeyDownAsync" />
-            <div class="avatar-upload-container">
-                <InputFile id="chat-image" OnChange="OnImageSend"
+
+                <InputFile id="chat-image-icon" OnChange="OnImageSend"
                            style="display:none;" accept=".jpg,.jpeg,.png,.jfif" />
-                <label for="chat-image" disabled="@_isUploading" class="user-profile-icon">
-                    <p class="chat-send-icon">🖼️</p>
+                <label for="chat-image-icon" disabled="@_isUploading" class="chat-image-icon">
+                🖼️
                 </label>
-            </div>
             <EmojiComponent
                 OnEmojiSelect="HandleAddEmojiToInput" />
                     <button class="btn-primary"
-                    disabled="@(IsLocked || string.IsNullOrWhiteSpace(_messageContent))"
+                    disabled="@(IsLocked || (string.IsNullOrWhiteSpace(_messageContent) && _sendedPhoto == null))"
                     @onclick="HandleSendMessage">
                 Wyślij
             </button>
@@ -47,11 +54,17 @@
     private bool _isUploading = false;
     private string _tempImageUrl = string.Empty;
     private string _messageContent = string.Empty;
-    private string _imageUrl = string.Empty;
     private IBrowserFile _sendedPhoto = null;
+    private Guid _inputFileKey = Guid.NewGuid();
+    private void ClearSelectedPhoto()
+    {
+        _sendedPhoto = null;
+        _tempImageUrl = string.Empty;
+        _inputFileKey = Guid.NewGuid(); 
+    }
     private async Task HandleKeyDownAsync(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter" && !IsLocked && !string.IsNullOrWhiteSpace(_messageContent))
+        if (e.Key == "Enter" && !IsLocked && (!string.IsNullOrWhiteSpace(_messageContent) || _sendedPhoto != null))
         {
             await HandleSendMessage();
         }
@@ -63,7 +76,8 @@
         {
             _sendedPhoto = await ImageService.GetBrowserFileAsync(e);
             if (_sendedPhoto == null) return;
-            _tempImageUrl = await ImageService.GetImageStringAsync(_sendedPhoto);
+            var base64 = await ImageService.GetImageStringAsync(_sendedPhoto);
+            _tempImageUrl = $"data:{_sendedPhoto.ContentType};base64,{base64}";
 
         }
         catch (Exception ex)
@@ -72,7 +86,7 @@
         }
         finally
         {
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
     }
     private void HandleAddEmojiToInput(string emoji)
@@ -84,12 +98,12 @@
         var contentToSend = _messageContent;
         if (AppState.CurrentChat == null) return;
         var chatId = AppState.CurrentChat.Identity.ChatID;
-        if (string.IsNullOrWhiteSpace(contentToSend)) return;
-        if (AppState.CurrentChat == null) return;
+        if (string.IsNullOrWhiteSpace(contentToSend) && _sendedPhoto == null) return;
 
         var newMessage = new MessageDTO
         {
-            Content = contentToSend,
+            Content = contentToSend ?? string.Empty,
+            imageUrl = string.Empty,
             SenderUsername = AppState.CurrentUser.Username,
             ChatID = chatId,
             SenderID = AppState.CurrentUser.UserID,
@@ -103,6 +117,7 @@
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AppState.CurrentUser?.Token);
             if(_sendedPhoto != null)
             {
+                _isUploading = true;
                 byte[] fileData = await ImageService.GetFileDataAsync(_sendedPhoto);
                 var imageUrl = await ImageService
                 .UploadImageAsync
@@ -127,6 +142,7 @@
             }
 
             _messageContent = string.Empty;
+            ClearSelectedPhoto();
             await InvokeAsync(StateHasChanged);
 
         }
@@ -134,7 +150,12 @@
         {
             _logger.LogError(ex, "Error sending message");
             _messageContent = contentToSend;
+        }
+        finally
+        {
+            _isUploading = false;
             await InvokeAsync(StateHasChanged);
+
         }
     }
 }

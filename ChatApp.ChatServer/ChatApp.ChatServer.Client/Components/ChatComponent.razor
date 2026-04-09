@@ -42,8 +42,10 @@
                                 {
                                 <span class="message-time">[@msg.SentAt.ToString("HH:mm")]</span>
                                 <span class="message-user">@msg.SenderUsername:</span>
-                                @HasImage(msg.imageUrl)
-                                <img src="@msg.imageUrl" class="chat-image"/>
+                                }
+                                @if (HasImage(msg.imageUrl))
+                                {
+                                    <img src="@msg.imageUrl" class="chat-image" />
                                 }
                                     <span class="message-content">@msg.Content</span>
                                 </div>

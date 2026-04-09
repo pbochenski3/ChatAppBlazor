@@ -37,6 +37,7 @@ namespace ChatApp.Application.Services
             var message = new Message
             {
                 Content = messageDto.Content,
+                imageUrl = messageDto.imageUrl,
                 SenderID = messageDto.SenderID,
                 ChatID = messageDto.ChatID,
                 MessageID = messageDto.MessageID,
@@ -68,6 +69,7 @@ namespace ChatApp.Application.Services
             {
                 MessageID = m.MessageID,
                 Content = m.Content,
+                imageUrl= m.imageUrl,
                 SentAt = m.SentAt,
                 SenderID = m.SenderID,
                 SenderUsername = m.MessageType == MessageType.System ? "SYSTEM" : (m.Sender?.Username ?? "Unknown"),
