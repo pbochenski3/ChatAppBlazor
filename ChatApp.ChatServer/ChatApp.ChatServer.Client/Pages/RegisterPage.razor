@@ -1,9 +1,4 @@
 @page "/register"
-@inject IConfiguration Configuration
-@inject NavigationManager NavManager
-@inject ChatHubService ChatHubService
-@inject AppStateService AppState
-@implements IDisposable
 
 @if (!string.IsNullOrEmpty(_notification))
 {
@@ -67,44 +62,33 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (AppState.CurrentUser != null)
+        if (_appStateService.CurrentUser != null)
         {
-            NavManager.NavigateTo("/hub");
+            _navManager.NavigateTo("/hub");
         }
-        ChatHubService.RegisterStatusMessage += HandleRegisterNotification;
-    }
+        _notification = _appStateService.Message;
+        _notification = string.Empty;
 
-    private void HandleRegisterNotification(string message)
-    {
-        _notification = message;
-        if (message.Equals("User registered successfully."))
-        {
-            _registerModel = new UserDTO();
-            AppState.Message = "Registered successfully!";
-            NavManager.NavigateTo("/");
-            return;
-        }
-        _isProcessing = false;
-        InvokeAsync(StateHasChanged);
     }
 
     private async Task HandleRegisterAsync()
     {
-        _isProcessing = true;
+        _notification = string.Empty;
+        StateHasChanged();
         try
         {
-            await ChatHubService.RegisterUserAsync(_registerModel);
+            _isProcessing = true;
+            await _authService.RegisterUserAsync(_registerModel);
         }
         catch (Exception ex)
         {
             _notification = $"{ex.Message}";
             _isProcessing = false;
-            await InvokeAsync(StateHasChanged);
         }
-    }
-
-    public void Dispose()
-    {
-        ChatHubService.RegisterStatusMessage -= HandleRegisterNotification;
+        finally
+        {
+            _isProcessing = false;    
+            StateHasChanged();
+        }
     }
 }

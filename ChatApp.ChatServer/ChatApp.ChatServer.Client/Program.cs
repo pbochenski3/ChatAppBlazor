@@ -1,5 +1,6 @@
 using ChatApp.Application.Interfaces;
 using ChatApp.ChatServer.Client.Services;
+using ChatApp.ChatServer.Client.Services.Interfaces;
 using ChatApp.Infrastructure.Handlers;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -8,6 +9,7 @@ builder.Services.AddScoped<ChatHubService>();
 builder.Services.AddScoped<AppStateService>();
 builder.Services.AddScoped<ChatSettingsService>();
 builder.Services.AddScoped<ImageService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenProvider>(sp => sp.GetRequiredService<AppStateService>());
 builder.Services.AddTransient<AuthorizationHandler>();
 builder.Services.AddHttpClient("ChatAPI", client =>

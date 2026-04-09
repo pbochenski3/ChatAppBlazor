@@ -145,56 +145,6 @@ public class ChatHubService : IAsyncDisposable
     {
         return await HubConnection.InvokeAsync<string>("GetUserAvatarUrlAsync");
     }
-    public async Task LoginUserAsync(UserDTO dto)
-    {
-        var response = await _httpClient.PostAsJsonAsync("api/auth/login", dto);
-        if (response.IsSuccessStatusCode)
-        {
-            var loggedInUser = await response.Content.ReadFromJsonAsync<UserDTO>();
-            _appStateService.CurrentUser = loggedInUser;
-            
-            if (loggedInUser != null)
-            {
-                await StartAsync();
-                LoginStatusMessage?.Invoke("Success", loggedInUser);
-            }
-            else
-            {
-                throw new Exception("Logged user is null");
-            }
-        }
-        else
-        {
-            var errorContent = await response.Content.ReadAsStringAsync();
-            throw new Exception(errorContent);
-        }
-    }
-    public async Task RegisterUserAsync(UserDTO dto)
-    {
-        if (string.IsNullOrWhiteSpace(dto.Username) || dto.Username.Length < 5)
-        {
-            throw new ArgumentException("Username must be at least 5 characters.");
-        }
-        if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 8)
-        {
-            throw new ArgumentException("Password must be at least 8 characters.");
-        }
-        if(dto.Username.Equals("SYSTEM", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new ArgumentException("Username is already oucppied.");
-        };
-        
-        var response = await _httpClient.PostAsJsonAsync("api/auth/register", dto);
-        if (response.IsSuccessStatusCode)
-        {
-            RegisterStatusMessage?.Invoke("User registered successfully.");
-        }
-        else
-        {
-            var errorContent = await response.Content.ReadAsStringAsync();
-            throw new Exception(errorContent);
-        }
-    }
     public async Task<UserChatDTO?> GetChatDetailsAsync(Guid chatId, CancellationToken token)
     {
         if (HubConnection == null) return null;

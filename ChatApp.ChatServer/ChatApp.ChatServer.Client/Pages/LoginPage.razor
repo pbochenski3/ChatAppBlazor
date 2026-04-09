@@ -1,10 +1,4 @@
 @page "/"
-@inject IConfiguration Configuration
-@inject NavigationManager NavManager
-@inject ChatHubService ChatHubService
-@inject AppStateService AppState
-@implements IDisposable
-
 @if (!string.IsNullOrEmpty(_notification))
 {
     <div class="notification-toast">
@@ -67,20 +61,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (AppState.CurrentUser != null)
+        if (_appStateService.CurrentUser != null)
         {
-            NavManager.NavigateTo("/hub");
+            _navManager.NavigateTo("/hub");
         }
-        _notification = AppState.Message;
-        AppState.Message = null;
-        ChatHubService.LoginStatusMessage += HandleLoginNotification;
-    }
-
-    private void HandleLoginNotification(string message, UserDTO user)
-    {
-        _notification = message;
-        _isProcessing = false;
-        InvokeAsync(StateHasChanged);
+        _notification = _appStateService.Message;
+        _notification = string.Empty;
     }
 
     private async Task HandleLoginAsync()
@@ -91,21 +77,16 @@
         try
         {
             _isProcessing = true;
-            var response = await _httpClient.PostAsJsonAsync("api/auth/login", _loginModel);
-            if(response.IsSuccessStatusCode)
+            await _authService.LoginUserAsync(_loginModel);
+
+            if (_appStateService.CurrentUser != null)
             {
-                var user = await response.Content.ReadFromJsonAsync<UserDTO>();
-                if(user != null)
-                {
-                    await AppState.SetUserAsync(user);
-                    _loginModel = new UserDTO();
-                    AppState.Message = "Logged in successfully!";
-                    NavManager.NavigateTo("/hub");
-                }
-                else
-                {
-                    _notification = "Invalid login attempt.";
-                }
+                _navManager.NavigateTo("/hub");
+                _appStateService.Message = "Zostałeś zalogowany!";
+            }
+            else
+            {
+                _notification = "Invalid login attempt.";
             }
 
         }
@@ -113,10 +94,10 @@
         {
             _notification = $"{ex.Message}";
         }
+        finally
+        {
+            _isProcessing = false;
+        }
     }
 
-    public void Dispose()
-    {
-        ChatHubService.LoginStatusMessage -= HandleLoginNotification;
-    }
 }
