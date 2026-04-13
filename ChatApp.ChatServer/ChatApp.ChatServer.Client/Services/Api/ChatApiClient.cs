@@ -1,11 +1,11 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
 using ChatApp.Application.Interfaces.Chats;
-using ChatApp.ChatServer.Client.Services.Interfaces;
+using ChatApp.ChatServer.Client.Services.Api.Interfaces;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.Http.Json;
 
-namespace ChatApp.ChatServer.Client.Services
+namespace ChatApp.ChatServer.Client.Services.Api
 {
     public class ChatApiClient : IChatApiClient
     {

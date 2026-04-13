@@ -1,6 +1,6 @@
 using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
-using ChatApp.ChatServer.Client.Services;
+using ChatApp.ChatServer.Client.Services.State;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.Http.Json;
 
@@ -140,11 +140,7 @@ public class ChatHubService : IAsyncDisposable
         if (HubConnection == null) return new List<InviteDTO>();
         return await HubConnection.InvokeAsync<List<InviteDTO>>("GetUserInvitesAsync");
     }
-    public async Task<List<ContactDTO>> GetUserContactsAsync()
-    {
-        if (HubConnection == null) return new List<ContactDTO>();
-        return await HubConnection.InvokeAsync<List<ContactDTO>>("GetUserContactsAsync");
-    }
+
     public async Task<ContactDTO?> GetContactByIdAsync(Guid contactId)
     {
         if (HubConnection == null) return null;
@@ -159,16 +155,6 @@ public class ChatHubService : IAsyncDisposable
     {
         if (HubConnection == null) return;
         await HubConnection.InvokeAsync("HandleInviteActionAsync", inviteId, status);
-    }
-    public async Task RemoveContactAsync(Guid chatId)
-    {
-        if (HubConnection == null) return;
-        await HubConnection.InvokeAsync("RemoveContactAsync", chatId);
-    }
-    public async Task<List<ContactDTO>> GetContactListAsync()
-    {
-        if (HubConnection == null) return new List<ContactDTO>();
-        return await HubConnection.InvokeAsync<List<ContactDTO>>("GetContactListAsync");
     }
     public async Task<HashSet<UserDTO>> GetChatUsersAsync(Guid chatId)
     {

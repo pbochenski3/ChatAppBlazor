@@ -1,7 +1,7 @@
 ﻿using ChatApp.Application.DTO;
 using System.Xml.Linq;
 
-namespace ChatApp.ChatServer.Client.Services
+namespace ChatApp.ChatServer.Client.Services.State
 {
     public class ChatSettingsService
     {

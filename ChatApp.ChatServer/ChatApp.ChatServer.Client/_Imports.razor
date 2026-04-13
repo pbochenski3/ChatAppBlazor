@@ -1,6 +1,8 @@
 ﻿@using System.Net.Http
 @using System.Net.Http.Json
-@using ChatApp.ChatServer.Client.Services.Interfaces
+@using ChatApp.ChatServer.Client.Services.Api
+@using ChatApp.ChatServer.Client.Services.Api.Interfaces
+@using ChatApp.ChatServer.Client.Services.State
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
@@ -26,5 +28,6 @@
 @inject NavigationManager _navManager
 @inject IAuthClient _authService
 @inject IChatApiClient _chatApiClient
+@inject IContactApiClient _contactApiClient
 @inject IConfiguration Configuration
 @inject IJSRuntime JSRuntime

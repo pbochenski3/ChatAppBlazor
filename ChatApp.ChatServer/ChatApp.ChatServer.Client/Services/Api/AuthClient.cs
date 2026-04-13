@@ -1,8 +1,9 @@
 ﻿using ChatApp.Application.DTO;
-using ChatApp.ChatServer.Client.Services.Interfaces;
+using ChatApp.ChatServer.Client.Services.Api.Interfaces;
+using ChatApp.ChatServer.Client.Services.State;
 using System.Net.Http.Json;
 
-namespace ChatApp.ChatServer.Client.Services
+namespace ChatApp.ChatServer.Client.Services.Api
 {
     public class AuthClient : IAuthClient
     {

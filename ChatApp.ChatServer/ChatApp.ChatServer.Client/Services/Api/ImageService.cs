@@ -7,7 +7,7 @@ using System.Net.Http.Json;
 using System.Net.NetworkInformation;
 
 
-namespace ChatApp.ChatServer.Client.Services
+namespace ChatApp.ChatServer.Client.Services.Api
 {
     public class ImageService
     {
@@ -64,7 +64,6 @@ namespace ChatApp.ChatServer.Client.Services
                 UploadType.GroupAvatar => $"api/chat/groupAvatar?chatId={targetId}",
                 UploadType.ChatImage => $"api/chat/chatImage?chatId={targetId}",
             };
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var response = await _httpClient.PostAsync(url, content);
             if (!response.IsSuccessStatusCode)
             {

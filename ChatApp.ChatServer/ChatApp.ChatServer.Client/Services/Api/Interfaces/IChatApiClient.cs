@@ -1,7 +1,7 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
 
-namespace ChatApp.ChatServer.Client.Services.Interfaces
+namespace ChatApp.ChatServer.Client.Services.Api.Interfaces
 {
     public interface IChatApiClient
     {

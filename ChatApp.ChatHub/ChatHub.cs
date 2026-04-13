@@ -85,10 +85,6 @@ namespace ChatApp.ChatHub
                 await Clients.Caller.SendAsync("ReceiveStatus", "An error occurred while trying to send the invite.");
             }
         }
-        public async Task<List<ContactDTO>> GetUserContactsAsync()
-        {
-            return await _contactService.GetUserContactsAsync(UserId);
-        }
         public async Task<ContactDTO?> GetContactByIdAsync(Guid contactId)
         {
             return await _contactService.GetContactByIdAsync(contactId, UserId);
@@ -101,39 +97,6 @@ namespace ChatApp.ChatHub
         {
             var userIds = await _chatService.GetUsersInChatIdAsync(chatId);
             return await _userService.GetUsersByIdsAsync(userIds);
-        }
-        public async Task RemoveContactAsync(Guid chatId)
-        {
-            try
-            {
-                CancellationToken token = default;
-                var contactId = await _privateChatService.GetReceiverUserIdAsync(chatId, UserId, token);
-                if (contactId == Guid.Empty)
-                {
-                    throw new Exception("Receiver not found");
-                }
-                
-                var target = Clients.Users(contactId.ToString());
-                await _contactService.RemoveContactAsync(contactId, UserId, chatId);
-                
-                var userChatTask = Clients.Caller.SendAsync("ChatReload", chatId,true);
-                var targetChatTask = target.SendAsync("ChatReload", chatId,true);
-                await Task.WhenAll(userChatTask, targetChatTask);
-
-                var tasks = new List<Task>
-                {
-                   Clients.Caller.SendAsync("ReceiveStatus", "Kontakt został usunięty!"),
-                   target.SendAsync("ReceiveStatus", "Ktoś usunął cie z kontaktów!"),
-                   Clients.Caller.SendAsync("ContactInviteReload", true),
-                   target.SendAsync("ContactInviteReload", true)
-                };
-                await Task.WhenAll(tasks);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in RemoveContactAsync");
-                await Clients.Caller.SendAsync("ReceiveStatus", "An error occurred while processing the delete action.");
-            }
         }
         public async Task<string> GetUserAvatarUrlAsync()
         {
@@ -193,10 +156,7 @@ namespace ChatApp.ChatHub
         {
             return await _sidebarService.GetSidebarItemsAsync(UserId);
         }
-        public async Task<List<ContactDTO>> GetContactListAsync()
-        {
-            return await _contactService.GetUserContactsAsync(UserId);
-        }
+    
         public async Task CreateGroupChatAsync(Guid chatId, HashSet<Guid> usersToAdd)
         {
             await _groupChatService.CreateGroupChatAsync(chatId, usersToAdd);

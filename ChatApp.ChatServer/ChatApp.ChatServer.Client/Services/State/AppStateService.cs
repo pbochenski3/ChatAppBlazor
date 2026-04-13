@@ -7,7 +7,7 @@ using Microsoft.JSInterop;
 using System.Text.Json;
 
 
-namespace ChatApp.ChatServer.Client.Services
+namespace ChatApp.ChatServer.Client.Services.State
 {
     public class AppStateService : ITokenProvider
     {
