@@ -40,6 +40,7 @@
                 Name="@_appStateService.CurrentUser.Username"
                 LabelRole="Użytkownik"
                 IsGroup="false"/>
+            <button class="btn-secondary" @onclick="() => _appStateService.Logout()">Zamknij profil</button>
         }
     </main>
 }
@@ -145,7 +146,7 @@
     private async Task HandleInviteStatusReceivedAsync(string status, Guid contactId)
     {
         CancellationToken token = default;
-        var chatTask = _chatHubService.GetChatDetailsAsync(contactId, token);
+        var chatTask = _chatApiClient.GetChatDetailsAsync(contactId, token);
         var notifyTask = ShowNotificationAsync(status);
         await Task.WhenAll(chatTask, notifyTask);
     }
@@ -281,7 +282,7 @@
     {
         try
         {
-        if (_appStateService.CurrentChat != null)
+            if (_appStateService.CurrentChat != null)
             {
                 await _chatHubService.RemoveContactAsync(_appStateService.CurrentChat.Identity.ChatID);
             }
@@ -298,7 +299,12 @@
     }
     private async Task HandleChangeChatNameAsync(string chatName)
     {
-        await _chatHubService.ChangeChatNameAsync(_appStateService.CurrentChat.Identity.ChatID, chatName);
+        var chatId = _appStateService.CurrentChat?.Identity.ChatID;
+        var adminName = _appStateService.CurrentUser?.Username;
+        if (chatId != null && adminName != null)
+        {
+            await _chatApiClient.ChangeChatNameAsync(chatId.Value, chatName, adminName);
+        }
     }
     private async Task HandleChatLeave()
     {
@@ -349,42 +355,29 @@
         bool isMessageForCurrentChat = _appStateService.CurrentChat != null && dto.ChatID == _appStateService.CurrentChat.Identity.ChatID;
         if (isMessageForCurrentChat)
         {
-            if (_receivedMessages.Any(m => m.MessageID == dto.MessageID))
-            {
-                return;
-            }
+            if (_receivedMessages.Any(m => m.MessageID == dto.MessageID)) return;
 
             _receivedMessages.Add(dto);
             await InvokeAsync(StateHasChanged);
-
             if (dto.SenderID != _currentUser.UserID)
             {
-                try
+              
+                _ = Task.Run(async () =>
                 {
-                    _ = Task.Run((Func<Task>)(async () =>
-           {
-               try
-               {
-                   await this._chatHubService.MarkMessageAsReadAsync(dto.ChatID, dto.MessageID);
-               }
-               catch (Exception ex)
-               {
-                   _logger.LogWarning(ex, "Failed to mark as read");
-               }
-           }));
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to mark message as read for ChatId: {ChatId}, MessageId: {MessageId}", dto.ChatID, dto.MessageID);
-                }
+                    try
+                    {
+                        await _chatApiClient.MarkMessageAsReadAsync(dto.ChatID, dto.MessageID);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Background mark-as-read failed for message: {MessageId}", dto.MessageID);
+                    }
+                });
             }
         }
-        else
+        else if (dto.SenderID != _currentUser.UserID)
         {
-            if (dto.SenderID != _currentUser.UserID)
-            {
-                await HandleCounterUpdateAsync(dto.ChatID, false);
-            }
+            await HandleCounterUpdateAsync(dto.ChatID, false);
         }
     }
     private async Task HandleSidebarMessageReloadAsync(Guid chatId, string sender,string content)
@@ -476,7 +469,7 @@
             _receivedMessages = new List<MessageDTO>();
             _logger.LogInformation("Loading chat: {Id} (Force: {Force})", args.ChatId, args.Force);
 
-            var chatInformation = await _chatHubService.GetChatDetailsAsync(args.ChatId, token);
+            var chatInformation = await _chatApiClient.GetChatDetailsAsync(args.ChatId, token);
 
             if (chatInformation == null)
             {
@@ -495,7 +488,7 @@
                 _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", args.ChatId);
             }
 
-            _receivedMessages = await _chatHubService.GetChatHistoryAsync(chatInformation.Identity.ChatID, token);
+            _receivedMessages = await _chatApiClient.GetChatMessageHistoryAsync(chatInformation.Identity.ChatID, token);
             token.ThrowIfCancellationRequested();
 
             _appStateService.CurrentChat = chatInformation;
@@ -507,7 +500,7 @@
             if (!chatInformation.State.IsArchive)
             {
                 await _chatHubService.JoinChatGroupSignalAsync(chatInformation.Identity.ChatID);
-                await _chatHubService.MarkChatMessagesAsReadAsync(chatInformation.Identity.ChatID, token);
+                await _chatApiClient.MarkAllMessagesAsReadAsync(chatInformation.Identity.ChatID, token);
                 await HandleCounterUpdateAsync(chatInformation.Identity.ChatID, true);
             }
 
@@ -553,7 +546,7 @@
         {
             if (_appStateService.CurrentChat != null)
             {
-                await _chatHubService.DeleteChatAsync(_appStateService.CurrentChat.Identity.ChatID);
+                await _chatApiClient.DeleteChatAsync(_appStateService.CurrentChat.Identity.ChatID);
                 await ShowNotificationAsync("Czat został usunięty!");
             }
         }

@@ -64,14 +64,6 @@ namespace ChatApp.ChatHub
         {
             return base.OnConnectedAsync();
         }
-        public async Task MarkMessageAsReadAsync(Guid chatId, Guid messageId)
-        {
-            await _readStatusService.MarkMessageAsReadAsync(UserId, chatId, messageId);
-        }
-        public async Task MarkChatMessagesAsReadAsync(Guid chatId)
-        {
-            await _readStatusService.MarkChatMessagesAsReadAsync(UserId, chatId, Context.ConnectionAborted);
-        }
         public async Task<bool> IsGroupChatExistingAsync(Guid chatId)
         {
             return await _chatService.IsGroupChatExistingAsync(chatId, UserId);
@@ -147,35 +139,7 @@ namespace ChatApp.ChatHub
         {
             return await _userService.GetAvatarUrlAsync(UserId);
         }
-        public async Task ChangeChatNameAsync(Guid chatId, string chatName)
-        {
-            try
-            {
-                await _userChatService.UpdateChatNameAsync(chatId, chatName);
-                var chat = await _chatService.GetUsersInChatIdAsync(chatId);
-                var participants = chat.Select(id => id.ToString()).ToList();
-                var admin = await _userService.GetUserByIdAsync(UserId);
-
-                var systemMessage = new MessageDTO
-                {
-                    ChatID = chatId,
-                    MessageID = Guid.CreateVersion7(),
-                    Content = $"{admin.Username} zmienił nazwe czatu na {chatName}.",
-                    SenderUsername = "SYSTEM",
-                    MessageType = MessageType.System,
-                    SentAt = DateTime.UtcNow,
-                };
-
-                await _messageService.SaveMessageAsync(systemMessage);
-                await Clients.Users(participants).SendAsync("ReceiveMessage", systemMessage);
-                await Clients.Users(participants).SendAsync("UpdateChatName", chatId,chatName);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in ChangeChatNameAsync");
-                await Clients.Caller.SendAsync("ReceiveStatus", "An error occurred while trying to change the chat name.");
-            }
-        }
+       
         public async Task HandleInviteActionAsync(Guid inviteId, bool status)
         {
             try
@@ -220,18 +184,6 @@ namespace ChatApp.ChatHub
         public async Task<List<InviteDTO>> GetUserInvitesAsync()
         {
             return await _inviteService.GetUserInvitesAsync(UserId);
-        }
-        public async Task<List<MessageDTO>> GetChatHistoryAsync(Guid chatId)
-        {
-            return await _messageService.GetChatHistoryAsync(UserId, chatId, Context.ConnectionAborted);
-        }
-        public async Task<UserChatDTO?> GetChatDetailsAsync(Guid chatId)
-        {
-            return await _userChatService.GetUserChatDetailsAsync(chatId, UserId, Context.ConnectionAborted);
-        }
-        public async Task<bool> IsChatArchivedAsync(Guid chatId, Guid contactId)
-        {
-            return await _userChatService.IsChatArchivedAsync(chatId, contactId);
         }
         public async Task<List<UserChatDTO>> GetUserChatListAsync()
         {
@@ -333,13 +285,6 @@ namespace ChatApp.ChatHub
             await Task.WhenAll(tasks);
 
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatId.ToString());
-        }
-        public async Task DeleteChatAsync(Guid chatId)
-        {
-            await _chatService.DeleteChatAsync(chatId, UserId);
-            await Clients.Caller.SendAsync("ReceiveStatus", "Czat został usunięty!");
-            await Clients.Caller.SendAsync("SideBarReload", true);
-            await Clients.Caller.SendAsync("ChatClose", true);
         }
     }
 }

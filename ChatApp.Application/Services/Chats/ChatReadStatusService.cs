@@ -21,9 +21,8 @@ namespace ChatApp.Application.Services.Chats
             await _userChatRepo.UpdateLastReadMessageAsync(userId, chatId, messageId);
         }
 
-        public async Task MarkChatMessagesAsReadAsync(Guid userId, Guid chatId, CancellationToken token)
+        public async Task MarkAllMessagesAsReadAsync(Guid userId, Guid chatId, CancellationToken token)
         {
-            // Replace MarkChatAsReadAsync (deprecated) by explicit UpdateLastReadMessageAsync
             var userChat = await _userChatRepo.GetUserChatAsync(chatId, userId, token);
             var lastMessageId = userChat?.LastMessageID;
             if (lastMessageId.HasValue)

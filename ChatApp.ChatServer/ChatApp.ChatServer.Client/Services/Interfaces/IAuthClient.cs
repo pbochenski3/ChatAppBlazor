@@ -2,7 +2,7 @@
 
 namespace ChatApp.ChatServer.Client.Services.Interfaces
 {
-    public interface IAuthService
+    public interface IAuthClient
     {
         Task LoginUserAsync(UserDTO dto);
         Task RegisterUserAsync(UserDTO dto);

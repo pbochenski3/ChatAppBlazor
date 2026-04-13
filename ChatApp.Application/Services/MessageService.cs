@@ -48,7 +48,7 @@ namespace ChatApp.Application.Services
             await _messageRepo.AddMessageAsync(message);
         }
 
-        public async Task<List<MessageDTO>> GetChatHistoryAsync(Guid userId, Guid chatId, CancellationToken token)
+        public async Task<List<MessageDTO>> GetChatMessageHistoryAsync(Guid userId, Guid chatId, CancellationToken token)
         {
             bool isArchive = await _userChatService.IsChatArchivedAsync(chatId, userId);
             DateTime? cutoffDate = null;

@@ -4,15 +4,15 @@ using System.Net.Http.Json;
 
 namespace ChatApp.ChatServer.Client.Services
 {
-    public class AuthService : IAuthService
+    public class AuthClient : IAuthClient
     {
         private readonly AppStateService _appStateService;
         private readonly HttpClient _httpClient;
         private readonly ChatHubService _chatHubService;
-        private readonly ILogger<AuthService> _logger;
+        private readonly ILogger<AuthClient> _logger;
 
 
-        public AuthService(AppStateService appStateService, HttpClient httpClient,ChatHubService chatHubService, ILogger<AuthService> logger)
+        public AuthClient(AppStateService appStateService, HttpClient httpClient,ChatHubService chatHubService, ILogger<AuthClient> logger)
         {
             _appStateService = appStateService;
             _httpClient = httpClient;

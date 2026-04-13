@@ -9,7 +9,7 @@ namespace ChatApp.Application.Interfaces.Service
     public interface IMessageService
     {
         Task SaveMessageAsync(MessageDTO messageDto);
-        Task<List<MessageDTO>> GetChatHistoryAsync(Guid userId, Guid chatId, CancellationToken token);
+        Task<List<MessageDTO>> GetChatMessageHistoryAsync(Guid userId, Guid chatId, CancellationToken token);
     
     }
 }

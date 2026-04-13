@@ -15,7 +15,7 @@ namespace ChatApp.ChatHub.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class MessageController : Controller
+    public class MessageController : AppControllerBase
     {
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly IChatService _chatService;
@@ -28,28 +28,12 @@ namespace ChatApp.ChatHub.Controllers
             _readStatusService = readStatusService;
             _chatService = chatService;
         }
-        //[Authorize]
-        //[HttpGet]
-        //public async Task<IActionResult> GetUnreadMessageCountAsync(Guid chatId, CancellationToken c)
-        //{
-        //    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        //    if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
-        //    {
-        //        return Unauthorized();
-        //    }
-        //    await _readStatusService.MarkChatMessagesAsReadAsync(userGuid, chatId,ct);
-        //}
-        [Authorize]
         [HttpPost]
         public async Task<IActionResult> SendChatMessageAsync([FromBody] MessageDTO dto)
         {
             try
             {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
-                {
-                    return Unauthorized();
-                }
+                var userId = CurrentUserId;
                 if (dto.ChatID == Guid.Empty) return BadRequest();
 
                 await _messageService.SaveMessageAsync(dto);
@@ -67,5 +51,31 @@ namespace ChatApp.ChatHub.Controllers
                 }
             }
         }
+        [HttpGet("{chatId}/history")]
+        public async Task<ActionResult<List<MessageDTO>>> GetChatMessageHistoryAsync([FromRoute] Guid chatId, CancellationToken ct)
+        {
+            var userId = CurrentUserId;
+            if (chatId == Guid.Empty) return BadRequest();
+            List<MessageDTO> messages = await _messageService.GetChatMessageHistoryAsync(userId, chatId, ct);
+
+            return Ok(messages);
+        }
+        [HttpPatch("chat/{chatId}/read/{messageId}")]
+        public async Task<IActionResult> MarkMessageAsReadAsync([FromRoute] Guid chatId, [FromRoute] Guid messageId)
+        {
+            var userId = CurrentUserId;
+            if (chatId == Guid.Empty) return BadRequest();
+            await _readStatusService.MarkMessageAsReadAsync(userId, chatId,messageId);
+            return Ok();
+        }
+        [HttpPatch("chat/{chatId}/read-all")]
+        public async Task<IActionResult> MarkAllMessagesAsReadAsync([FromRoute] Guid chatId,CancellationToken ct)
+        {
+            var userId = CurrentUserId;
+            if (chatId == Guid.Empty) return BadRequest();
+            await _readStatusService.MarkAllMessagesAsReadAsync(userId, chatId, ct);
+            return Ok();
+        }
     }
 }
+

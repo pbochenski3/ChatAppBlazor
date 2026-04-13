@@ -12,11 +12,13 @@ namespace ChatApp.ChatServer.Client.Services
     public class AppStateService : ITokenProvider
     {
         private readonly IJSRuntime _js;
+        private readonly NavigationManager _navManager;
         private const string UserKey = "current_user_session";
         private const string ChatKey = "current_user_chat";
-        public AppStateService(IJSRuntime js)
+        public AppStateService(IJSRuntime js, NavigationManager navManager)
         {
             _js = js;
+            _navManager = navManager;
         }
         public bool IsInitialized { get; private set; } = false;
         public string? Message { get; set; }
@@ -73,6 +75,8 @@ namespace ChatApp.ChatServer.Client.Services
             Message = "You have been logged out.";
             await _js.InvokeVoidAsync("localStorage.removeItem", UserKey);
             await _js.InvokeVoidAsync("localStorage.removeItem", ChatKey);
+            _navManager.NavigateTo("/");
+
         }
     }
 }

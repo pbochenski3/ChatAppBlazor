@@ -97,16 +97,6 @@ public class ChatHubService : IAsyncDisposable
             await OnAppReload.Invoke(target);
         }
     }
-    public async Task MarkMessageAsReadAsync(Guid chatId, Guid messageId)
-    {
-        if (HubConnection == null) return;
-        await HubConnection.InvokeAsync("MarkMessageAsReadAsync", chatId, messageId);
-    }
-    public async Task MarkChatMessagesAsReadAsync(Guid chatId, CancellationToken token)
-    {
-        if (HubConnection == null) return;
-        await HubConnection.InvokeAsync("MarkChatMessagesAsReadAsync", chatId, token);
-    }
     public async Task JoinChatGroupSignalAsync(Guid chatId)
     {
         if (HubConnection == null) return;
@@ -145,29 +135,6 @@ public class ChatHubService : IAsyncDisposable
     {
         return await HubConnection.InvokeAsync<string>("GetUserAvatarUrlAsync");
     }
-    public async Task<UserChatDTO?> GetChatDetailsAsync(Guid chatId, CancellationToken token)
-    {
-        if (HubConnection == null) return null;
-        return await HubConnection.InvokeAsync<UserChatDTO?>("GetChatDetailsAsync", chatId, token);
-    }
-    public async Task RestoreChatAsync(Guid chatId)
-    {
-        if (HubConnection == null) return;
-        await HubConnection.InvokeAsync("RestoreChatAsync", chatId);
-    }
-    public async Task<List<MessageDTO>> GetChatHistoryAsync(Guid chatId, CancellationToken token)
-    {
-        if (HubConnection == null) return new List<MessageDTO>();
-        try
-        {
-            return await HubConnection.InvokeAsync<List<MessageDTO>>("GetChatHistoryAsync", chatId, token);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to load chat messages for ChatId: {ChatId}", chatId);
-            return new List<MessageDTO>();
-        }
-    }
     public async Task<List<InviteDTO>> GetUserInvitesAsync()
     {
         if (HubConnection == null) return new List<InviteDTO>();
@@ -183,16 +150,10 @@ public class ChatHubService : IAsyncDisposable
         if (HubConnection == null) return null;
         return await HubConnection.InvokeAsync<ContactDTO?>("GetContactByIdAsync", contactId);
     }
-
     public async Task SendContactInviteAsync(Guid receiverId)
     {
         if (HubConnection == null) return;
         await HubConnection.InvokeAsync("SendContactInviteAsync", receiverId);
-    }
-    public async Task<bool> IsChatArchivedAsync(Guid chatId, Guid contactId)
-    {
-        if (HubConnection == null) return false;
-        return await HubConnection.InvokeAsync<bool>("IsChatArchivedAsync", chatId, contactId);
     }
     public async Task HandleInviteActionAsync(Guid inviteId, bool status)
     {
@@ -203,11 +164,6 @@ public class ChatHubService : IAsyncDisposable
     {
         if (HubConnection == null) return;
         await HubConnection.InvokeAsync("RemoveContactAsync", chatId);
-    }
-    public async Task ChangeChatNameAsync(Guid chatId, string chatName)
-    {
-        if (HubConnection == null) return;
-        await HubConnection.InvokeAsync("ChangeChatNameAsync", chatId, chatName);
     }
     public async Task<List<ContactDTO>> GetContactListAsync()
     {
@@ -253,11 +209,6 @@ public class ChatHubService : IAsyncDisposable
     {
         if (HubConnection == null) return;
         await HubConnection.InvokeAsync("LeaveChatGroupAsync", chatId);
-    }
-    public async Task DeleteChatAsync(Guid chatId)
-    {
-        if (HubConnection == null) return;
-        await HubConnection.InvokeAsync("DeleteChatAsync", chatId);
     }
     public async ValueTask DisposeAsync()
     {
