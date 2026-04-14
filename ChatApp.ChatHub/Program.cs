@@ -92,6 +92,8 @@ builder.Services.AddScoped<IChatReadStatusService, ChatReadStatusService>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 //SignalR - UserIdProvider
 builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+// Connection tracker for debugging SignalR connections
+builder.Services.AddSingleton<ChatApp.ChatHub.Services.ConnectionTracker>();
 //JWT
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 //UserChat

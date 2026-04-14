@@ -25,7 +25,7 @@ namespace ChatApp.Application.Services.Chats
             _messageRepo = messageRepo;
         }
 
-        public async Task CreatePrivateChatAsync(Guid userId1, Guid userId2)
+        public async Task<Guid> CreatePrivateChatAsync(Guid userId1, Guid userId2)
         {
             var chat = await _chatRepo.GetChatAsync(userId1, userId2);
 
@@ -34,7 +34,7 @@ namespace ChatApp.Application.Services.Chats
                 var user1 = await _userRepo.GetByIdAsync(userId1);
                 var user2 = await _userRepo.GetByIdAsync(userId2);
 
-                var newChat = new Chat
+                chat = new Chat
                 {
                     ChatID = Guid.CreateVersion7(),
                     CreatedAt = DateTime.UtcNow,
@@ -42,27 +42,27 @@ namespace ChatApp.Application.Services.Chats
                     UserChats = new List<UserChat>(),
                 };
 
-                newChat.UserChats.Add(new UserChat
+                chat.UserChats.Add(new UserChat
                 {
                     UserID = userId1,
-                    ChatID = newChat.ChatID,
+                    ChatID = chat.ChatID,
                     ChatName = user2.Username,
                     IsArchive = false,
                 });
 
-                newChat.UserChats.Add(new UserChat
+                chat.UserChats.Add(new UserChat
                 {
                     UserID = userId2,
-                    ChatID = newChat.ChatID,
+                    ChatID = chat.ChatID,
                     ChatName = user1.Username,
                     IsArchive = false,
                 });
 
-                await _chatRepo.AddChatAsync(newChat);
+                await _chatRepo.AddChatAsync(chat);
                 var systemMessage = new Message
                 {
                     MessageID = Guid.CreateVersion7(),
-                    ChatID = newChat.ChatID,
+                    ChatID = chat.ChatID,
                     Content = "Ten czat nie ma jeszcze wiadomości! Przywitaj się!",
                     SentAt = DateTime.UtcNow,
                     MessageType = MessageType.System
@@ -73,13 +73,9 @@ namespace ChatApp.Application.Services.Chats
             {
                 await _userChatRepo.SetChatAccessibilityAsync(chat.ChatID, true);
             }
-        }
-
-        public async Task<Guid?> GetPrivateChatIdAsync(Guid userId, Guid contactUserId, CancellationToken token)
-        {
-            var chat =  await _chatRepo.GetChatAsync(userId, contactUserId, token);
             return chat.ChatID;
         }
+
 
         public async Task<Guid> GetReceiverUserIdAsync(Guid chatId, Guid userId, CancellationToken token)
         {

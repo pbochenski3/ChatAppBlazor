@@ -18,7 +18,7 @@ namespace ChatApp.ChatHub.Controllers
             _hubContext = hubContext;
             _privateChatService = privateChatService;
         }
-        [HttpGet("list")]
+        [HttpGet]
         public async Task<IActionResult> GetUserContactsAsync(CancellationToken ct)
         {
             var contacts = await _contactService.GetUserContactsAsync(CurrentUserId);

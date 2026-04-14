@@ -1,6 +1,7 @@
 ﻿using Azure.Core;
 using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
+using ChatApp.Application.DTO.Requests;
 using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Service;

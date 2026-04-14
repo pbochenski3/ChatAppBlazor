@@ -1,4 +1,5 @@
 @page "/hub"
+@using ChatApp.Application.DTO.Requests
 @implements IAsyncDisposable
 @inject ILogger<BlazorHub> _logger
 
@@ -18,7 +19,7 @@
             OnContactInvited="HandleContactInvite"
             OnContactSelected="HandleChatLoadAsync"
             OnProfileOpen="HandleOpenProfile"
-            OnInviteAction="@(args => HandleContactStatus(args.InviteId, args.Status))"
+            OnInviteAction="HandleContactStatus"
             SidebarItem="_sidebarItems"
             UsersList="_foundUsers"
             InvitesList="_receivedInvites"
@@ -143,12 +144,9 @@
         _isProfileOpen = open;
         await InvokeAsync(StateHasChanged);
     }
-    private async Task HandleInviteStatusReceivedAsync(string status, Guid contactId)
+    private async Task HandleInviteStatusReceivedAsync(string status)
     {
-        CancellationToken token = default;
-        var chatTask = _chatApiClient.GetChatDetailsAsync(contactId, token);
         var notifyTask = ShowNotificationAsync(status);
-        await Task.WhenAll(chatTask, notifyTask);
     }
     private async Task HandleUnifiedReloadAsync(ReloadTarget target)
     {
@@ -200,7 +198,7 @@
     }
     private async Task HandleInviteLoadAsync(bool reload)
     {
-        _receivedInvites = await _chatHubService.GetUserInvitesAsync();
+        _receivedInvites = await _inviteApiClient.GetUserInvitesAsync();
         _isPending = false;
         await InvokeAsync(StateHasChanged);
         _logger.LogInformation("Invite reload triggered for user {Username}", _currentUser.Username);
@@ -274,7 +272,7 @@
     }
     private async Task HandleContactInvite(Guid contactId)
     {
-        await _chatHubService.SendContactInviteAsync(contactId);
+        await _inviteApiClient.SendContactInviteAsync(contactId);
         _foundUsers.RemoveAll(u => u.UserID == contactId);
         _isSearchingGlobal = false;
     }
@@ -321,11 +319,11 @@
             _ = ShowNotificationAsync($"{ex.Message}");
         }
     }
-    private async Task HandleContactStatus(Guid inviteId, bool status)
+    private async Task HandleContactStatus(InviteActionRequest request)
     {
         try
         {
-            await _chatHubService.HandleInviteActionAsync(inviteId, status);
+            await _inviteApiClient.HandleInviteActionAsync(request);
         }
         catch (Exception ex)
         {

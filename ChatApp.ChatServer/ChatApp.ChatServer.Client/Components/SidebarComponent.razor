@@ -1,12 +1,12 @@
 @using ChatApp.Application.DTO.Chats
+@using ChatApp.Application.DTO.Requests
 @using ChatApp.Application.Interfaces
 @using ChatApp.Application.DTO.Chats
-@inject AppStateService AppState
 <aside class="sidebar">
     <div class="sidebar-header">
         <div class="user-info-wrapper">
-            <img src="@(AppState?.CurrentUser?.AvatarUrl ?? String.Empty)" class="user-avatar-logged" onclick="@OpenProfile">
-            <div class="user-detail">Witaj @(AppState?.CurrentUser?.Username ?? String.Empty)</div>
+            <img src="@(_appStateService?.CurrentUser?.AvatarUrl ?? String.Empty)" class="user-avatar-logged" onclick="@OpenProfile">
+            <div class="user-detail">Witaj @(_appStateService?.CurrentUser?.Username ?? String.Empty)</div>
         </div>
         <div class="nav-tabs">
             <button class="@(currentView == View.Contacts ? "active" : "")" @onclick="() => currentView = View.Contacts">
@@ -51,7 +51,7 @@
                                     @if(chat.LastMessage.LastMessageContent != null)
                                     {
                                     <p class="contact-name">
-                                        @((chat.LastMessage.LastMessageSender == AppState.CurrentUser.Username)
+                                            @((chat.LastMessage.LastMessageSender == _appStateService.CurrentUser.Username)
                                                                 ? $"Ty: {chat.LastMessage.LastMessageContent}"
                                                                 : $"{chat.LastMessage.LastMessageSender}: {chat.LastMessage.LastMessageContent}")
                                     </p>
@@ -84,10 +84,10 @@
                                         <span class="invite-username">@invite.SenderUsername</span>
                                     </div>
                                     <div class="invite-actions">
-                                        <button class="btn-accept" @onclick="() => HandleInviteResponse(invite.InviteID, true)">
+                                        <button class="btn-accept" @onclick="() => HandleInviteResponse(invite.InviteID, InviteStatus.Accepted)">
                                             Akceptuj
                                         </button>
-                                        <button class="btn-decline" @onclick="() => HandleInviteResponse(invite.InviteID, false)">
+                                        <button class="btn-decline" @onclick="() => HandleInviteResponse(invite.InviteID, InviteStatus.Rejected)">
                                             Odrzuć
                                         </button>
                                     </div>
@@ -165,7 +165,7 @@
     [Parameter] public EventCallback<string> OnSearchRequested { get; set; }
     [Parameter] public EventCallback<ContactSelectedArgs> OnContactSelected { get; set; }
     [Parameter] public EventCallback<Guid> OnContactInvited { get; set; }
-    [Parameter] public EventCallback<(Guid InviteId,bool Status)> OnInviteAction { get; set; }
+    [Parameter] public EventCallback<InviteActionRequest> OnInviteAction { get; set; }
     [Parameter] public EventCallback<bool> OnProfileOpen { get; set; }
     [Parameter] public List<UserChatDTO> SidebarItem { get; set; } = new List<UserChatDTO>();
     [Parameter] public List<UserDTO> UsersList { get; set; } = new List<UserDTO>();
@@ -204,9 +204,10 @@
 
         await OnSearchRequested.InvokeAsync(globalSearchQuery);
     }
-    private async Task HandleInviteResponse(Guid InviteId,bool Response)
+    private async Task HandleInviteResponse(Guid inviteId,InviteStatus response)
     {
-        await OnInviteAction.InvokeAsync((InviteId,Response));
+        var chatId = _appStateService.CurrentChat?.Identity?.ChatID ?? Guid.Empty;
+        await OnInviteAction.InvokeAsync(new InviteActionRequest(inviteId,response,chatId));
     }
     private async Task OpenProfile()
     {

@@ -1,4 +1,5 @@
 using ChatApp.Application.Interfaces.Repository;
+using ChatApp.Domain.Enums;
 using ChatApp.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

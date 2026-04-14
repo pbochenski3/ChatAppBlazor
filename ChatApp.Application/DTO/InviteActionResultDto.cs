@@ -4,9 +4,9 @@ using System.Text;
 
 namespace ChatApp.Application.DTO
 {
-    public record ChangeChatNameRequest(
-        string NewName,
-        string AdminName
+    public record InviteActionResultDto(
+        Guid senderId,
+        Guid receiverId,
+        Guid chatId
         );
-
 }

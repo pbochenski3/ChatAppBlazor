@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ChatApp.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -17,6 +18,4 @@ namespace ChatApp.Domain.Models
         public InviteStatus Status { get; set; } 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
-
-    public enum InviteStatus { Pending, Accepted, Rejected }
 }

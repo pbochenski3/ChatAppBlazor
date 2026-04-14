@@ -12,7 +12,7 @@ public class ChatHubService : IAsyncDisposable
     public event Action<string>? OnContactDelete;
     public event Action<string, UserDTO>? LoginStatusMessage;
     public event Func<MessageDTO, Task>? OnMessageReceived;
-    public event Func<string, Guid, Task>? InviteStatusMessage;
+    public event Func<string,Task>? InviteStatusMessage;
     public event Func<ContactSelectedArgs, Task>? OnChatLoad;
     public event Func<ReloadTarget, Task>? OnAppReload;
     public event Func<Guid, Task>? OnUserInChatReload;
@@ -46,11 +46,11 @@ public class ChatHubService : IAsyncDisposable
             }
         });
 
-        HubConnection.On<string, Guid>("ReceiveStatus", async (status, contactId) =>
+        HubConnection.On<string>("ReceiveStatus", async (status) =>
         {
             if (InviteStatusMessage != null)
             {
-                await InviteStatusMessage.Invoke(status, contactId);
+                await InviteStatusMessage.Invoke(status);
             }
         });
 
@@ -135,27 +135,7 @@ public class ChatHubService : IAsyncDisposable
     {
         return await HubConnection.InvokeAsync<string>("GetUserAvatarUrlAsync");
     }
-    public async Task<List<InviteDTO>> GetUserInvitesAsync()
-    {
-        if (HubConnection == null) return new List<InviteDTO>();
-        return await HubConnection.InvokeAsync<List<InviteDTO>>("GetUserInvitesAsync");
-    }
 
-    public async Task<ContactDTO?> GetContactByIdAsync(Guid contactId)
-    {
-        if (HubConnection == null) return null;
-        return await HubConnection.InvokeAsync<ContactDTO?>("GetContactByIdAsync", contactId);
-    }
-    public async Task SendContactInviteAsync(Guid receiverId)
-    {
-        if (HubConnection == null) return;
-        await HubConnection.InvokeAsync("SendContactInviteAsync", receiverId);
-    }
-    public async Task HandleInviteActionAsync(Guid inviteId, bool status)
-    {
-        if (HubConnection == null) return;
-        await HubConnection.InvokeAsync("HandleInviteActionAsync", inviteId, status);
-    }
     public async Task<HashSet<UserDTO>> GetChatUsersAsync(Guid chatId)
     {
         if (HubConnection == null) return new HashSet<UserDTO>();
