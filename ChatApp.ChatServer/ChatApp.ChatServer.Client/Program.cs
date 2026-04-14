@@ -9,7 +9,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddScoped<ChatHubService>();
 builder.Services.AddScoped<AppStateService>();
 builder.Services.AddScoped<ChatSettingsService>();
-builder.Services.AddScoped<ImageService>();
+builder.Services.AddScoped<IImageApiClient, ImageApiClient>();
 builder.Services.AddScoped<IAuthClient, AuthClient>();
 builder.Services.AddScoped<IChatApiClient, ChatApiClient>();
 builder.Services.AddScoped<IContactApiClient, ContactApiClient>();

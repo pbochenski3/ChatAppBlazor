@@ -1,4 +1,5 @@
-﻿using ChatApp.Domain.Enums;
+﻿using ChatApp.ChatServer.Client.Services.Api.Interfaces;
+using ChatApp.Domain.Enums;
 using ChatApp.Domain.Models;
 using ChatApp.Domain.Shared;
 using Microsoft.AspNetCore.Components.Forms;
@@ -9,11 +10,11 @@ using System.Net.NetworkInformation;
 
 namespace ChatApp.ChatServer.Client.Services.Api
 {
-    public class ImageService
+    public class ImageApiClient : IImageApiClient
     {
         private readonly HttpClient _httpClient;
         private const string UploadFieldName = "file";
-        public ImageService(HttpClient httpClient)
+        public ImageApiClient(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
