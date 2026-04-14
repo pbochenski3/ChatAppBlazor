@@ -1,8 +1,5 @@
 ﻿﻿@using ChatApp.Application.DTO.Chats
 @using ChatApp.Domain.Enums
-@inject AppStateService AppStateService
-@inject ChatHubService ChatHubService
-@inject ImageApiClient ImageService
 @inject ILogger<ImageComponent> Logger
 <div class="profile-wrapper">
     <div class="avatar-wrapper">
@@ -49,8 +46,8 @@
     {
         try
         {
-            selectedFile = await ImageService.GetBrowserFileAsync(e);
-            var base64 = await ImageService.GetImageStringAsync(selectedFile);
+            selectedFile = await _imageService.GetBrowserFileAsync(e);
+            var base64 = await _imageService.GetImageStringAsync(selectedFile);
             _tempAvatarUrl = $"data:{selectedFile.ContentType};base64,{base64}";
         }
         catch (Exception ex)
@@ -68,20 +65,20 @@
         try
         {
             isUploading = true;
-            var fileData = await ImageService.GetFileDataAsync(selectedFile);
+            var fileData = await _imageService.GetFileDataAsync(selectedFile);
             var uploadType = UploadType.UserAvatar;
             Guid? targetId = null;
             if (IsGroup)
             {
                 uploadType = UploadType.GroupAvatar;
-                targetId = AppStateService.CurrentChat.Identity.ChatID;
+                targetId = _appStateService.CurrentChat.Identity.ChatID;
             }
-            await ImageService
+            await _imageService
         .UploadImageAsync
         (
             fileData,
             selectedFile.Name,
-            AppStateService.CurrentUser.Token,
+            _appStateService.CurrentUser.Token,
             uploadType,
             targetId
         );

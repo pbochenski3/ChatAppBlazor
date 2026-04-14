@@ -1,5 +1,6 @@
 using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Requests;
+using ChatApp.Application.DTO.Results;
 using ChatApp.Domain.Enums;
 using System;
 using System.Collections.Generic;

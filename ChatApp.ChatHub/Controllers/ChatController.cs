@@ -133,6 +133,14 @@ namespace ChatApp.ChatHub.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpGet("{chatId}/existing")]
+        public async Task<IActionResult> CheckGroupChatExistsAsync([FromRoute] Guid chatId, CancellationToken ct)
+        {
+            var userId = CurrentUserId;
+            if (chatId == Guid.Empty) return BadRequest();
+            var exists = await _chatService.IsChatExistingAsync(chatId, userId);
+            return Ok(exists);
+        }
         public async Task<string> SaveImageAsync(IFormFile file,UploadType type, Guid? chatId = null, Guid? userId = null)
         {
             var url = string.Empty;
@@ -148,6 +156,21 @@ namespace ChatApp.ChatHub.Controllers
                     break;
             }
             return url;
+        }
+        [HttpGet("{chatId}/usersId")]
+        public async Task<IActionResult> GetChatUsersAsync([FromRoute] Guid chatId, CancellationToken ct)
+        {
+            try
+            {
+                var ids = await _chatService.GetUsersInChatIdAsync(chatId);
+
+                return Ok(ids);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
     }
 }

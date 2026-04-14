@@ -20,7 +20,7 @@ namespace ChatApp.ChatServer.Client.Services.Api
         }
         public async Task<List<ContactDTO>> GetContactListAsync()
         {
-            var contacts = await _httpClient.GetFromJsonAsync<List<ContactDTO>>("api/contacts")
+            var contacts = await _httpClient.GetFromJsonAsync<List<ContactDTO>>("api/contact")
                            ?? new List<ContactDTO>();
             return contacts;
         }

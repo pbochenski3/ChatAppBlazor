@@ -38,7 +38,7 @@ namespace ChatApp.Application.Services.Chats
             await _chatRepo.TryDeleteChatIfEmptyAsync(chatId);
         }
 
-        public async Task<bool> IsGroupChatExistingAsync(Guid chatId, Guid userId)
+        public async Task<bool> IsChatExistingAsync(Guid chatId, Guid userId)
         {
             return await _chatRepo.CheckIfGroupExist(chatId, userId);
         }

@@ -97,11 +97,6 @@ public class ChatHubService : IAsyncDisposable
             await OnAppReload.Invoke(target);
         }
     }
-    public async Task JoinChatGroupSignalAsync(Guid chatId)
-    {
-        if (HubConnection == null) return;
-        await HubConnection.InvokeAsync("JoinChatGroupSignalAsync", chatId);
-    }
     public async Task StartAsync()
     {
         if (HubConnection != null && HubConnection.State == HubConnectionState.Connected)
@@ -131,50 +126,24 @@ public class ChatHubService : IAsyncDisposable
             HubConnection = null;
         }
     }
+    //public async Task<List<UserChatDTO>> GetUserChatListAsync()
+    //{
+    //    if (HubConnection == null) return new List<UserChatDTO>();
+    //    return await HubConnection.InvokeAsync<List<UserChatDTO>>("GetUserChatListAsync");
+    //}
+    public async Task JoinChatGroupSignalAsync(Guid chatId)
+    {
+        if (HubConnection == null) return;
+        await HubConnection.InvokeAsync("JoinChatGroupSignalAsync", chatId);
+    }
     public async Task<string> GetUserAvatarUrlAsync()
     {
         return await HubConnection.InvokeAsync<string>("GetUserAvatarUrlAsync");
-    }
-
-    public async Task<HashSet<UserDTO>> GetChatUsersAsync(Guid chatId)
-    {
-        if (HubConnection == null) return new HashSet<UserDTO>();
-        return await HubConnection.InvokeAsync<HashSet<UserDTO>>("GetChatUsersAsync", chatId);
-    }
-    public async Task<List<UserChatDTO>> GetUserChatListAsync()
-    {
-        if (HubConnection == null) return new List<UserChatDTO>();
-        return await HubConnection.InvokeAsync<List<UserChatDTO>>("GetUserChatListAsync");
-    }
-    public async Task CreateGroupChatAsync(Guid chatId, HashSet<Guid> userIdsToAdd)
-    {
-        if (HubConnection == null) return;
-        await HubConnection.InvokeAsync("CreateGroupChatAsync", chatId, userIdsToAdd);
-    }
-    public async Task<HashSet<Guid>> GetChatUsersIdsAsync(Guid chatId)
-    {
-        if (HubConnection == null) return new HashSet<Guid>();
-        return await HubConnection.InvokeAsync<HashSet<Guid>>("GetChatUsersIdsAsync", chatId);
-    }
-    public async Task<bool> IsGroupChatExistingAsync(Guid chatId)
-    {
-        if (HubConnection == null) return false;
-        return await HubConnection.InvokeAsync<bool>("IsGroupChatExistingAsync", chatId);
-    }
-    public async Task AddUsersToGroupChatAsync(Guid chatId, HashSet<Guid> userIdsToAdd)
-    {
-        if (HubConnection == null) return;
-        await HubConnection.InvokeAsync("AddUsersToGroupChatAsync", chatId, userIdsToAdd);
     }
     public async Task<List<UserChatDTO>> GetSidebarItemsAsync()
     {
         if (HubConnection == null) return new List<UserChatDTO>();
         return await HubConnection.InvokeAsync<List<UserChatDTO>>("GetSidebarItemsAsync");
-    }
-    public async Task LeaveChatGroupAsync(Guid chatId)
-    {
-        if (HubConnection == null) return;
-        await HubConnection.InvokeAsync("LeaveChatGroupAsync", chatId);
     }
     public async ValueTask DisposeAsync()
     {

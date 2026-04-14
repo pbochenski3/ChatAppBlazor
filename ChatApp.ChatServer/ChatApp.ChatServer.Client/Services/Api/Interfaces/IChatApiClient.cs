@@ -11,5 +11,7 @@ namespace ChatApp.ChatServer.Client.Services.Api.Interfaces
         Task<List<MessageDTO>> GetChatMessageHistoryAsync(Guid chatId, CancellationToken token);
         Task DeleteChatAsync(Guid chatId);
         Task ChangeChatNameAsync(Guid chatId, string chatName,string adminName);
+        Task<bool> IsChatExistingAsync(Guid chatId);
+        Task<HashSet<Guid>> GetChatUsersIdsAsync(Guid chatId);
     }
 }

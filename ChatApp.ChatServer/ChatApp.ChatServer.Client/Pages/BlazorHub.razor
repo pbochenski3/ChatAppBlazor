@@ -310,7 +310,7 @@
         {
             if (_appStateService.CurrentChat != null)
             {
-                await _chatHubService.LeaveChatGroupAsync(_appStateService.CurrentChat.Identity.ChatID);
+                await _groupChatApiClient.LeaveGroupChatAsync(_appStateService.CurrentChat.Identity.ChatID);
             }
         }
         catch (Exception ex)
@@ -426,7 +426,7 @@
         }
         try
         {
-            _chatSettingsService.UsersInChat = await _chatHubService.GetChatUsersAsync(chatId);
+            _chatSettingsService.UsersInChat = await _groupChatApiClient.GetChatUsersAsync(chatId);
             await InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
@@ -479,7 +479,7 @@
 
             try
             {
-                _chatSettingsService.UsersInChat = await _chatHubService.GetChatUsersAsync(chatInformation.Identity.ChatID);
+                _chatSettingsService.UsersInChat = await _groupChatApiClient.GetChatUsersAsync(chatInformation.Identity.ChatID);
             }
             catch (Exception ex)
             {
@@ -524,14 +524,14 @@
     {
         if (_appStateService.CurrentChat != null)
         {
-            await _chatHubService.AddUsersToGroupChatAsync(_appStateService.CurrentChat.Identity.ChatID, usersToAdd);
+            await _groupChatApiClient.AddUsersToGroupChatAsync(_appStateService.CurrentChat.Identity.ChatID, usersToAdd);
         }
     }
     private async Task HandleChatUsersLoadAsync()
     {
         if (_appStateService.CurrentChat != null)
         {
-            await _chatHubService.GetChatUsersAsync(_appStateService.CurrentChat.Identity.ChatID);
+            await _groupChatApiClient.GetChatUsersAsync(_appStateService.CurrentChat.Identity.ChatID);
         }
     }
     private async Task HandleSidebarLock()

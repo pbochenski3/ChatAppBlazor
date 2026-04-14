@@ -14,6 +14,7 @@ builder.Services.AddScoped<IAuthClient, AuthClient>();
 builder.Services.AddScoped<IChatApiClient, ChatApiClient>();
 builder.Services.AddScoped<IContactApiClient, ContactApiClient>();
 builder.Services.AddScoped<IInviteApiClient, InviteApiClient>();
+builder.Services.AddScoped<IGroupChatApiClient, GroupChatApiClient>();
 builder.Services.AddScoped<ITokenProvider>(sp => sp.GetRequiredService<AppStateService>());
 builder.Services.AddTransient<AuthorizationHandler>();
 builder.Services.AddHttpClient("ChatAPI", client =>

@@ -1,8 +1,5 @@
 ﻿@using ChatApp.Domain.Enums
 @using System.Net.Http.Headers
-@inject AppStateService _appStateService
-@inject ImageApiClient _imageService
-@inject HttpClient _httpClient
 @inject ILogger<ChatInputComponent> _logger
 
 <div class="message-input-area @(IsArchive ? "archived-status" : "")">

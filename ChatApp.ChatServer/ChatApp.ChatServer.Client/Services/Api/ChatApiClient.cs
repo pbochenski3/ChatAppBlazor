@@ -77,12 +77,19 @@ namespace ChatApp.ChatServer.Client.Services.Api
                 //zmienic zeby wyskakiwal error a nie pusty czat
             }
         }
+        public async Task<bool> IsChatExistingAsync(Guid chatId)
+        {
+            return await _httpClient.GetFromJsonAsync<bool>($"/api/chat/{chatId}/existing");
+        }
         public async Task DeleteChatAsync(Guid chatId)
         {
                 var response = await _httpClient.DeleteAsync($"/api/chat/{chatId}");
                 response.EnsureSuccessStatusCode();
         }
-
+        public async Task<HashSet<Guid>> GetChatUsersIdsAsync(Guid chatId)
+        {
+            return await _httpClient.GetFromJsonAsync<HashSet<Guid>>($"api/chat/{chatId}/usersId");
+        }
         public async Task ChangeChatNameAsync(Guid chatId, string chatName,string adminName)
         {
             var request = new ChangeChatNameRequest(chatName,adminName);

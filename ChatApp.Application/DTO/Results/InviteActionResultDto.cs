@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChatApp.Application.DTO
+namespace ChatApp.Application.DTO.Results
 {
     public record InviteActionResultDto(
         Guid senderId,
