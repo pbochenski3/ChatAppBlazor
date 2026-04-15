@@ -1,4 +1,5 @@
 ﻿using ChatApp.Application.DTO;
+using ChatApp.Domain.Enums;
 using System.Xml.Linq;
 
 namespace ChatApp.ChatServer.Client.Services.State
@@ -17,6 +18,7 @@ namespace ChatApp.ChatServer.Client.Services.State
         public bool IsSettingsOpen { get; set;  }
         public bool IsArchive { get; set; } = false;
         public bool IsChatLocked { get; set; } = true;
+        public ChatSettingsView SettingsView { get; set; } = ChatSettingsView.Settings;
         public event Action? OnStateChanged;
         public void ToggleSettings()
         {
