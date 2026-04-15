@@ -1,22 +1,35 @@
 ﻿using ChatApp.ChatServer.Client.Services.Api;
 using ChatApp.ChatServer.Client.Services.Api.Interfaces;
 using ChatApp.ChatServer.Client.Services.State;
+using ChatApp.Domain.Enums;
 
 namespace ChatApp.ChatServer.Client.Services.Actions
 {
     public class ChatSettingsActionService
     {
+        private readonly ChatStateService _chatStateService;
         private readonly AppStateService _appStateService;
         private readonly IChatApiClient _chatApi;
+        private readonly IContactApiClient _contactApi;
         private readonly IGroupChatApiClient _groupChatApi;
         private readonly DialogService _dialogService;
+
         private readonly ILogger<ChatSettingsActionService> _logger;
-        public ChatSettingsActionService(AppStateService appStateService, IChatApiClient chatApi, IGroupChatApiClient groupChatApi, DialogService dialogService, ILogger<ChatSettingsActionService> logger)
+        public ChatSettingsActionService(
+            ChatStateService chatStateService,
+            AppStateService appStateService,
+            IChatApiClient chatApi,
+            IGroupChatApiClient groupChatApi,
+            DialogService dialogService,
+            IContactApiClient contactApi,
+            ILogger<ChatSettingsActionService> logger)
         {
+            _chatStateService = chatStateService;
             _appStateService = appStateService;
             _chatApi = chatApi;
             _groupChatApi = groupChatApi;
             _dialogService = dialogService;
+            _contactApi = contactApi;
             _logger = logger;
         }
         public void RequestDeleteChat()
@@ -70,6 +83,27 @@ namespace ChatApp.ChatServer.Client.Services.Actions
                 _logger.LogError(ex, "Error during leaving chat group");
                 // _ = ShowNotificationAsync($"{ex.Message}");
             }
+        }
+        public void RequestContactDelete(Guid chatId)
+        {
+            _dialogService.ShowConfirm(
+        "Usuwanie kontaktu",
+        "Czy na pewno chcesz usunąć ten kontakt?",
+        "Usuń",
+        "Anuluj",
+        async () => await HandleContactDeleteAsync(chatId)
+        );
+        }
+        private async Task HandleContactDeleteAsync(Guid chatId)
+        {
+
+            await _contactApi.RemoveContactAsync(chatId);
+
+        }
+        public async Task HandleLoadUsersToAddAsync()
+        {
+            _chatStateService.ReceivedContacts =  await _contactApi.GetContactListAsync();
+            _chatStateService.SettingsView = ChatSettingsView.AddUsers;
         }
         public async Task HandleChangeChatNameAsync(string chatName)
         {

@@ -1,4 +1,6 @@
-﻿using ChatApp.ChatServer.Client.Services.Api.Interfaces;
+﻿using ChatApp.Application.DTO;
+using ChatApp.ChatServer.Client.Services.Api;
+using ChatApp.ChatServer.Client.Services.Api.Interfaces;
 using ChatApp.ChatServer.Client.Services.State;
 using ChatApp.Domain.Enums;
 
@@ -8,30 +10,27 @@ namespace ChatApp.ChatServer.Client.Services.Actions
     {
         private readonly SidebarStateService _sidebarStateService;
         private readonly IContactApiClient _contactApiClient;
+        private readonly IInviteApiClient _inviteApiClient;
         private readonly AppStateService _appStateService;
         private readonly DialogService _dialogService;
         private readonly ILogger<SidebarActionService> _logger;
-        public SidebarActionService(ILogger<SidebarActionService> logger, SidebarStateService sidebarStateService, IContactApiClient contactApiClient, AppStateService appStateService, DialogService dialogService )
+        public SidebarActionService(
+            ILogger<SidebarActionService> logger,
+            SidebarStateService sidebarStateService,
+            IContactApiClient contactApiClient,
+            AppStateService appStateService,
+            DialogService dialogService,
+            IInviteApiClient inviteApiClient
+            )
         {
             _logger = logger;
             _appStateService = appStateService;
             _sidebarStateService = sidebarStateService;
             _contactApiClient = contactApiClient;
             _dialogService = dialogService;
+            _inviteApiClient = inviteApiClient;
         }
         public event Action? OnSidebarStateChanged;
-        public void RequestContactDelete()
-        {
-            _dialogService.ShowConfirm(
-        "Usuwanie kontaktu",
-        "Czy na pewno chcesz usunąć ten kontakt?",
-        "Usuń",
-        "Anuluj",
-        async () => await HandleContactDeleteAsync()
-        );
-        }
- 
-
         public async Task HandleSidebarLoadAsync(bool reload)
         {
             try
@@ -48,20 +47,6 @@ namespace ChatApp.ChatServer.Client.Services.Actions
             {
                 OnSidebarStateChanged?.Invoke();
             }
-        }
-
-        private async Task HandleContactDeleteAsync()
-        {
-
-            await _contactApiClient.RemoveContactAsync(_appStateService.CurrentChat.Identity.ChatID);
-
-        }
-        public async Task HandleLoadContactsAsync()
-        {
-            await _contactApiClient.GetContactListAsync();
-            _sidebarStateService.SidebarView = SidebarView.AddContact;
-            OnSidebarStateChanged?.Invoke();
-
         }
         public async Task HandleCounterUpdateAsync(Guid chatId, bool clean)
         {
@@ -89,6 +74,42 @@ namespace ChatApp.ChatServer.Client.Services.Actions
             {
                 await HandleSidebarLoadAsync(true);
             }
+        }
+        private async Task HandleGlobalSearch(string query)
+        {
+            _sidebarStateService.IsSearchingGlobal = true;
+            _sidebarStateService.FoundUsers = await _httpClient.GetFromJsonAsync<List<UserDTO>>($"api/user/to-invite?query={query}");
+            _sidebarStateService.IsSearchingGlobal = false;
+            StateHasChanged();
+        }
+        private async Task HandleInviteLoadAsync(bool reload)
+        {
+            _sidebarStateService.ReceivedInvites = await _inviteApiClient.GetUserInvitesAsync();
+            _sidebarStateService.IsPending = false;
+            await InvokeAsync(StateHasChanged);
+            _logger.LogInformation("Invite reload triggered for user {Username}", _currentUser.Username);
+        }
+        private async Task HandleContactInvite(Guid contactId)
+        {
+            await _inviteApiClient.SendContactInviteAsync(contactId);
+            _sidebarStateService.FoundUsers.RemoveAll(u => u.UserID == contactId);
+            _sidebarStateService.IsSearchingGlobal = false;
+        }
+        private async Task HandleSidebarMessageReloadAsync(Guid chatId, string sender, string content)
+        {
+            var itemsToUpdate = _sidebarStateService.SidebarItems.FirstOrDefault(sb => sb.Identity.ChatID == chatId);
+            if (itemsToUpdate != null)
+            {
+                itemsToUpdate.LastMessage.LastMessageContent = content;
+                itemsToUpdate.LastMessage.LastMessageSender = sender;
+            }
+
+            OnSidebarStateChanged?.Invoke();
+
+        }
+        private async Task HandleSidebarLock()
+        {
+            _sidebarStateService.IsPending = !_sidebarStateService.IsPending;
         }
     }
 

@@ -8,13 +8,13 @@
                 {
                     <button class="btn-secondary" @onclick="() => _chatStateService.SettingsView = ChatSettingsView.ChangeName">Zmień nazwe czatu</button>
                     <button class="btn-secondary" @onclick="() => _chatStateService.SettingsView = ChatSettingsView.Users">Uczestnicy</button>
-                    <button class="btn-secondary" @onclick="_sidebarActionService.HandleLoadContactsAsync">Dodaj osoby</button>
+                    <button class="btn-secondary" @onclick="_chatSettingsActionService.HandleLoadUsersToAddAsync">Dodaj osoby</button>
 
 
                     @if (!_appStateService.CurrentChat.Identity.IsGroup)
                     {
 
-                        <button class="btn-secondary btn-delete" @onclick='_sidebarActionService.RequestContactDelete'>Usuń kontakt</button>
+                        <button class="btn-secondary btn-delete" @onclick='_chatSettingsActionService.HandleLoadUsersToAddAsync'>Usuń kontakt</button>
                     }
                     else
                     {
@@ -132,6 +132,12 @@
             _chatStateService.SettingsView = ChatSettingsView.Settings;
             await _chatSettingsActionService.HandleChangeChatNameAsync(name);
         }
+    }
+    private async Task HandleContactDeleteAsync()
+    {
+
+        _chatSettingsActionService.RequestContactDelete(_appStateService.CurrentChat.Identity.ChatID);
+
     }
 
     private async Task HandleChatLeaveAsync()

@@ -51,6 +51,7 @@ namespace ChatApp.ChatServer.Client.Services.Actions
                 await _sidebarActionService.HandleCounterUpdateAsync(dto.ChatID, false);
             }
         }
+
         private async void MarkAsRead(Guid chatId, Guid messageId)
         {
             try

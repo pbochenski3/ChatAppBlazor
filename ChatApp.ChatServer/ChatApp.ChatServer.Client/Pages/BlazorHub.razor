@@ -143,13 +143,7 @@
             StateHasChanged();
         });
     }
-    private async Task HandleGlobalSearch(string query)
-    {
-        _sidebarStateService.IsSearchingGlobal = true;
-        _sidebarStateService.FoundUsers = await _httpClient.GetFromJsonAsync<List<UserDTO>>($"api/user/to-invite?query={query}");
-        _sidebarStateService.IsSearchingGlobal = false;
-        StateHasChanged();
-    }
+
     private async Task ShowNotificationAsync(string message, int durationInSeconds = 5)
     {
         _notification = message;
@@ -168,13 +162,6 @@
             await _sidebarActionService.HandleSidebarLoadAsync(reload);
             await InvokeAsync(StateHasChanged);
         }
-    }
-    private async Task HandleInviteLoadAsync(bool reload)
-    {
-        _sidebarStateService.ReceivedInvites = await _inviteApiClient.GetUserInvitesAsync();
-        _sidebarStateService.IsPending = false;
-        await InvokeAsync(StateHasChanged);
-        _logger.LogInformation("Invite reload triggered for user {Username}", _currentUser.Username);
     }
     private async Task HandleGroupAvatarReloadAsync(string newAvatarUrl, Guid chatId)
     {
@@ -226,96 +213,6 @@
         await InvokeAsync(StateHasChanged);
 
     }
-    private async Task HandleContactInvite(Guid contactId)
-    {
-        await _inviteApiClient.SendContactInviteAsync(contactId);
-        _sidebarStateService.FoundUsers.RemoveAll(u => u.UserID == contactId);
-        _sidebarStateService.IsSearchingGlobal = false;
-    }
-    private async Task HandleContactDelete()
-    {
-        try
-        {
-            if (_appStateService.CurrentChat != null)
-            {
-                await _contactApiClient.RemoveContactAsync(_appStateService.CurrentChat.Identity.ChatID);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during contact deletion");
-            _ = ShowNotificationAsync($"{ex.Message}");
-        }
-    }
-    private async Task HandleContactStatus(InviteActionRequest request)
-    {
-        try
-        {
-            await _inviteApiClient.HandleInviteActionAsync(request);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during contact status update");
-            _ = ShowNotificationAsync($"{ex.Message}");
-        }
-    }
-    private async Task HandleContactLoad()
-    {
-        try
-        {
-            _chatStateService.IsSettingsOpen = true;
-            _chatStateService.ReceivedContacts = await _contactApiClient.GetContactListAsync();
-            _logger.LogInformation("Contacts loaded");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during contacts loading");
-        }
-        finally
-        {
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-    private async Task HandleSidebarMessageReloadAsync(Guid chatId, string sender,string content)
-    {
-        var itemsToUpdate = _sidebarStateService.SidebarItems.FirstOrDefault(sb => sb.Identity.ChatID == chatId);
-        if (itemsToUpdate != null)
-        {
-            itemsToUpdate.LastMessage.LastMessageContent = content;
-            itemsToUpdate.LastMessage.LastMessageSender = sender;
-        }
-
-        await InvokeAsync(StateHasChanged);
-
-    }
-    private async Task HandleCounterUpdateAsync(Guid chatId, bool clean)
-    {
-        var index = _sidebarStateService.SidebarItems.FindIndex(sb => sb.Identity.ChatID == chatId);
-
-        if (index != -1)
-        {
-            if (clean)
-            {
-                _sidebarStateService.SidebarItems[index].State.UnreadMessageCount = 0;
-                _logger.LogInformation("Counter cleared for: {ChatId}", chatId);
-            }
-            else
-            {
-                var updatedItem = _sidebarStateService.SidebarItems[index];
-                updatedItem.State.UnreadMessageCount += 1;
-
-                _sidebarStateService.SidebarItems.RemoveAt(index);
-                _sidebarStateService.SidebarItems.Insert(0, updatedItem);
-
-                _logger.LogInformation("Counter increased for: {ChatId}. Current: {Count}", chatId, updatedItem.State.UnreadMessageCount);
-            }
-            await InvokeAsync(StateHasChanged);
-        }
-        else if (!clean)
-        {
-            await _sidebarActionService.HandleSidebarLoadAsync(true);
-        }
-    }
     private async Task HandleUserOnGroupLoadAsync(Guid chatId)
     {
         if (_appStateService.CurrentChat?.Identity.ChatID != chatId)
@@ -338,10 +235,6 @@
         {
             await _groupChatApiClient.GetChatUsersAsync(_appStateService.CurrentChat.Identity.ChatID);
         }
-    }
-    private async Task HandleSidebarLock()
-    {
-        _sidebarStateService.IsPending = !_sidebarStateService.IsPending;
     }
     public async ValueTask DisposeAsync()
     {
