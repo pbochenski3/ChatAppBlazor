@@ -100,6 +100,7 @@ namespace ChatApp.ChatServer.Client.Services.Actions
             await _contactApi.RemoveContactAsync(chatId);
 
         }
+
         public async Task HandleLoadUsersToAddAsync()
         {
             _chatStateService.ReceivedContacts =  await _contactApi.GetContactListAsync();

@@ -78,16 +78,16 @@ namespace ChatApp.ChatServer.Client.Services.Actions
         private async Task HandleGlobalSearch(string query)
         {
             _sidebarStateService.IsSearchingGlobal = true;
-            _sidebarStateService.FoundUsers = await _httpClient.GetFromJsonAsync<List<UserDTO>>($"api/user/to-invite?query={query}");
+            _sidebarStateService.FoundUsers = await _contactApiClient.GetSearchedUsersList(query);
             _sidebarStateService.IsSearchingGlobal = false;
-            StateHasChanged();
+            OnSidebarStateChanged?.Invoke();
         }
         private async Task HandleInviteLoadAsync(bool reload)
         {
             _sidebarStateService.ReceivedInvites = await _inviteApiClient.GetUserInvitesAsync();
             _sidebarStateService.IsPending = false;
-            await InvokeAsync(StateHasChanged);
-            _logger.LogInformation("Invite reload triggered for user {Username}", _currentUser.Username);
+            OnSidebarStateChanged?.Invoke();
+            _logger.LogInformation("Invite reload triggered for user {Username}", _appStateService.CurrentUser.Username);
         }
         private async Task HandleContactInvite(Guid contactId)
         {

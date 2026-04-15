@@ -6,6 +6,7 @@ using ChatApp.ChatServer.Client.Services.Api.Interfaces;
 using ChatApp.Domain.Models;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.Http.Json;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ChatApp.ChatServer.Client.Services.Api
 {
@@ -30,6 +31,12 @@ namespace ChatApp.ChatServer.Client.Services.Api
             var sidebarItems = await _httpClient.GetFromJsonAsync<List<UserChatDTO>>("api/sidebar")
                 ?? new List<UserChatDTO>();
             return sidebarItems;
+        }
+        public async Task<List<UserDTO>> GetSearchedUsersList(string query)
+        {
+            var foundUsers = await _httpClient.GetFromJsonAsync<List<UserDTO>>($"api/user/to-invite?query={query}")
+                ?? new List<UserDTO>();
+            return foundUsers;
         }
         public async Task RemoveContactAsync(Guid chatId)
         {

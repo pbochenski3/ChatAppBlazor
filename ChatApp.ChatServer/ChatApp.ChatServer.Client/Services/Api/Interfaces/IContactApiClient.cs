@@ -8,5 +8,6 @@ namespace ChatApp.ChatServer.Client.Services.Api.Interfaces
         Task<List<ContactDTO>> GetContactListAsync();
         Task RemoveContactAsync(Guid chatId);
         Task<List<UserChatDTO>> GetSidebarItemsAsync();
+        Task<List<UserDTO>> GetSearchedUsersList(string query);
     }
 }
