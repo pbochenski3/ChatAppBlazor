@@ -1,4 +1,5 @@
 ﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO.Chats;
 
 namespace ChatApp.ChatServer.Client.Services.Api.Interfaces
 {
@@ -6,5 +7,6 @@ namespace ChatApp.ChatServer.Client.Services.Api.Interfaces
     {
         Task<List<ContactDTO>> GetContactListAsync();
         Task RemoveContactAsync(Guid chatId);
+        Task<List<UserChatDTO>> GetSidebarItemsAsync();
     }
 }

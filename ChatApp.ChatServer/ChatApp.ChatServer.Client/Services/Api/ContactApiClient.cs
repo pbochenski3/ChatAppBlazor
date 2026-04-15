@@ -1,4 +1,5 @@
 ﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO.Chats;
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Services.Chats;
 using ChatApp.ChatServer.Client.Services.Api.Interfaces;
@@ -23,6 +24,12 @@ namespace ChatApp.ChatServer.Client.Services.Api
             var contacts = await _httpClient.GetFromJsonAsync<List<ContactDTO>>("api/contact")
                            ?? new List<ContactDTO>();
             return contacts;
+        }
+        public async Task<List<UserChatDTO>> GetSidebarItemsAsync()
+        {
+            var sidebarItems = await _httpClient.GetFromJsonAsync<List<UserChatDTO>>("api/sidebar")
+                ?? new List<UserChatDTO>();
+            return sidebarItems;
         }
         public async Task RemoveContactAsync(Guid chatId)
         {
