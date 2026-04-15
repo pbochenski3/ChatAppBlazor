@@ -1,8 +1,8 @@
 ﻿<div class="contact-settings-panel">
     <div class="settings-content">
-        @switch (_currentView)
+        @switch (_chatStateService.SettingsView)
         {
-            case View.Settings:
+            case ChatSettingsView.Settings:
                 <div class="sidebar-header"><h3>Ustawienia</h3></div>
                 if (!_chatStateService.IsArchive)
                 {
