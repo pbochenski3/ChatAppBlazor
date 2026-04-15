@@ -28,16 +28,16 @@ namespace ChatApp.ChatServer.Client.Services.State
         {
             IsInitialized = false;
             var user = await _js.InvokeAsync<string?>("localStorage.getItem", UserKey);
-            var chat = await _js.InvokeAsync<string?>("localStorage.getItem", ChatKey);
+            //var chat = await _js.InvokeAsync<string?>("localStorage.getItem", ChatKey);
             if(!string.IsNullOrEmpty(user))
                 {
                 CurrentUser = JsonSerializer.Deserialize<UserDTO>(user);
                 };
-            if (!string.IsNullOrEmpty(chat))
-            {
-                CurrentChat = JsonSerializer.Deserialize<UserChatDTO>(chat);
-            }
-            ;
+            //if (!string.IsNullOrEmpty(chat))
+            //{
+            //    CurrentChat = JsonSerializer.Deserialize<UserChatDTO>(chat);
+            //}
+            //;
             IsInitialized = true;
         }
         public async Task<string?> GetToken()
@@ -74,7 +74,7 @@ namespace ChatApp.ChatServer.Client.Services.State
             CurrentChat = null;
             Message = "You have been logged out.";
             await _js.InvokeVoidAsync("localStorage.removeItem", UserKey);
-            await _js.InvokeVoidAsync("localStorage.removeItem", ChatKey);
+            //await _js.InvokeVoidAsync("localStorage.removeItem", ChatKey);
             _navManager.NavigateTo("/");
 
         }

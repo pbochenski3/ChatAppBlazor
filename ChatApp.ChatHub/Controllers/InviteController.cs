@@ -5,6 +5,7 @@ using ChatApp.Domain.Enums;
 using ChatApp.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 
 namespace ChatApp.ChatHub.Controllers
 {
@@ -14,10 +15,12 @@ namespace ChatApp.ChatHub.Controllers
     {
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly IInviteService _inviteService;
-        public InviteController(IHubContext<ChatHub> hubContext, IInviteService inviteService)
+        private readonly ILogger<InviteController> _logger;
+        public InviteController(IHubContext<ChatHub> hubContext, IInviteService inviteService, ILogger<InviteController> logger)
         {
             _hubContext = hubContext;
             _inviteService = inviteService;
+            _logger = logger;
         }
         [HttpGet]
         public async Task<IActionResult> GetUserInvitesAsync()
@@ -31,11 +34,13 @@ namespace ChatApp.ChatHub.Controllers
         {
             var senderId = CurrentUserId;
             await _inviteService.SendInviteAsync(senderId, receiverId);
+            _logger.LogInformation("SendContactInvite: sender={SenderId}, receiver={ReceiverId}", senderId, receiverId);
             await Task.WhenAll(
                 _hubContext.Clients.User(senderId.ToString()).SendAsync("ReceiveStatus", "Zaproszenie wysłane!"),
                 _hubContext.Clients.User(receiverId.ToString()).SendAsync("InviteReload", true),
                 _hubContext.Clients.User(receiverId.ToString()).SendAsync("ReceiveStatus", "Otrzymałeś nowe zaproszenie!")
             );
+            _logger.LogDebug("Invite notifications sent for invite from {SenderId} to {ReceiverId}", senderId, receiverId);
             return Ok();
         }
         [HttpPost("action")]

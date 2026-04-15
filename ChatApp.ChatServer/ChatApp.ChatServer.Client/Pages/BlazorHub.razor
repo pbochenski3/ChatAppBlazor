@@ -310,7 +310,9 @@
         {
             if (_appStateService.CurrentChat != null)
             {
-                await _groupChatApiClient.LeaveGroupChatAsync(_appStateService.CurrentChat.Identity.ChatID);
+                var chatId = _appStateService.CurrentChat.Identity.ChatID;
+                var username = _appStateService.CurrentUser.Username;
+                await _groupChatApiClient.LeaveGroupChatAsync(chatId, username);
             }
         }
         catch (Exception ex)
@@ -359,7 +361,7 @@
             await InvokeAsync(StateHasChanged);
             if (dto.SenderID != _currentUser.UserID)
             {
-              
+
                 _ = Task.Run(async () =>
                 {
                     try
@@ -438,19 +440,13 @@
     {
         bool isSameChat = _appStateService.CurrentChat?.Identity.ChatID == args.ChatId;
 
-        if (args.Force)
+        if (!args.Force && isSameChat)
         {
-            if (!isSameChat && _appStateService.CurrentChat != null)
-            {
-                return;
-            }
+            return;
         }
-        else
+        if(args.Force && !isSameChat)
         {
-            if (isSameChat)
-            {
-                return;
-            }
+            return;
         }
         if(_isProfileOpen)
         {

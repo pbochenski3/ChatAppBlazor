@@ -62,12 +62,45 @@ namespace ChatApp.ChatHub
 
         public override Task OnConnectedAsync()
         {
+            try
+            {
+                _logger.LogInformation("Hub connected: ConnectionId={ConnectionId}, UserIdentifier={UserIdentifier}", Context.ConnectionId, Context.UserIdentifier);
+                var nameClaim = Context.User?.Identity?.Name;
+                _logger.LogDebug("Connected user name claim: {NameClaim}", nameClaim);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error while logging OnConnectedAsync");
+            }
+
             return base.OnConnectedAsync();
+        }
+
+        public override Task OnDisconnectedAsync(Exception? exception)
+        {
+            try
+            {
+                _logger.LogInformation("Hub disconnected: ConnectionId={ConnectionId}, UserIdentifier={UserIdentifier}, Reason={Reason}", Context.ConnectionId, Context.UserIdentifier, exception?.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error while logging OnDisconnectedAsync");
+            }
+
+            return base.OnDisconnectedAsync(exception);
         }
 
         public async Task JoinChatGroupSignalAsync(Guid chatId)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, chatId.ToString());
+            try
+            {
+                _logger.LogInformation("Connection {ConnectionId} (UserId={UserId}) joined group {ChatId}", Context.ConnectionId, Context.UserIdentifier, chatId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Failed to log JoinChatGroupSignalAsync");
+            }
         }
   
         public async Task<string> GetUserAvatarUrlAsync()

@@ -23,9 +23,9 @@ namespace ChatApp.ChatServer.Client.Services.Api
         {
             await _httpClient.PostAsJsonAsync($"api/groupchat/{chatId}/add-users", userIdsToAdd);
         }
-        public async Task LeaveGroupChatAsync(Guid chatId)
+        public async Task LeaveGroupChatAsync(Guid chatId,string username)
         {
-            var response = await _httpClient.DeleteAsync($"api/groupchat/{chatId}/remove-user");
+            var response = await _httpClient.DeleteAsync($"api/groupchat/{chatId}/{username}");
             if (!response.IsSuccessStatusCode)
                 {
                     var errorMessage = await response.Content.ReadAsStringAsync();
