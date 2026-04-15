@@ -1,5 +1,6 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
+using ChatApp.Domain.Enums;
 
 namespace ChatApp.ChatServer.Client.Services.State
 {
@@ -11,9 +12,12 @@ namespace ChatApp.ChatServer.Client.Services.State
             _logger = logger;
         }
         public bool IsPending { get; set; } = false;
+        public bool IsSearchingGlobal { get; set; } = false;
         public List<UserChatDTO> SidebarItems { get; set; } = new List<UserChatDTO>();
         public List<InviteDTO> ReceivedInvites { get; set; } = new List<InviteDTO>();
         public List<UserDTO> FoundUsers { get; set; } = new List<UserDTO>();
-        public bool IsSearchingGlobal { get; set; } = false;
+        public string GlobalSearchQuery { get; set; } = "";
+        public SidebarView SidebarView { get; set; } = SidebarView.Contacts;
+
     }
 }

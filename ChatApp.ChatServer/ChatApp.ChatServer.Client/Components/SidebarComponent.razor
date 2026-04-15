@@ -2,6 +2,7 @@
 @using ChatApp.Application.DTO.Requests
 @using ChatApp.Application.Interfaces
 @using ChatApp.Application.DTO.Chats
+@implements IDisposable
 <aside class="sidebar">
     <div class="sidebar-header">
         <div class="user-info-wrapper">
@@ -9,15 +10,15 @@
             <div class="user-detail">Witaj @(_appStateService?.CurrentUser?.Username ?? String.Empty)</div>
         </div>
         <div class="nav-tabs">
-            <button class="@(currentView == View.Contacts ? "active" : "")" @onclick="() => currentView = View.Contacts">
+            <button class="@(_sidebarStateService.SidebarView == SidebarView.Contacts ? "active" : "")" @onclick="() => _sidebarStateService.SidebarView = SidebarView.Contacts">
                 Kontakty
             </button>
-            <button class="@(currentView == View.Invites ? "active" : "")" @onclick="() => currentView = View.Invites">
+            <button class="@(_sidebarStateService.SidebarView == SidebarView.Invites ? "active" : "")" @onclick="() => _sidebarStateService.SidebarView = SidebarView.Invites">
                 Zaproszenia @(PendingInvitesCount > 0 ? $"({PendingInvitesCount})" : "")
             </button>
         </div>
 
-        @if (currentView == View.Contacts)
+        @if (_sidebarStateService.SidebarView == SidebarView.Contacts)
         {
             <div class="search-container">
                 <input type="text" class="form-control search-input"
@@ -29,11 +30,11 @@
     </div>
 
     <div class="sidebar-content">
-        @switch (currentView)
+        @switch (_sidebarStateService.SidebarView)
         {
-            case View.Contacts:
+            case SidebarView.Contacts:
                 <div class="contacts-list">
-                    @if (SidebarItem == null || !FilteredSidebar.Any())
+                    @if (_sidebarStateService.SidebarItems == null || !FilteredSidebar.Any())
                     {
                         <p class="section-hint">Nie znaleziono kontaktów.</p>
                     }
@@ -67,16 +68,16 @@
                     }
                 </div>
                 break;
-            case View.Invites:
+            case SidebarView.Invites:
                 <div class="invites-list">
                     <div class="empty-state-container">
-                        @if(!InvitesList.Any())
+                        @if(!_sidebarStateService.ReceivedInvites.Any())
                         {
                             <p class="section-hint">Brak nowych zaproszeń.</p>
                         }
                         else
                         {
-                            @foreach(var invite in InvitesList)
+                            @foreach (var invite in _sidebarStateService.ReceivedInvites)
                             {
                                 <div class="invite-item">
                                     <div class="invite-info">
@@ -97,27 +98,27 @@
                     </div>
                 </div>
                 break;
-            case View.AddContact:
+            case SidebarView.AddContact:
                 <div class="add-contact-view">
                     <h4 class="view-title">Znajdź użytkownika</h4>
                     <div class="search-container">
                         <input type="text" class="form-control search-input"
                                placeholder="Wpisz nazwę użytkownika..."
-                               @bind="globalSearchQuery"
+                               @bind="_sidebarStateService.GlobalSearchQuery"
                                @bind:event="oninput"
                                @onkeyup="OnGlobalSearchInput" />
                     </div>
 
                     <div class="search-results">
-                        @if (IsSearching)
+                        @if (_sidebarStateService.IsSearchingGlobal)
                         {
                             <div class="loading-spinner-container">
-                                <p class="section-hint">Szukanie "@globalSearchQuery"...</p>
+                                <p class="section-hint">Szukanie "@_sidebarStateService.GlobalSearchQuery"...</p>
                             </div>
                         }
-                        else if (UsersList != null && UsersList.Any())
+                        else if (_sidebarStateService.FoundUsers != null && _sidebarStateService.FoundUsers.Any())
                         {
-                            @foreach (var user in UsersList)
+                            @foreach (var user in _sidebarStateService.FoundUsers)
                             {
                                 <div class="search-result-item">
                                     <div class="contacts-info">
@@ -125,13 +126,13 @@
                                         <span class="search-username">@user.Username</span>
     
                                     </div>
-                                    <button disabled="@isPending" class="btn-add-action" @onclick="() => SendInvite(user.UserID)">
+                                    <button disabled="@_sidebarStateService.IsPending" class="btn-add-action" @onclick="() => SendInvite(user.UserID)">
                                         Dodaj
                                     </button>
                                 </div>
                             }
                         }
-                        else if (!string.IsNullOrEmpty(globalSearchQuery) && globalSearchQuery.Length >= 3)
+                        else if (!string.IsNullOrEmpty(_sidebarStateService.GlobalSearchQuery) && _sidebarStateService.GlobalSearchQuery.Length >= 3)
                         {
                             <p class="section-hint">Nie znaleziono użytkownika.</p>
                         }
@@ -145,15 +146,15 @@
         }
     </div>
     <div class="sidebar-footer">
-        @if (currentView != View.AddContact)
+        @if (_sidebarStateService.SidebarView != SidebarView.AddContact)
         {
-            <button class="btn-add-contact" @onclick="() => currentView = View.AddContact">
+            <button class="btn-add-contact" @onclick="() => _sidebarStateService.SidebarView = SidebarView.AddContact">
                 <span class="plus-icon">+</span> Dodaj kontakt
             </button>
         }
         else
         {
-            <button class="btn-secondary" @onclick="() => currentView = View.Contacts">
+            <button class="btn-secondary" @onclick="() => _sidebarStateService.SidebarView = SidebarView.Contacts">
                 Anuluj i wróć
             </button>
         }
@@ -161,32 +162,25 @@
 </aside>
 
 @code {
-    #region Parameters
     [Parameter] public EventCallback<string> OnSearchRequested { get; set; }
     [Parameter] public EventCallback<ContactSelectedArgs> OnContactSelected { get; set; }
     [Parameter] public EventCallback<Guid> OnContactInvited { get; set; }
     [Parameter] public EventCallback<InviteActionRequest> OnInviteAction { get; set; }
     [Parameter] public EventCallback<bool> OnProfileOpen { get; set; }
-    [Parameter] public List<UserChatDTO> SidebarItem { get; set; } = new List<UserChatDTO>();
-    [Parameter] public List<UserDTO> UsersList { get; set; } = new List<UserDTO>();
-    [Parameter] public List<InviteDTO> InvitesList { get; set; } = new List<InviteDTO>();
-    [Parameter] public bool IsSearching { get; set; }
-    [Parameter] public bool isPending { get; set;  }
-    #endregion
-    #region Variables
-    private enum View { Contacts, Invites, AddContact }
-    private View currentView = View.Contacts;
     private string searchTerm = "";
-    private string globalSearchQuery = "";
-    private int PendingInvitesCount => InvitesList?.Count ?? 0;
+    private int PendingInvitesCount => _sidebarStateService?.ReceivedInvites?.Count ?? 0;
     protected Guid SelectedContactId;
-    #endregion
-    protected override void OnParametersSet()
+    protected override async Task OnInitializedAsync()
     {
-        StateHasChanged();
+        _sidebarActionService.OnSidebarStateChanged += SidebarStateChanged;
+        //_sidebarStateService.OnSidebarStateChanged += SidebarStateChanged;
+    }
+    private void SidebarStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
     }
     private IEnumerable<UserChatDTO> FilteredSidebar =>
-        SidebarItem?.Where(c => string.IsNullOrWhiteSpace(searchTerm) ||
+        _sidebarStateService.SidebarItems?.Where(c => string.IsNullOrWhiteSpace(searchTerm) ||
                                c.Identity.ChatName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
         ?? Enumerable.Empty<UserChatDTO>();
     private async Task SelectContact(Guid contactId)
@@ -196,13 +190,13 @@
     }
     private async Task OnGlobalSearchInput()
     {
-        if (string.IsNullOrWhiteSpace(globalSearchQuery) || globalSearchQuery.Length < 3)
+        if (string.IsNullOrWhiteSpace(_sidebarStateService.GlobalSearchQuery) || _sidebarStateService.GlobalSearchQuery.Length < 3)
         {
-            UsersList?.Clear();
+            _sidebarStateService.FoundUsers?.Clear();
             return;
         }
 
-        await OnSearchRequested.InvokeAsync(globalSearchQuery);
+        await OnSearchRequested.InvokeAsync(_sidebarStateService.GlobalSearchQuery);
     }
     private async Task HandleInviteResponse(Guid inviteId,InviteStatus response)
     {
@@ -215,8 +209,13 @@
     }
     private async Task SendInvite(Guid targetUserId)
     {
-        isPending = true;
+        _sidebarStateService.IsPending = true;
         await OnContactInvited.InvokeAsync(targetUserId);
-        globalSearchQuery = "";
+        _sidebarStateService.GlobalSearchQuery = "";
+    }
+    public void Dispose()
+    {
+     _sidebarActionService.OnSidebarStateChanged -= SidebarStateChanged;
+    // _sidebarStateService.OnSidebarStateChanged -= SidebarStateChanged;
     }
 }

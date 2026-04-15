@@ -74,14 +74,12 @@
     }
     private void SubscribeToEvent()
     {
-        Console.WriteLine($"[ChatComponent] Subscribing. DialogServiceHash={_dialogService.GetHashCode()}, ChatStateServiceHash={_chatStateService.GetHashCode()}, ChatActionServiceHash={_chatActionService.GetHashCode()}");
         _dialogService.OnStateChanged += HandleStateChanged;
         _chatStateService.OnStateChanged += HandleStateChanged;
         _chatActionService.OnStateChanged += HandleStateChanged;
     }
     private void UnsubscribeToEvent()
     {
-        Console.WriteLine($"[ChatComponent] Unsubscribing. DialogServiceHash={_dialogService.GetHashCode()}, ChatStateServiceHash={_chatStateService.GetHashCode()}, ChatActionServiceHash={_chatActionService.GetHashCode()}");
         _dialogService.OnStateChanged -= HandleStateChanged;
         _chatStateService.OnStateChanged -= HandleStateChanged;
         _chatActionService.OnStateChanged -= HandleStateChanged;

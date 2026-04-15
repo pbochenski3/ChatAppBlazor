@@ -25,12 +25,7 @@
             OnContactInvited="HandleContactInvite"
             OnContactSelected="_chatActionService.HandleChatLoadAsync"
             OnProfileOpen="HandleOpenProfile"
-            OnInviteAction="HandleContactStatus"
-            SidebarItem="_sidebarStateService.SidebarItems"
-                          UsersList="_sidebarStateService.FoundUsers"
-            InvitesList="_sidebarStateService.ReceivedInvites"
-                          IsSearching="_sidebarStateService.IsSearchingGlobal"
-            isPending="_sidebarStateService.IsPending" />
+            OnInviteAction="HandleContactStatus"/>
        
         @if (_appStateService.CurrentChat != null)
         {
