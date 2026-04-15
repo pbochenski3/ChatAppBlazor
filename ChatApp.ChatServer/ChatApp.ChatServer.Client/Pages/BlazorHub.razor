@@ -1,7 +1,13 @@
 @page "/hub"
 @using ChatApp.Application.DTO.Requests
+@using ChatApp.ChatServer.Client.Services.Actions
 @implements IAsyncDisposable
 @inject ILogger<BlazorHub> _logger
+@inject SidebarStateService _sidebarStateService
+@inject SidebarActionService _sidebarActionService
+@inject ChatActionService _chatActionService
+@inject ChatStateService _chatStateService
+@inject SidebarStateService _sidebarStateService
 
 @if (_isLoading == false)
 {
@@ -17,24 +23,20 @@
         <SidebarComponent 
             OnSearchRequested="HandleGlobalSearch"
             OnContactInvited="HandleContactInvite"
-            OnContactSelected="HandleChatLoadAsync"
+            OnContactSelected="_chatActionService.HandleChatLoadAsync"
             OnProfileOpen="HandleOpenProfile"
             OnInviteAction="HandleContactStatus"
-            SidebarItem="_sidebarItems"
-            UsersList="_foundUsers"
-            InvitesList="_receivedInvites"
-            IsSearching="_isSearchingGlobal"
-            isPending="_isPending" />
+            SidebarItem="_sidebarStateService.SidebarItems"
+                          UsersList="_sidebarStateService.FoundUsers"
+            InvitesList="_sidebarStateService.ReceivedInvites"
+                          IsSearching="_sidebarStateService.IsSearchingGlobal"
+            isPending="_sidebarStateService.IsPending" />
        
         @if (_appStateService.CurrentChat != null)
         {
-            <ChatComponent 
-                Messages="_receivedMessages"
-                IsLocked="_isChatLocked"
-                IsArchive="_isChatArchived"
-                />
+            <ChatComponent/>
         }
-        @if(_isProfileOpen)
+        @if(_appStateService.IsProfileOpen)
         {
             <ImageComponent
                 AvatarUrl="@_appStateService.CurrentUser.AvatarUrl"
@@ -48,19 +50,9 @@
 
 @code {
     #region Private Fields
-    private CancellationTokenSource? _chatLoadingCts;
     private string? _notification = string.Empty;
     private UserDTO _currentUser = new UserDTO();
-    private List<MessageDTO> _receivedMessages = new List<MessageDTO>();
-    private List<InviteDTO> _receivedInvites = new List<InviteDTO>();
-    private List<UserDTO> _foundUsers = new List<UserDTO>();
-    private List<UserChatDTO> _sidebarItems = new List<UserChatDTO>();
-    private bool _isSearchingGlobal = false;
-    private bool _isPending;
-    private bool _isChatLocked = true;
-    private bool _isChatArchived = false;
     private bool _isLoading = true;
-    private bool _isProfileOpen = false;
 
     #endregion
 
@@ -101,47 +93,33 @@
     private void SubscribeToEvent()
     {
         _chatHubService.OnAppReload += HandleUnifiedReloadAsync;
-        _chatHubService.OnMessageReceived += HandleReceiveMessageAsync;
+        //_chatHubService.OnMessageReceived += HandleReceiveMessageAsync;
         _chatHubService.InviteStatusMessage += HandleInviteStatusReceivedAsync;
-        _chatHubService.OnChatLoad += HandleChatLoadAsync;
-        _chatHubService.OnUserInChatReload += HandleUserOnGroupLoadAsync;
+       // _chatHubService.OnChatLoad += HandleChatLoadAsync;
+       // _chatHubService.OnUserInChatReload += HandleUserOnGroupLoadAsync;
         _chatHubService.OnChatNameChanged += HandleChatNameReloadAsync;
         _chatHubService.OnLastMessageChanged += HandleSidebarMessageReloadAsync;
         _chatHubService.OnAvatarReload += HandleAvatarReloadAsync;
         _chatHubService.OnGroupAvatarReload += HandleGroupAvatarReloadAsync;
-        //ChatState
-        _chatSettingsService.OnChatNameChangeRequested += HandleChangeChatNameAsync;
-        _chatSettingsService.OnContactDeleteRequested += HandleContactDelete;
-        _chatSettingsService.OnCreateGroupChatRequested += HandleCreateGroupChat;
-        _chatSettingsService.OnContactLoadRequested += HandleContactLoad;
-        _chatSettingsService.OnChatLeaveRequested += HandleChatLeave;
-        _chatSettingsService.OnChatDeleteRequested += HandleChatDelete;
 
     }
     private void UnSubscribeToEvent()
     {
         _chatHubService.OnAppReload -= HandleUnifiedReloadAsync;
-        _chatHubService.OnMessageReceived -= HandleReceiveMessageAsync;
+        //_chatHubService.OnMessageReceived -= HandleReceiveMessageAsync;
         _chatHubService.InviteStatusMessage -= HandleInviteStatusReceivedAsync;
-        _chatHubService.OnChatLoad -= HandleChatLoadAsync;
+        //_chatHubService.OnChatLoad -= HandleChatLoadAsync;
         _chatHubService.OnUserInChatReload -= HandleUserOnGroupLoadAsync;
         _chatHubService.OnChatNameChanged -= HandleChatNameReloadAsync;
         _chatHubService.OnLastMessageChanged -= HandleSidebarMessageReloadAsync;
         _chatHubService.OnAvatarReload -= HandleAvatarReloadAsync;
         _chatHubService.OnGroupAvatarReload -= HandleGroupAvatarReloadAsync;
-        //ChatState
-        _chatSettingsService.OnChatNameChangeRequested -= HandleChangeChatNameAsync;
-        _chatSettingsService.OnContactDeleteRequested -= HandleContactDelete;
-        _chatSettingsService.OnCreateGroupChatRequested -= HandleCreateGroupChat;
-        _chatSettingsService.OnContactLoadRequested -= HandleContactLoad;
-        _chatSettingsService.OnChatLeaveRequested -= HandleChatLeave;
-        _chatSettingsService.OnChatDeleteRequested -= HandleChatDelete;
 
     }
     private async Task HandleOpenProfile(bool open)
     {
         _appStateService.CurrentChat = null;
-        _isProfileOpen = open;
+        _appStateService.IsProfileOpen = open;
         await InvokeAsync(StateHasChanged);
     }
     private async Task HandleInviteStatusReceivedAsync(string status)
@@ -155,7 +133,7 @@
             switch (target)
             {
                 case ReloadTarget.Sidebar:
-                    await HandleSidebarLoadAsync(true);
+                    await _sidebarActionService.HandleSidebarLoadAsync(true);
                     break;
                 case ReloadTarget.Invite:
                     await HandleInviteLoadAsync(true);
@@ -164,7 +142,7 @@
                     await HandleDataReloadAsync(true);
                     break;
                 case ReloadTarget.Chat:
-                    await HandleChatClose(true);
+                    await _chatActionService.HandleChatClose(true);
                     break;
             }
             StateHasChanged();
@@ -172,9 +150,9 @@
     }
     private async Task HandleGlobalSearch(string query)
     {
-        _isSearchingGlobal = true;
-        _foundUsers = await _httpClient.GetFromJsonAsync<List<UserDTO>>($"api/user/to-invite?query={query}");
-        _isSearchingGlobal = false;
+        _sidebarStateService.IsSearchingGlobal = true;
+        _sidebarStateService.FoundUsers = await _httpClient.GetFromJsonAsync<List<UserDTO>>($"api/user/to-invite?query={query}");
+        _sidebarStateService.IsSearchingGlobal = false;
         StateHasChanged();
     }
     private async Task ShowNotificationAsync(string message, int durationInSeconds = 5)
@@ -192,37 +170,20 @@
         if (reload)
         {
             await HandleInviteLoadAsync(reload);
-            await HandleSidebarLoadAsync(reload);
+            await _sidebarActionService.HandleSidebarLoadAsync(reload);
             await InvokeAsync(StateHasChanged);
         }
     }
     private async Task HandleInviteLoadAsync(bool reload)
     {
-        _receivedInvites = await _inviteApiClient.GetUserInvitesAsync();
-        _isPending = false;
+        _sidebarStateService.ReceivedInvites = await _inviteApiClient.GetUserInvitesAsync();
+        _sidebarStateService.IsPending = false;
         await InvokeAsync(StateHasChanged);
         _logger.LogInformation("Invite reload triggered for user {Username}", _currentUser.Username);
     }
-    private async Task HandleSidebarLoadAsync(bool reload)
-    {
-        try
-        {
-            _sidebarItems = await _chatHubService.GetSidebarItemsAsync();
-            _logger.LogInformation("Sidebar reloaded. Items count: {Count}", _sidebarItems.Count);
-            _isPending = false;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during sidebar reload");
-        }
-        finally
-        {
-            await InvokeAsync(StateHasChanged);
-        }
-    }
     private async Task HandleGroupAvatarReloadAsync(string newAvatarUrl, Guid chatId)
     {
-        var chatToUpdate = _sidebarItems.FirstOrDefault(sb => sb.Identity.ChatID == chatId);
+        var chatToUpdate = _sidebarStateService.SidebarItems.FirstOrDefault(sb => sb.Identity.ChatID == chatId);
         if (chatToUpdate != null)
         {
             chatToUpdate.Identity.AvatarUrl = newAvatarUrl;
@@ -236,7 +197,7 @@
     private async Task HandleAvatarReloadAsync(string newAvatarUrl,Guid userId)
     {
         _appStateService.CurrentUser.AvatarUrl = newAvatarUrl;
-        var userInChat = _chatSettingsService.UsersInChat.FirstOrDefault(u => u.UserID == userId);
+        var userInChat = _chatStateService.UsersInChat.FirstOrDefault(u => u.UserID == userId);
         if (userInChat != null)
         {
             userInChat.AvatarUrl = newAvatarUrl;
@@ -246,9 +207,9 @@
             _appStateService.CurrentUser.AvatarUrl = newAvatarUrl;
         }
 
-        if (_sidebarItems != null && _sidebarItems.Any())
+        if (_sidebarStateService.SidebarItems != null && _sidebarStateService.SidebarItems.Any())
         {
-            var item = _sidebarItems.FirstOrDefault(sb => !sb.Identity.IsGroup && sb.Identity.OtherUserId == userId);
+            var item = _sidebarStateService.SidebarItems.FirstOrDefault(sb => !sb.Identity.IsGroup && sb.Identity.OtherUserId == userId);
             if (item != null)
             {
                 item.Identity.AvatarUrl = newAvatarUrl;
@@ -258,7 +219,7 @@
     }
     private async Task HandleChatNameReloadAsync(Guid chatId, string newChatName)
     {
-        var chat = _sidebarItems.FirstOrDefault(c => c.Identity.ChatID == chatId);
+        var chat = _sidebarStateService.SidebarItems.FirstOrDefault(c => c.Identity.ChatID == chatId);
         if (chat != null)
         {
             chat.Identity.ChatName = newChatName;
@@ -273,8 +234,8 @@
     private async Task HandleContactInvite(Guid contactId)
     {
         await _inviteApiClient.SendContactInviteAsync(contactId);
-        _foundUsers.RemoveAll(u => u.UserID == contactId);
-        _isSearchingGlobal = false;
+        _sidebarStateService.FoundUsers.RemoveAll(u => u.UserID == contactId);
+        _sidebarStateService.IsSearchingGlobal = false;
     }
     private async Task HandleContactDelete()
     {
@@ -288,36 +249,6 @@
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during contact deletion");
-            _ = ShowNotificationAsync($"{ex.Message}");
-        }
-    }
-    private async Task HandleChatClose(bool close)
-    {
-        _appStateService.CurrentChat = null;
-    }
-    private async Task HandleChangeChatNameAsync(string chatName)
-    {
-        var chatId = _appStateService.CurrentChat?.Identity.ChatID;
-        var adminName = _appStateService.CurrentUser?.Username;
-        if (chatId != null && adminName != null)
-        {
-            await _chatApiClient.ChangeChatNameAsync(chatId.Value, chatName, adminName);
-        }
-    }
-    private async Task HandleChatLeave()
-    {
-        try
-        {
-            if (_appStateService.CurrentChat != null)
-            {
-                var chatId = _appStateService.CurrentChat.Identity.ChatID;
-                var username = _appStateService.CurrentUser.Username;
-                await _groupChatApiClient.LeaveGroupChatAsync(chatId, username);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during leaving chat group");
             _ = ShowNotificationAsync($"{ex.Message}");
         }
     }
@@ -337,8 +268,8 @@
     {
         try
         {
-            _chatSettingsService.IsSettingsOpen = true;
-            _chatSettingsService.ReceivedContacts = await _contactApiClient.GetContactListAsync();
+            _chatStateService.IsSettingsOpen = true;
+            _chatStateService.ReceivedContacts = await _contactApiClient.GetContactListAsync();
             _logger.LogInformation("Contacts loaded");
         }
         catch (Exception ex)
@@ -350,39 +281,9 @@
             await InvokeAsync(StateHasChanged);
         }
     }
-    private async Task HandleReceiveMessageAsync(MessageDTO dto)
-    {
-        bool isMessageForCurrentChat = _appStateService.CurrentChat != null && dto.ChatID == _appStateService.CurrentChat.Identity.ChatID;
-        if (isMessageForCurrentChat)
-        {
-            if (_receivedMessages.Any(m => m.MessageID == dto.MessageID)) return;
-
-            _receivedMessages.Add(dto);
-            await InvokeAsync(StateHasChanged);
-            if (dto.SenderID != _currentUser.UserID)
-            {
-
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        await _chatApiClient.MarkMessageAsReadAsync(dto.ChatID, dto.MessageID);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Background mark-as-read failed for message: {MessageId}", dto.MessageID);
-                    }
-                });
-            }
-        }
-        else if (dto.SenderID != _currentUser.UserID)
-        {
-            await HandleCounterUpdateAsync(dto.ChatID, false);
-        }
-    }
     private async Task HandleSidebarMessageReloadAsync(Guid chatId, string sender,string content)
     {
-        var itemsToUpdate = _sidebarItems.FirstOrDefault(sb => sb.Identity.ChatID == chatId);
+        var itemsToUpdate = _sidebarStateService.SidebarItems.FirstOrDefault(sb => sb.Identity.ChatID == chatId);
         if (itemsToUpdate != null)
         {
             itemsToUpdate.LastMessage.LastMessageContent = content;
@@ -394,22 +295,22 @@
     }
     private async Task HandleCounterUpdateAsync(Guid chatId, bool clean)
     {
-        var index = _sidebarItems.FindIndex(sb => sb.Identity.ChatID == chatId);
+        var index = _sidebarStateService.SidebarItems.FindIndex(sb => sb.Identity.ChatID == chatId);
 
         if (index != -1)
         {
             if (clean)
             {
-                _sidebarItems[index].State.UnreadMessageCount = 0;
+                _sidebarStateService.SidebarItems[index].State.UnreadMessageCount = 0;
                 _logger.LogInformation("Counter cleared for: {ChatId}", chatId);
             }
             else
             {
-                var updatedItem = _sidebarItems[index];
+                var updatedItem = _sidebarStateService.SidebarItems[index];
                 updatedItem.State.UnreadMessageCount += 1;
 
-                _sidebarItems.RemoveAt(index);
-                _sidebarItems.Insert(0, updatedItem);
+                _sidebarStateService.SidebarItems.RemoveAt(index);
+                _sidebarStateService.SidebarItems.Insert(0, updatedItem);
 
                 _logger.LogInformation("Counter increased for: {ChatId}. Current: {Count}", chatId, updatedItem.State.UnreadMessageCount);
             }
@@ -417,7 +318,7 @@
         }
         else if (!clean)
         {
-            await HandleSidebarLoadAsync(true);
+            await _sidebarActionService.HandleSidebarLoadAsync(true);
         }
     }
     private async Task HandleUserOnGroupLoadAsync(Guid chatId)
@@ -428,99 +329,12 @@
         }
         try
         {
-            _chatSettingsService.UsersInChat = await _groupChatApiClient.GetChatUsersAsync(chatId);
+            _chatStateService.UsersInChat = await _groupChatApiClient.GetChatUsersAsync(chatId);
             await InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", chatId);
-        }
-    }
-    private async Task HandleChatLoadAsync(ContactSelectedArgs args)
-    {
-        bool isSameChat = _appStateService.CurrentChat?.Identity.ChatID == args.ChatId;
-
-        if (!args.Force && isSameChat)
-        {
-            return;
-        }
-        if(args.Force && !isSameChat)
-        {
-            return;
-        }
-        if(_isProfileOpen)
-        {
-            _isProfileOpen = false;
-        }
-
-        _chatSettingsService.IsSettingsOpen = false;
-        _chatLoadingCts?.Cancel();
-        _chatLoadingCts = new CancellationTokenSource();
-        var token = _chatLoadingCts.Token;
-
-        try
-        {
-            _receivedMessages = new List<MessageDTO>();
-            _logger.LogInformation("Loading chat: {Id} (Force: {Force})", args.ChatId, args.Force);
-
-            var chatInformation = await _chatApiClient.GetChatDetailsAsync(args.ChatId, token);
-
-            if (chatInformation == null)
-            {
-                _logger.LogError("[BLAZORHUB] Chat not found: {Id}", args.ChatId);
-                return;
-            }
-
-            token.ThrowIfCancellationRequested();
-
-            try
-            {
-                _chatSettingsService.UsersInChat = await _groupChatApiClient.GetChatUsersAsync(chatInformation.Identity.ChatID);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", args.ChatId);
-            }
-
-            _receivedMessages = await _chatApiClient.GetChatMessageHistoryAsync(chatInformation.Identity.ChatID, token);
-            token.ThrowIfCancellationRequested();
-
-            _appStateService.CurrentChat = chatInformation;
-            _isChatArchived = chatInformation.State.IsArchive;
-            _chatSettingsService.IsArchive = chatInformation.State.IsArchive;
-            _isChatLocked = chatInformation.State.IsArchive;
-            await _appStateService.SetChatAsync(chatInformation);
-
-            if (!chatInformation.State.IsArchive)
-            {
-                await _chatHubService.JoinChatGroupSignalAsync(chatInformation.Identity.ChatID);
-                await _chatApiClient.MarkAllMessagesAsReadAsync(chatInformation.Identity.ChatID, token);
-                await HandleCounterUpdateAsync(chatInformation.Identity.ChatID, true);
-            }
-
-        }
-        catch (OperationCanceledException)
-        {
-            _logger.LogInformation("Chat loading cancelled: {Id}", args.ChatId);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Critical error loading chat {Id}", args.ChatId);
-            _ = ShowNotificationAsync("Błąd podczas ładowania czatu.");
-        }
-        finally
-        {
-            if (!token.IsCancellationRequested)
-            {
-                await InvokeAsync(StateHasChanged);
-            }
-        }
-    }
-    private async Task HandleCreateGroupChat(HashSet<Guid> usersToAdd)
-    {
-        if (_appStateService.CurrentChat != null)
-        {
-            await _groupChatApiClient.AddUsersToGroupChatAsync(_appStateService.CurrentChat.Identity.ChatID, usersToAdd);
         }
     }
     private async Task HandleChatUsersLoadAsync()
@@ -532,22 +346,7 @@
     }
     private async Task HandleSidebarLock()
     {
-        _isPending = !_isPending;
-    }
-    private async Task HandleChatDelete()
-    {
-        try
-        {
-            if (_appStateService.CurrentChat != null)
-            {
-                await _chatApiClient.DeleteChatAsync(_appStateService.CurrentChat.Identity.ChatID);
-                await ShowNotificationAsync("Czat został usunięty!");
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during chat deletion");
-        }
+        _sidebarStateService.IsPending = !_sidebarStateService.IsPending;
     }
     public async ValueTask DisposeAsync()
     {
