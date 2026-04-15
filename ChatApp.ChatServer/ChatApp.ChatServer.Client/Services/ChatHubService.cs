@@ -1,5 +1,6 @@
 using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
+using ChatApp.ChatServer.Client.Services.Actions;
 using ChatApp.ChatServer.Client.Services.State;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.Http.Json;
@@ -12,25 +13,31 @@ public class ChatHubService : IAsyncDisposable
     public event Action<string>? OnContactDelete;
     public event Action<string, UserDTO>? LoginStatusMessage;
     public event Func<MessageDTO, Task>? OnMessageReceived;
-    public event Func<string,Task>? InviteStatusMessage;
+    public event Func<string, Task>? InviteStatusMessage;
     public event Func<ContactSelectedArgs, Task>? OnChatLoad;
     public event Func<ReloadTarget, Task>? OnAppReload;
     public event Func<Guid, Task>? OnUserInChatReload;
-    public event Func<string,Guid, Task>? OnAvatarReload;
-    public event Func<string,Guid, Task>? OnGroupAvatarReload;
-    public event Func<Guid,string, Task>? OnChatNameChanged;
-    public event Func<Guid,string,string, Task>? OnLastMessageChanged;
+    public event Func<string, Guid, Task>? OnAvatarReload;
+    public event Func<string, Guid, Task>? OnGroupAvatarReload;
+    public event Func<Guid, string, Task>? OnChatNameChanged;
+    public event Func<Guid, string, string, Task>? OnLastMessageChanged;
 
     private readonly AppStateService _appStateService;
     private readonly string _baseHubUrl;
     private readonly HttpClient _httpClient;
     private readonly ILogger<ChatHubService> _logger;
+    private readonly ChatActionService _chatActionService;
 
-    public ChatHubService(IConfiguration configuration, AppStateService appStateService, HttpClient httpClient, ILogger<ChatHubService> logger)
+    public ChatHubService(IConfiguration configuration,
+        AppStateService appStateService,
+        HttpClient httpClient,
+        ChatActionService chatActionService,
+        ILogger<ChatHubService> logger)
     {
         _appStateService = appStateService;
         _baseHubUrl = configuration["SignalR:HubUrl"] ?? throw new ArgumentNullException("SignalR:HubUrl");
         _httpClient = httpClient;
+        _chatActionService = chatActionService;
         _logger = logger;
     }
 
@@ -40,10 +47,7 @@ public class ChatHubService : IAsyncDisposable
 
         HubConnection.On<MessageDTO>("ReceiveMessage", async (message) =>
         {
-            if (OnMessageReceived != null)
-            {
-                await OnMessageReceived.Invoke(message);
-            }
+                await _chatActionService.HandleIncomingMessageAsync(message);
         });
 
         HubConnection.On<string>("ReceiveStatus", async (status) =>
@@ -75,12 +79,12 @@ public class ChatHubService : IAsyncDisposable
         HubConnection.On<Guid, string>("UpdateChatName", async (chatId, newName) =>
         {
             await OnChatNameChanged.Invoke(chatId, newName);
-        }); 
-        HubConnection.On<Guid, string,string>("UpdateLastMessage", async (chatId, lastSender, lastMessage) =>
-        {
-            await OnLastMessageChanged.Invoke(chatId,lastSender,lastMessage);
         });
-        HubConnection.On<string,Guid>("ContactAvatarReload", async (avatarUrl,userId) =>
+        HubConnection.On<Guid, string, string>("UpdateLastMessage", async (chatId, lastSender, lastMessage) =>
+        {
+            await OnLastMessageChanged.Invoke(chatId, lastSender, lastMessage);
+        });
+        HubConnection.On<string, Guid>("ContactAvatarReload", async (avatarUrl, userId) =>
         {
             await (OnAvatarReload?.Invoke(avatarUrl, userId) ?? Task.CompletedTask);
         });
@@ -113,9 +117,17 @@ public class ChatHubService : IAsyncDisposable
                 })
                 .WithAutomaticReconnect()
                 .Build();
-
+        SubscribeToEvent();
         RegisterHandlers();
         await HubConnection.StartAsync();
+    }
+    public void SubscribeToEvent()
+    {
+        _chatActionService.OnJoinGroupRequested += JoinChatGroupSignalAsync;
+    }
+    public void UnsubscribeFromEvent()
+    {
+        _chatActionService.OnJoinGroupRequested -= JoinChatGroupSignalAsync;
     }
     public async Task StopAsync()
     {
@@ -140,13 +152,12 @@ public class ChatHubService : IAsyncDisposable
     {
         return await HubConnection.InvokeAsync<string>("GetUserAvatarUrlAsync");
     }
-    public async Task<List<UserChatDTO>> GetSidebarItemsAsync()
-    {
-        if (HubConnection == null) return new List<UserChatDTO>();
-        return await HubConnection.InvokeAsync<List<UserChatDTO>>("GetSidebarItemsAsync");
-    }
     public async ValueTask DisposeAsync()
     {
+        if(_chatActionService != null)
+        {
+            _chatActionService.OnJoinGroupRequested -= JoinChatGroupSignalAsync;
+        }    
         if (HubConnection is not null)
         {
             await HubConnection.DisposeAsync();

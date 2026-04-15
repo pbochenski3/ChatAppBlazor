@@ -1,13 +1,14 @@
 @using ChatApp.Domain.Enums
+@inject DialogService _dialogService
 @implements IDisposable;
 
-<div class="chat-main-wrapper @(_chatSettingsService.IsSettingsOpen ? "show-settings" : "")">
+<div class="chat-main-wrapper @(_chatStateService.IsSettingsOpen ? "show-settings" : "")">
 
-    @if (_showConfirm)
+    @if (_dialogService.IsVisible)
     {
-        <ConfirmDialog Title="@_confirmTitle"
-                       Message="@_confirmMessage"
-                       OnClose="HandleConfirmAsync" />
+        <ConfirmDialog Title="@_dialogService.Title"
+                       Message="@_dialogService.Message"
+                       OnClose="OnDialogClose" />
     }
 
     <div class="chat-content">
@@ -21,15 +22,15 @@
                     <span class="user-name">@_appStateService.CurrentChat.Identity.ChatName</span>
                 </div>
             </div>
-            <div class="contact-config" @onclick="_chatSettingsService.ToggleSettings">⚙️</div>
+            <div class="contact-config" @onclick="_chatStateService.ToggleSettings">⚙️</div>
         </div>
 
         <div class="chat-body">
             <div class="chat-box" id="chat-window">
                 <div class="chat-messages">
-                    @if (Messages != null && Messages.Any())
+                    @if (_chatStateService.ReceivedMessages != null && _chatStateService.ReceivedMessages.Any())
                     {
-                        @foreach (var msg in Messages)
+                        @foreach (var msg in _chatStateService.ReceivedMessages)
                         {
                             <div @key="msg.MessageID"
                             class="message 
@@ -58,46 +59,47 @@
                 </div>
             </div>
             <ChatInputComponent 
-                IsLocked="IsLocked" 
-                IsArchive="IsArchive" />
+                IsLocked="_chatStateService.IsChatLocked" 
+                IsArchive="_chatStateService.IsArchive" />
         </div>
     </div>
     <ChatSettingsComponent/>
 </div>
 
 @code {
-    [Parameter] public List<MessageDTO> Messages { get; set; } = new();
-    [Parameter] public bool IsLocked { get; set; }
-    [Parameter] public bool IsArchive { get; set; }
-
-    private bool _showConfirm = false;
-    private string _confirmTitle = string.Empty;
-    private string _confirmMessage = string.Empty;
-    private Func<Task>? _onConfirmAction;
 
     protected override async Task OnInitializedAsync()
     {
-        _chatSettingsService.OnConfirmationActionRequested += OpenConfirmDialog;
+        SubscribeToEvent();
     }
-    private Task OpenConfirmDialog(string title, string message, Func<Task> action)
+    private void SubscribeToEvent()
     {
-        _confirmTitle = title;
-        _confirmMessage = message;
-        _onConfirmAction = action;
-        _showConfirm = true;
-        StateHasChanged();
-        return Task.CompletedTask;
+        Console.WriteLine($"[ChatComponent] Subscribing. DialogServiceHash={_dialogService.GetHashCode()}, ChatStateServiceHash={_chatStateService.GetHashCode()}, ChatActionServiceHash={_chatActionService.GetHashCode()}");
+        _dialogService.OnStateChanged += HandleStateChanged;
+        _chatStateService.OnStateChanged += HandleStateChanged;
+        _chatActionService.OnStateChanged += HandleStateChanged;
     }
-    private async Task HandleConfirmAsync(bool result)
+    private void UnsubscribeToEvent()
     {
-        _showConfirm = false;
-        if (result && _onConfirmAction != null)
+        Console.WriteLine($"[ChatComponent] Unsubscribing. DialogServiceHash={_dialogService.GetHashCode()}, ChatStateServiceHash={_chatStateService.GetHashCode()}, ChatActionServiceHash={_chatActionService.GetHashCode()}");
+        _dialogService.OnStateChanged -= HandleStateChanged;
+        _chatStateService.OnStateChanged -= HandleStateChanged;
+        _chatActionService.OnStateChanged -= HandleStateChanged;
+    }
+    private void HandleStateChanged()
+    {
+        Console.WriteLine("State changed, invoking StateHasChanged...");
+        _ = InvokeAsync(() =>
         {
-            await _onConfirmAction.Invoke();
-            await InvokeAsync(StateHasChanged);
-
-        }
+            StateHasChanged();
+        });
     }
+
+    private async Task OnDialogClose(bool result)
+    {
+        await _dialogService.HandleClose(result);
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await JSRuntime.InvokeVoidAsync("scrollToBottom", "chat-window");
@@ -108,6 +110,6 @@
     private bool HasText(string msg) => !string.IsNullOrWhiteSpace(msg);
     public void Dispose()
     {
-        _chatSettingsService.OnConfirmationActionRequested -= OpenConfirmDialog;
+        UnsubscribeToEvent();
     }
 }

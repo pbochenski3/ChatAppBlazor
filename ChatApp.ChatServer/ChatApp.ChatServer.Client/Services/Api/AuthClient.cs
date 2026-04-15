@@ -9,15 +9,15 @@ namespace ChatApp.ChatServer.Client.Services.Api
     {
         private readonly AppStateService _appStateService;
         private readonly HttpClient _httpClient;
-        private readonly ChatHubService _chatHubService;
         private readonly ILogger<AuthClient> _logger;
+        public event Func<Guid, Task>? OnStartHubRequested;
 
 
-        public AuthClient(AppStateService appStateService, HttpClient httpClient,ChatHubService chatHubService, ILogger<AuthClient> logger)
+
+        public AuthClient(AppStateService appStateService, HttpClient httpClient, ILogger<AuthClient> logger)
         {
             _appStateService = appStateService;
             _httpClient = httpClient;
-            _chatHubService = chatHubService;
             _logger = logger;
 
         }
@@ -31,7 +31,6 @@ namespace ChatApp.ChatServer.Client.Services.Api
                 if (loggedInUser != null)
                 {
                     _appStateService.CurrentUser = loggedInUser;
-                    await _chatHubService.StartAsync();
                     await _appStateService.SetUserAsync(loggedInUser);
                     _appStateService.Message = "Logged in successfully!";
                 }

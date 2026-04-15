@@ -24,6 +24,7 @@ namespace ChatApp.ChatServer.Client.Services.State
         public string? Message { get; set; }
         public UserDTO? CurrentUser { get; set; } = null;
         public UserChatDTO? CurrentChat { get; set; } = null;
+        public bool IsProfileOpen { get; set; } = false;
         public async Task LoadSessionAsync()
         {
             IsInitialized = false;
