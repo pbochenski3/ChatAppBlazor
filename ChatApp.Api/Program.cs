@@ -28,6 +28,7 @@ var JwtSetting = builder.Configuration.GetSection("JwtSettings");
 var key = Encoding.UTF8.GetBytes(JwtSetting["Key"]!);
 var issuer = JwtSetting["Issuer"];
 var audience = JwtSetting["Audience"];
+builder.Services.AddAntiforgery();
 builder.Services.AddSignalR();
 builder.Services.AddDbContextFactory<ChatDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ChatDatabase")));
@@ -126,11 +127,14 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(storagePath),
     RequestPath = "/cdn"
 });
+app.UseStaticFiles();
+app.MapStaticAssets();
 
 app.UseCors("BlazorAppPolicy");
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseAntiforgery();
 app.MapControllers();
 app.MapHub<ChatHub>("/chathub");
 app.MapRazorComponents<App>()
