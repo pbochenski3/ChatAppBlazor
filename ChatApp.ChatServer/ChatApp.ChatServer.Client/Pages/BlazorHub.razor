@@ -93,7 +93,7 @@
        // _chatHubService.OnChatLoad += HandleChatLoadAsync;
        // _chatHubService.OnUserInChatReload += HandleUserOnGroupLoadAsync;
         _chatHubService.OnChatNameChanged += HandleChatNameReloadAsync;
-        _chatHubService.OnLastMessageChanged += HandleSidebarMessageReloadAsync;
+        //_chatHubService.OnLastMessageChanged += HandleSidebarMessageReloadAsync;
         _chatHubService.OnAvatarReload += HandleAvatarReloadAsync;
         _chatHubService.OnGroupAvatarReload += HandleGroupAvatarReloadAsync;
 
@@ -106,7 +106,7 @@
         //_chatHubService.OnChatLoad -= HandleChatLoadAsync;
         _chatHubService.OnUserInChatReload -= HandleUserOnGroupLoadAsync;
         _chatHubService.OnChatNameChanged -= HandleChatNameReloadAsync;
-        _chatHubService.OnLastMessageChanged -= HandleSidebarMessageReloadAsync;
+        //_chatHubService.OnLastMessageChanged -= HandleSidebarMessageReloadAsync;
         _chatHubService.OnAvatarReload -= HandleAvatarReloadAsync;
         _chatHubService.OnGroupAvatarReload -= HandleGroupAvatarReloadAsync;
 
@@ -229,13 +229,13 @@
             _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", chatId);
         }
     }
-    private async Task HandleChatUsersLoadAsync()
-    {
-        if (_appStateService.CurrentChat != null)
-        {
-            await _groupChatApiClient.GetChatUsersAsync(_appStateService.CurrentChat.Identity.ChatID);
-        }
-    }
+    // private async Task HandleChatUsersLoadAsync()
+    // {
+    //     if (_appStateService.CurrentChat != null)
+    //     {
+    //         await _groupChatApiClient.GetChatUsersAsync(_appStateService.CurrentChat.Identity.ChatID);
+    //     }
+    // }
     public async ValueTask DisposeAsync()
     {
         UnSubscribeToEvent();

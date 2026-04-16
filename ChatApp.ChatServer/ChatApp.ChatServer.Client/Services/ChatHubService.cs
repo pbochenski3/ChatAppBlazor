@@ -27,17 +27,23 @@ public class ChatHubService : IAsyncDisposable
     private readonly HttpClient _httpClient;
     private readonly ILogger<ChatHubService> _logger;
     private readonly ChatActionService _chatActionService;
+    private readonly SidebarActionService _sidebarActionService;
+    private readonly ChatSettingsActionService _chatSettingsActionService;
 
     public ChatHubService(IConfiguration configuration,
         AppStateService appStateService,
         HttpClient httpClient,
         ChatActionService chatActionService,
+        SidebarActionService sidebarActionService,
+        ChatSettingsActionService chatSettingsActionService,
         ILogger<ChatHubService> logger)
     {
         _appStateService = appStateService;
         _baseHubUrl = configuration["SignalR:HubUrl"] ?? throw new ArgumentNullException("SignalR:HubUrl");
         _httpClient = httpClient;
         _chatActionService = chatActionService;
+        _sidebarActionService = sidebarActionService;
+        _chatSettingsActionService = chatSettingsActionService;
         _logger = logger;
     }
 
@@ -45,19 +51,8 @@ public class ChatHubService : IAsyncDisposable
     {
         if (HubConnection == null) return;
 
-        HubConnection.On<MessageDTO>("ReceiveMessage", async (message) =>
-        {
-                await _chatActionService.HandleIncomingMessageAsync(message);
-        });
-
-        HubConnection.On<string>("ReceiveStatus", async (status) =>
-        {
-            if (InviteStatusMessage != null)
-            {
-                await InviteStatusMessage.Invoke(status);
-            }
-        });
-
+        HubConnection.On<MessageDTO>("ReceiveMessage", async (message) => await _chatActionService.HandleIncomingMessageAsync(message));
+        HubConnection.On<string>("ReceiveStatus", async (status) => await InviteStatusMessage.Invoke(status));
         HubConnection.On<bool>("SideBarReload", async (_) => await TriggerReload(ReloadTarget.Sidebar));
         HubConnection.On<bool>("InviteReload", async (_) => await TriggerReload(ReloadTarget.Invite));
         HubConnection.On<bool>("ContactInviteReload", async (_) => await TriggerReload(ReloadTarget.Global));
@@ -93,13 +88,6 @@ public class ChatHubService : IAsyncDisposable
             await (OnGroupAvatarReload?.Invoke(avatarUrl, chatId) ?? Task.CompletedTask);
         });
 
-    }
-    private async Task TriggerReload(ReloadTarget target)
-    {
-        if (OnAppReload != null)
-        {
-            await OnAppReload.Invoke(target);
-        }
     }
     public async Task StartAsync()
     {
