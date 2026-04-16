@@ -82,26 +82,16 @@
     }
     private void SubscribeToEvent()
     {
-        //_chatHubService.OnAppReload += HandleUnifiedReloadAsync;
-        //_chatHubService.OnMessageReceived += HandleReceiveMessageAsync;
         _chatHubService.InviteStatusMessage += HandleInviteStatusReceivedAsync;
-       // _chatHubService.OnChatLoad += HandleChatLoadAsync;
-       // _chatHubService.OnUserInChatReload += HandleUserOnGroupLoadAsync;
-        _chatHubService.OnChatNameChanged += HandleChatNameReloadAsync;
-        //_chatHubService.OnLastMessageChanged += HandleSidebarMessageReloadAsync;
+  
         _chatHubService.OnAvatarReload += HandleAvatarReloadAsync;
         _chatHubService.OnGroupAvatarReload += HandleGroupAvatarReloadAsync;
 
     }
     private void UnSubscribeToEvent()
     {
-        //_chatHubService.OnAppReload -= HandleUnifiedReloadAsync;
-        //_chatHubService.OnMessageReceived -= HandleReceiveMessageAsync;
         _chatHubService.InviteStatusMessage -= HandleInviteStatusReceivedAsync;
-        //_chatHubService.OnChatLoad -= HandleChatLoadAsync;
-        _chatHubService.OnUserInChatReload -= HandleUserOnGroupLoadAsync;
-        _chatHubService.OnChatNameChanged -= HandleChatNameReloadAsync;
-        //_chatHubService.OnLastMessageChanged -= HandleSidebarMessageReloadAsync;
+
         _chatHubService.OnAvatarReload -= HandleAvatarReloadAsync;
         _chatHubService.OnGroupAvatarReload -= HandleGroupAvatarReloadAsync;
 
@@ -190,36 +180,6 @@
             }
         }
         await InvokeAsync(StateHasChanged);
-    }
-    private async Task HandleChatNameReloadAsync(Guid chatId, string newChatName)
-    {
-        var chat = _sidebarStateService.SidebarItems.FirstOrDefault(c => c.Identity.ChatID == chatId);
-        if (chat != null)
-        {
-            chat.Identity.ChatName = newChatName;
-        }
-        if(_appStateService.CurrentChat != null && _appStateService.CurrentChat.Identity.ChatID == chatId)
-        {
-            _appStateService.CurrentChat.Identity.ChatName = newChatName;
-        }
-        await InvokeAsync(StateHasChanged);
-
-    }
-    private async Task HandleUserOnGroupLoadAsync(Guid chatId)
-    {
-        if (_appStateService.CurrentChat?.Identity.ChatID != chatId)
-        {
-            return;
-        }
-        try
-        {
-            _chatStateService.UsersInChat = await _groupChatApiClient.GetChatUsersAsync(chatId);
-            await InvokeAsync(StateHasChanged);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", chatId);
-        }
     }
     public async ValueTask DisposeAsync()
     {

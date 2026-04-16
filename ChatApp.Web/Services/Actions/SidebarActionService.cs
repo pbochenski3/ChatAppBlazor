@@ -118,6 +118,20 @@ namespace ChatApp.Web.Services.Actions
             OnSidebarStateChanged?.Invoke();
 
         }
+        public async Task HandleChatNameReloadAsync(Guid chatId, string newChatName)
+        {
+            var chat = _sidebarStateService.SidebarItems.FirstOrDefault(c => c.Identity.ChatID == chatId);
+            if (chat != null)
+            {
+                chat.Identity.ChatName = newChatName;
+            }
+            if (_appStateService.CurrentChat != null && _appStateService.CurrentChat.Identity.ChatID == chatId)
+            {
+                _appStateService.CurrentChat.Identity.ChatName = newChatName;
+            }
+            OnSidebarStateChanged?.Invoke();
+
+        }
         public async Task HandleSidebarLock()
         {
             _sidebarStateService.IsPending = !_sidebarStateService.IsPending;

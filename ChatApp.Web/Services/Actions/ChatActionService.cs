@@ -1,5 +1,6 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.Events;
+using ChatApp.Web.Services.Api;
 using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.State;
 
@@ -146,7 +147,23 @@ namespace ChatApp.Web.Services.Actions
                 }
             }
         }
+        public async Task HandleUserOnGroupLoadAsync(Guid chatId)
+        {
+            if (_appStateService.CurrentChat?.Identity.ChatID != chatId)
+            {
+                return;
+            }
+            try
+            {
+                _chatStateService.UsersInChat = await _groupChatApi.GetChatUsersAsync(chatId);
+                OnStateChanged?.Invoke();
 
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", chatId);
+            }
+        }
         public async Task HandleChatClose(bool close)
         {
             await _appStateService.SetChatAsync(null);

@@ -65,17 +65,10 @@ public class ChatHubService : IAsyncDisposable
                 await OnChatLoad.Invoke(new ContactSelectedArgs(id, force));
             }
         });
-        HubConnection.On<Guid>("UsersInChatReload", async (chatId) =>
-        {
-            if (OnUserInChatReload != null)
-            {
-                await OnUserInChatReload.Invoke(chatId);
-            }
-        });
-        HubConnection.On<Guid, string>("UpdateChatName", async (chatId, newName) =>
-        {
-            await OnChatNameChanged.Invoke(chatId, newName);
-        });
+        HubConnection.On<Guid>("UsersInChatReload", async (chatId) => await _chatActionService.HandleUserOnGroupLoadAsync(chatId));
+
+        HubConnection.On<Guid, string>("UpdateChatName", async (chatId, newName) => await _sidebarActionService.HandleChatNameReloadAsync(chatId, newName));
+
         HubConnection.On<Guid, string, string>("UpdateLastMessage", async (chatId, lastSender, lastMessage) =>
         {
             await OnLastMessageChanged.Invoke(chatId, lastSender, lastMessage);

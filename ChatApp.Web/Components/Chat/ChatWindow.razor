@@ -67,10 +67,11 @@
 </div>
 
 @code {
-
+    private Guid chatId => _appStateService.CurrentChat?.Identity.ChatID ?? Guid.Empty;
     protected override async Task OnInitializedAsync()
     {
         SubscribeToEvent();
+        await _chatActionService.HandleUserOnGroupLoadAsync(chatId);
     }
     private void SubscribeToEvent()
     {
