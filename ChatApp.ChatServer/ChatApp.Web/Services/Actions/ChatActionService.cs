@@ -1,4 +1,5 @@
 ﻿using ChatApp.Application.DTO;
+using ChatApp.Application.Events;
 using ChatApp.ChatServer.Client.Services.Api;
 using ChatApp.ChatServer.Client.Services.Api.Interfaces;
 using ChatApp.ChatServer.Client.Services.State;

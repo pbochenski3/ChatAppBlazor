@@ -1,5 +1,6 @@
 using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
+using ChatApp.Application.Events;
 using ChatApp.ChatServer.Client.Services.Actions;
 using ChatApp.ChatServer.Client.Services.State;
 using Microsoft.AspNetCore.SignalR.Client;
