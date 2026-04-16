@@ -221,13 +221,6 @@
             _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", chatId);
         }
     }
-    // private async Task HandleChatUsersLoadAsync()
-    // {
-    //     if (_appStateService.CurrentChat != null)
-    //     {
-    //         await _groupChatApiClient.GetChatUsersAsync(_appStateService.CurrentChat.Identity.ChatID);
-    //     }
-    // }
     public async ValueTask DisposeAsync()
     {
         UnSubscribeToEvent();

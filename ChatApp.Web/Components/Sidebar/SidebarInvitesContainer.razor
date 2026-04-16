@@ -1,0 +1,41 @@
+﻿@using ChatApp.Application.DTO.Requests
+<div class="invites-list">
+    <div class="empty-state-container">
+        @if (!_sidebarStateService.ReceivedInvites.Any())
+        {
+            <p class="section-hint">Brak nowych zaproszeń.</p>
+        }
+        else
+        {
+            @foreach (var invite in _sidebarStateService.ReceivedInvites)
+            {
+                <div class="invite-item">
+                    <div class="invite-info">
+                        <img src="@invite.SenderAvatarUrl" class="invite-avatar" alt="avatar" />
+                        <span class="invite-username">@invite.SenderUsername</span>
+                    </div>
+                    <div class="invite-actions">
+                        <button class="btn-accept" @onclick="() => RequestInviteResponse(invite.InviteID, InviteStatus.Accepted)">
+                            Akceptuj
+                        </button>
+                        <button class="btn-decline" @onclick="() => RequestInviteResponse(invite.InviteID, InviteStatus.Rejected)">
+                            Odrzuć
+                        </button>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    override protected async Task OnInitializedAsync()
+    {
+        await _sidebarActionService.HandleInvitesLoadAsync();
+    }
+    private async Task RequestInviteResponse(Guid inviteId, InviteStatus response)
+    {
+        var chatId = _appStateService.CurrentChat?.Identity?.ChatID ?? Guid.Empty;
+        await _sidebarActionService.HandleInviteResponseAsync(new InviteActionRequest(inviteId, response, chatId));
+    }
+}

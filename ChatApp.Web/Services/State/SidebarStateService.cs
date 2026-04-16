@@ -16,7 +16,6 @@ namespace ChatApp.Web.Services.State
         public List<UserChatDTO> SidebarItems { get; set; } = new List<UserChatDTO>();
         public List<InviteDTO> ReceivedInvites { get; set; } = new List<InviteDTO>();
         public List<UserDTO> FoundUsers { get; set; } = new List<UserDTO>();
-        public string GlobalSearchQuery { get; set; } = "";
         public SidebarView SidebarView { get; set; } = SidebarView.Contacts;
 
     }

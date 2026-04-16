@@ -4,6 +4,7 @@ using ChatApp.Domain.Enums;
 using ChatApp.Web.Services;
 using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.State;
+using ChatApp.Application.DTO.Requests;
 
 namespace ChatApp.Web.Services.Actions
 {
@@ -14,6 +15,7 @@ namespace ChatApp.Web.Services.Actions
         private readonly IInviteApiClient _inviteApiClient;
         private readonly AppStateService _appStateService;
         private readonly DialogService _dialogService;
+        private readonly IGroupChatApiClient _groupChatApi;
         private readonly ILogger<SidebarActionService> _logger;
         public SidebarActionService(
             ILogger<SidebarActionService> logger,
@@ -21,6 +23,7 @@ namespace ChatApp.Web.Services.Actions
             IContactApiClient contactApiClient,
             AppStateService appStateService,
             DialogService dialogService,
+            IGroupChatApiClient groupChatApi,
             IInviteApiClient inviteApiClient
             )
         {
@@ -29,6 +32,7 @@ namespace ChatApp.Web.Services.Actions
             _sidebarStateService = sidebarStateService;
             _contactApiClient = contactApiClient;
             _dialogService = dialogService;
+            _groupChatApi = groupChatApi;
             _inviteApiClient = inviteApiClient;
         }
         public event Action? OnSidebarStateChanged;
@@ -76,27 +80,33 @@ namespace ChatApp.Web.Services.Actions
                // await HandleSidebarLoadAsync(true);
             }
         }
-        private async Task HandleGlobalSearch(string query)
+        public async Task HandleInviteResponseAsync(InviteActionRequest request)
+        { 
+            await _inviteApiClient.HandleInviteActionAsync(request);
+
+        }
+        public async Task HandleGlobalSearchAsync(string query)
         {
             _sidebarStateService.IsSearchingGlobal = true;
             _sidebarStateService.FoundUsers = await _contactApiClient.GetSearchedUsersList(query);
             _sidebarStateService.IsSearchingGlobal = false;
             OnSidebarStateChanged?.Invoke();
         }
-        private async Task HandleInviteLoadAsync(bool reload)
+        public async Task HandleInvitesLoadAsync()
         {
+            _sidebarStateService.IsPending = true;
             _sidebarStateService.ReceivedInvites = await _inviteApiClient.GetUserInvitesAsync();
             _sidebarStateService.IsPending = false;
             OnSidebarStateChanged?.Invoke();
             _logger.LogInformation("Invite reload triggered for user {Username}", _appStateService.CurrentUser.Username);
         }
-        private async Task HandleContactInvite(Guid contactId)
+        public async Task HandleSendInviteAsync(Guid contactId)
         {
             await _inviteApiClient.SendContactInviteAsync(contactId);
             _sidebarStateService.FoundUsers.RemoveAll(u => u.UserID == contactId);
             _sidebarStateService.IsSearchingGlobal = false;
         }
-        private async Task HandleSidebarMessageReloadAsync(Guid chatId, string sender, string content)
+        public async Task HandleSidebarMessageReloadAsync(Guid chatId, string sender, string content)
         {
             var itemsToUpdate = _sidebarStateService.SidebarItems.FirstOrDefault(sb => sb.Identity.ChatID == chatId);
             if (itemsToUpdate != null)
@@ -108,7 +118,7 @@ namespace ChatApp.Web.Services.Actions
             OnSidebarStateChanged?.Invoke();
 
         }
-        private async Task HandleSidebarLock()
+        public async Task HandleSidebarLock()
         {
             _sidebarStateService.IsPending = !_sidebarStateService.IsPending;
         }

@@ -44,6 +44,11 @@
 @code {
     private string searchTerm = "";
     protected Guid SelectedContactId;
+    override protected async Task OnInitializedAsync()
+    {
+        await _sidebarActionService.HandleSidebarLoadAsync();
+
+    }
     private IEnumerable<UserChatDTO> FilteredSidebar =>
     _sidebarStateService.SidebarItems?.Where(c => string.IsNullOrWhiteSpace(searchTerm) ||
                            c.Identity.ChatName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))

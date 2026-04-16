@@ -23,82 +23,13 @@
         @switch (_sidebarStateService.SidebarView)
         {
             case SidebarView.Contacts:
-                <SideBarChatsComponent />
+                <SideBarChatsContainer />
                 break;
             case SidebarView.Invites:
-                <div class="invites-list">
-                    <div class="empty-state-container">
-                        @if(!_sidebarStateService.ReceivedInvites.Any())
-                        {
-                            <p class="section-hint">Brak nowych zaproszeń.</p>
-                        }
-                        else
-                        {
-                            @foreach (var invite in _sidebarStateService.ReceivedInvites)
-                            {
-                                <div class="invite-item">
-                                    <div class="invite-info">
-                                        <img src="@invite.SenderAvatarUrl" class="invite-avatar" alt="avatar" />
-                                        <span class="invite-username">@invite.SenderUsername</span>
-                                    </div>
-                                    <div class="invite-actions">
-                                        <button class="btn-accept" @onclick="() => HandleInviteResponse(invite.InviteID, InviteStatus.Accepted)">
-                                            Akceptuj
-                                        </button>
-                                        <button class="btn-decline" @onclick="() => HandleInviteResponse(invite.InviteID, InviteStatus.Rejected)">
-                                            Odrzuć
-                                        </button>
-                                    </div>
-                                </div>
-                            }
-                        }
-                    </div>
-                </div>
+                <SidebarInvitesContainer/>
                 break;
             case SidebarView.AddContact:
-                <div class="add-contact-view">
-                    <h4 class="view-title">Znajdź użytkownika</h4>
-                    <div class="search-container">
-                        <input type="text" class="form-control search-input"
-                               placeholder="Wpisz nazwę użytkownika..."
-                               @bind="_sidebarStateService.GlobalSearchQuery"
-                               @bind:event="oninput"
-                               @onkeyup="OnGlobalSearchInput" />
-                    </div>
-
-                    <div class="search-results">
-                        @if (_sidebarStateService.IsSearchingGlobal)
-                        {
-                            <div class="loading-spinner-container">
-                                <p class="section-hint">Szukanie "@_sidebarStateService.GlobalSearchQuery"...</p>
-                            </div>
-                        }
-                        else if (_sidebarStateService.FoundUsers != null && _sidebarStateService.FoundUsers.Any())
-                        {
-                            @foreach (var user in _sidebarStateService.FoundUsers)
-                            {
-                                <div class="search-result-item">
-                                    <div class="contacts-info">
-                                        <img src="@user.AvatarUrl" class="user-avatar" />
-                                        <span class="search-username">@user.Username</span>
-    
-                                    </div>
-                                    <button disabled="@_sidebarStateService.IsPending" class="btn-add-action" @onclick="() => SendInvite(user.UserID)">
-                                        Dodaj
-                                    </button>
-                                </div>
-                            }
-                        }
-                        else if (!string.IsNullOrEmpty(_sidebarStateService.GlobalSearchQuery) && _sidebarStateService.GlobalSearchQuery.Length >= 3)
-                        {
-                            <p class="section-hint">Nie znaleziono użytkownika.</p>
-                        }
-                        else
-                        {
-                            <p class="section-hint">Wpisz min. 3 znaki, aby wyszukać.</p>
-                        }
-                    </div>
-                </div>
+                <SidebarAddContact />
                 break;
         }
     </div>
@@ -119,9 +50,6 @@
 </aside>
 
 @code {
-    [Parameter] public EventCallback<string> OnSearchRequested { get; set; }
-    [Parameter] public EventCallback<Guid> OnContactInvited { get; set; }
-    [Parameter] public EventCallback<InviteActionRequest> OnInviteAction { get; set; }
     [Parameter] public EventCallback<bool> OnProfileOpen { get; set; }
     private int PendingInvitesCount => _sidebarStateService?.ReceivedInvites?.Count ?? 0;
     protected override async Task OnInitializedAsync()
@@ -133,31 +61,13 @@
     {
         InvokeAsync(StateHasChanged);
     }
-    private async Task OnGlobalSearchInput()
-    {
-        if (string.IsNullOrWhiteSpace(_sidebarStateService.GlobalSearchQuery) || _sidebarStateService.GlobalSearchQuery.Length < 3)
-        {
-            _sidebarStateService.FoundUsers?.Clear();
-            return;
-        }
-
-        await OnSearchRequested.InvokeAsync(_sidebarStateService.GlobalSearchQuery);
-    }
-    private async Task HandleInviteResponse(Guid inviteId,InviteStatus response)
-    {
-        var chatId = _appStateService.CurrentChat?.Identity?.ChatID ?? Guid.Empty;
-        await OnInviteAction.InvokeAsync(new InviteActionRequest(inviteId,response,chatId));
-    }
+   
     private async Task OpenProfile()
     {
         await OnProfileOpen.InvokeAsync(true);
     }
-    private async Task SendInvite(Guid targetUserId)
-    {
-        _sidebarStateService.IsPending = true;
-        await OnContactInvited.InvokeAsync(targetUserId);
-        _sidebarStateService.GlobalSearchQuery = "";
-    }
+
+
     public void Dispose()
     {
      _sidebarActionService.OnSidebarStateChanged -= SidebarStateChanged;

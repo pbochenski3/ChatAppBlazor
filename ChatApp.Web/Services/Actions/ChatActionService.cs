@@ -146,6 +146,7 @@ namespace ChatApp.Web.Services.Actions
                 }
             }
         }
+
         public async Task HandleChatClose(bool close)
         {
             await _appStateService.SetChatAsync(null);

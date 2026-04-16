@@ -1,0 +1,63 @@
+﻿<div class="add-contact-view">
+    <h4 class="view-title">Znajdź użytkownika</h4>
+    <div class="search-container">
+        <input type="text" class="form-control search-input"
+               placeholder="Wpisz nazwę użytkownika..."
+               @bind="_globalSearchQuery"
+               @bind:event="oninput"
+               @onkeyup="OnGlobalSearchInput" />
+    </div>
+
+    <div class="search-results">
+        @if (_sidebarStateService.IsSearchingGlobal)
+        {
+            <div class="loading-spinner-container">
+                <p class="section-hint">Szukanie @_globalSearchQuery"...</p>
+            </div>
+        }
+        else if (_sidebarStateService.FoundUsers != null && _sidebarStateService.FoundUsers.Any())
+        {
+            @foreach (var user in _sidebarStateService.FoundUsers)
+            {
+                <div class="search-result-item">
+                    <div class="contacts-info">
+                        <img src="@user.AvatarUrl" class="user-avatar" />
+                        <span class="search-username">@user.Username</span>
+
+                    </div>
+                    <button disabled="@_sidebarStateService.IsPending" class="btn-add-action" @onclick="() => SendInvite(user.UserID)">
+                        Dodaj
+                    </button>
+                </div>
+            }
+        }
+        else if (!string.IsNullOrEmpty(_globalSearchQuery) && _globalSearchQuery.Length >= 3)
+        {
+            <p class="section-hint">Nie znaleziono użytkownika.</p>
+        }
+        else
+        {
+            <p class="section-hint">Wpisz min. 3 znaki, aby wyszukać.</p>
+        }
+    </div>
+</div>
+
+@code {
+    private string _globalSearchQuery = "";
+    private async Task SendInvite(Guid targetUserId)
+    {
+        _sidebarStateService.IsPending = true;
+        await _sidebarActionService.HandleSendInviteAsync(targetUserId);
+        _globalSearchQuery = "";
+    }
+    private async Task OnGlobalSearchInput()
+    {
+        if (string.IsNullOrWhiteSpace(_globalSearchQuery) || _globalSearchQuery.Length < 3)
+        {
+            _sidebarStateService.FoundUsers?.Clear();
+            return;
+        }
+
+        await _sidebarActionService.HandleGlobalSearchAsync(_globalSearchQuery);
+    }
+}
