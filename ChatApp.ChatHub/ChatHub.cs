@@ -89,9 +89,5 @@ namespace ChatApp.ChatHub
         //{
         //    return await _userChatService.GetUserChatListAsync(UserId);
         //}
-        public async Task<List<UserChatDTO>> GetSidebarItemsAsync()
-        {
-            return await _sidebarService.GetSidebarItemsAsync(UserId);
-        }
     } 
 }

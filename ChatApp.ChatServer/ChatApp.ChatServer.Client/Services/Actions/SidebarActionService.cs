@@ -31,11 +31,11 @@ namespace ChatApp.ChatServer.Client.Services.Actions
             _inviteApiClient = inviteApiClient;
         }
         public event Action? OnSidebarStateChanged;
-        public async Task HandleSidebarLoadAsync(bool reload)
+        public async Task HandleSidebarLoadAsync()
         {
             try
             {        
-                    _sidebarStateService.SidebarItems = await _contactApiClient.GetSidebarItemsAsync();
+                _sidebarStateService.SidebarItems = await _contactApiClient.GetSidebarItemsAsync();
                 _logger.LogInformation("Sidebar reloaded. Items count: {Count}", _sidebarStateService.SidebarItems.Count);
    
             }

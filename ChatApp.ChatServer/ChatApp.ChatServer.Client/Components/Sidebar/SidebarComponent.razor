@@ -17,56 +17,13 @@
                 Zaproszenia @(PendingInvitesCount > 0 ? $"({PendingInvitesCount})" : "")
             </button>
         </div>
-
-        @if (_sidebarStateService.SidebarView == SidebarView.Contacts)
-        {
-            <div class="search-container">
-                <input type="text" class="form-control search-input"
-                       placeholder="Szukaj na liście..."
-                       @bind="searchTerm"
-                       @bind:event="oninput" />
-            </div>
-        }
     </div>
 
     <div class="sidebar-content">
         @switch (_sidebarStateService.SidebarView)
         {
             case SidebarView.Contacts:
-                <div class="contacts-list">
-                    @if (_sidebarStateService.SidebarItems == null || !FilteredSidebar.Any())
-                    {
-                        <p class="section-hint">Nie znaleziono kontaktów.</p>
-                    }
-                    else
-                    {
-                        @foreach (var chat in FilteredSidebar)
-                        {
-                            <div class="contact-item @(SelectedContactId == chat.Identity.ChatID ? "active" : "")"
-                                 @onclick="async () => await SelectContact(chat.Identity.ChatID)">
-                                <div class="contact-avatar-container">
-                                    <img src="@chat.Identity.AvatarUrl" class="contact-img" alt="avatar" />
-                                </div>
-                                <div class="contact-info">
-                                    <p class="contact-name">@chat.Identity.ChatName</p>
-                                    @if(chat.LastMessage.LastMessageContent != null)
-                                    {
-                                    <p class="contact-name">
-                                            @((chat.LastMessage.LastMessageSender == _appStateService.CurrentUser.Username)
-                                                                ? $"Ty: {chat.LastMessage.LastMessageContent}"
-                                                                : $"{chat.LastMessage.LastMessageSender}: {chat.LastMessage.LastMessageContent}")
-                                    </p>
-                                        
-                                    }
-                                    @if(chat.State.UnreadMessageCount > 0)
-                                    {
-                                        <p class="contact-name">@chat.State.UnreadMessageCount nowe wiadomości!</p>
-                                    }
-                                </div>
-                            </div>
-                        }
-                    }
-                </div>
+                <SideBarChatsComponent />
                 break;
             case SidebarView.Invites:
                 <div class="invites-list">
@@ -167,9 +124,7 @@
     [Parameter] public EventCallback<Guid> OnContactInvited { get; set; }
     [Parameter] public EventCallback<InviteActionRequest> OnInviteAction { get; set; }
     [Parameter] public EventCallback<bool> OnProfileOpen { get; set; }
-    private string searchTerm = "";
     private int PendingInvitesCount => _sidebarStateService?.ReceivedInvites?.Count ?? 0;
-    protected Guid SelectedContactId;
     protected override async Task OnInitializedAsync()
     {
         _sidebarActionService.OnSidebarStateChanged += SidebarStateChanged;
@@ -178,15 +133,6 @@
     private void SidebarStateChanged()
     {
         InvokeAsync(StateHasChanged);
-    }
-    private IEnumerable<UserChatDTO> FilteredSidebar =>
-        _sidebarStateService.SidebarItems?.Where(c => string.IsNullOrWhiteSpace(searchTerm) ||
-                               c.Identity.ChatName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-        ?? Enumerable.Empty<UserChatDTO>();
-    private async Task SelectContact(Guid contactId)
-    {
-        SelectedContactId = contactId;
-        await OnContactSelected.InvokeAsync(new ContactSelectedArgs(contactId));
     }
     private async Task OnGlobalSearchInput()
     {
