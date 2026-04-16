@@ -36,7 +36,8 @@ namespace ChatApp.Web.Services.Actions
             _inviteApiClient = inviteApiClient;
         }
         public event Action? OnSidebarStateChanged;
-        public async Task HandleSidebarLoadAsync()
+        public event Action? OnInvitesStateChanged;
+        public async Task HandleChatsLoadAsync()
         {
             try
             {        
@@ -90,7 +91,7 @@ namespace ChatApp.Web.Services.Actions
             _sidebarStateService.IsSearchingGlobal = true;
             _sidebarStateService.FoundUsers = await _contactApiClient.GetSearchedUsersList(query);
             _sidebarStateService.IsSearchingGlobal = false;
-            OnSidebarStateChanged?.Invoke();
+            OnInvitesStateChanged?.Invoke();
         }
         public async Task HandleInvitesLoadAsync()
         {
@@ -105,8 +106,9 @@ namespace ChatApp.Web.Services.Actions
             await _inviteApiClient.SendContactInviteAsync(contactId);
             _sidebarStateService.FoundUsers.RemoveAll(u => u.UserID == contactId);
             _sidebarStateService.IsSearchingGlobal = false;
+            _sidebarStateService.IsPending = false;
         }
-        public async Task HandleSidebarMessageReloadAsync(Guid chatId, string sender, string content)
+        public async Task HandleSidebarLastMessageReloadAsync(Guid chatId, string sender, string content)
         {
             var itemsToUpdate = _sidebarStateService.SidebarItems.FirstOrDefault(sb => sb.Identity.ChatID == chatId);
             if (itemsToUpdate != null)

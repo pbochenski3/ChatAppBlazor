@@ -93,8 +93,8 @@ namespace ChatApp.Api.Controllers
                 await _chatService.DeleteChatAsync(chatId, userId);
                 string user = userId.ToString();
                 await _hubContext.Clients.User(user).SendAsync("ReceiveStatus", "Czat został usunięty!");
-                await _hubContext.Clients.User(user).SendAsync("SideBarReload", true);
-                await _hubContext.Clients.User(user).SendAsync("ChatClose", true);
+                await _hubContext.Clients.User(user).SendAsync("SidebarChatsReload");
+                await _hubContext.Clients.User(user).SendAsync("ChatClose");
                 return Ok();
             }
             catch (Exception ex)

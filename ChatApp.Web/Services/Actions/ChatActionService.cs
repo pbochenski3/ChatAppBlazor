@@ -51,6 +51,7 @@ namespace ChatApp.Web.Services.Actions
             {
                 await _sidebarActionService.HandleCounterUpdateAsync(dto.ChatID, false);
             }
+            OnStateChanged?.Invoke();
         }
 
         private async void MarkAsRead(Guid chatId, Guid messageId)
@@ -92,9 +93,9 @@ namespace ChatApp.Web.Services.Actions
                 _chatStateService.SetMessageList(new List<MessageDTO>());
                 _logger.LogInformation("Loading chat: {Id} (Force: {Force})", args.ChatId, args.Force);
 
-                var chatInformation = await _chatApi.GetChatDetailsAsync(args.ChatId, token);
+                _appStateService.CurrentChat = await _chatApi.GetChatDetailsAsync(args.ChatId, token);
 
-                if (chatInformation == null)
+                if (_appStateService.CurrentChat == null)
                 {
                     _logger.LogError("[BLAZORHUB] Chat not found: {Id}", args.ChatId);
                     return;
@@ -104,28 +105,25 @@ namespace ChatApp.Web.Services.Actions
 
                 try
                 {
-                    _chatStateService.UsersInChat = await _groupChatApi.GetChatUsersAsync(chatInformation.Identity.ChatID);
+                    _chatStateService.UsersInChat = await _groupChatApi.GetChatUsersAsync(_appStateService.CurrentChat.Identity.ChatID);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", args.ChatId);
                 }
 
-                _chatStateService.SetMessageList(await _chatApi.GetChatMessageHistoryAsync(chatInformation.Identity.ChatID, token));
+                _chatStateService.SetMessageList(await _chatApi.GetChatMessageHistoryAsync(_appStateService.CurrentChat.Identity.ChatID, token));
                 token.ThrowIfCancellationRequested();
 
-                _appStateService.CurrentChat = chatInformation;
-
-                await _appStateService.SetChatAsync(chatInformation);
-                if (!chatInformation.State.IsArchive)
+               // await _appStateService.SetChatAsync(_appStateService.CurrentChat);
+                if (!_appStateService.CurrentChat.State.IsArchive)
                 {
-                    _chatStateService.IsChatLocked = chatInformation.State.IsArchive;
                     if (OnJoinGroupRequested != null)
                     {
-                        await OnJoinGroupRequested.Invoke(chatInformation.Identity.ChatID);
+                        await OnJoinGroupRequested.Invoke(_appStateService.CurrentChat.Identity.ChatID);
                     }
-                    await _chatApi.MarkAllMessagesAsReadAsync(chatInformation.Identity.ChatID, token);
-                    await _sidebarActionService.HandleCounterUpdateAsync(chatInformation.Identity.ChatID, true);
+                    await _chatApi.MarkAllMessagesAsReadAsync(_appStateService.CurrentChat.Identity.ChatID, token);
+                    await _sidebarActionService.HandleCounterUpdateAsync(_appStateService.CurrentChat.Identity.ChatID, true);
                 }
 
             }
@@ -164,7 +162,7 @@ namespace ChatApp.Web.Services.Actions
                 _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", chatId);
             }
         }
-        public async Task HandleChatClose(bool close)
+        public async Task HandleChatCloseAsync()
         {
             await _appStateService.SetChatAsync(null);
         }

@@ -32,6 +32,7 @@ namespace ChatApp.Web.Services.Actions
             _contactApi = contactApi;
             _logger = logger;
         }
+        public event Action? OnStateChanged;
         public void RequestDeleteChat()
         {
             _dialogService.ShowConfirm(
@@ -76,7 +77,10 @@ namespace ChatApp.Web.Services.Actions
                     var chatId = _appStateService.CurrentChat.Identity.ChatID;
                     var username = _appStateService.CurrentUser.Username;
                     await _groupChatApi.LeaveGroupChatAsync(chatId, username);
+                    _appStateService.CurrentChat.State.IsArchive = true;
+                    OnStateChanged?.Invoke();
                 }
+                    
             }
             catch (Exception ex)
             {
@@ -115,7 +119,7 @@ namespace ChatApp.Web.Services.Actions
                 await _chatApi.ChangeChatNameAsync(chatId.Value, chatName, adminName);
             }
         }
-        public async Task HandleCreateGroupChatAsync(HashSet<Guid> usersToAdd)
+        public async Task HandleAddUsersToChatAsync(HashSet<Guid> usersToAdd)
         {
             if (_appStateService.CurrentChat != null)
             {

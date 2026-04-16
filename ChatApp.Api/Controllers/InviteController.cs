@@ -37,7 +37,7 @@ namespace ChatApp.Api.Controllers
             _logger.LogInformation("SendContactInvite: sender={SenderId}, receiver={ReceiverId}", senderId, receiverId);
             await Task.WhenAll(
                 _hubContext.Clients.User(senderId.ToString()).SendAsync("ReceiveStatus", "Zaproszenie wysłane!"),
-                _hubContext.Clients.User(receiverId.ToString()).SendAsync("InviteReload", true),
+                _hubContext.Clients.User(receiverId.ToString()).SendAsync("SidebarInvitesReload"),
                 _hubContext.Clients.User(receiverId.ToString()).SendAsync("ReceiveStatus", "Otrzymałeś nowe zaproszenie!")
             );
             _logger.LogDebug("Invite notifications sent for invite from {SenderId} to {ReceiverId}", senderId, receiverId);
@@ -50,7 +50,7 @@ namespace ChatApp.Api.Controllers
             {
                 var actionUserId = CurrentUserId;
                 await _inviteService.UpdateInviteStatusAsync(request.InviteId, request.Response);
-                await _hubContext.Clients.User(actionUserId.ToString()).SendAsync("InviteReload", true);
+                await _hubContext.Clients.User(actionUserId.ToString()).SendAsync("SidebarInvitesReload");
                 var invite = await _inviteService.ProcessInviteActionAsync(request.InviteId, request.Response, ct);
 
                 if (invite == null)
@@ -64,8 +64,8 @@ namespace ChatApp.Api.Controllers
                     _hubContext.Clients.User(actionUserId.ToString()).SendAsync("ReceiveStatus", $"{(request.Response == InviteStatus.Accepted ? "Zaakceptowałeś" : "Odrzuciłeś")} zaproszenie!")
                 );
                 await Task.WhenAll(
-                    _hubContext.Clients.User(receiverId.ToString()).SendAsync("SideBarReload", true),
-                    _hubContext.Clients.User(actionUserId.ToString()).SendAsync("SideBarReload", true)
+                    _hubContext.Clients.User(receiverId.ToString()).SendAsync("SidebarInvitesReload"),
+                    _hubContext.Clients.User(actionUserId.ToString()).SendAsync("SidebarInvitesReload")
                 );
 
                 if (invite.chatId == request.chatId)

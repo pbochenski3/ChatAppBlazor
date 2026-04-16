@@ -1,9 +1,10 @@
 ﻿@using ChatApp.Domain.Enums
 @using System.Net.Http.Headers
 @inject ILogger<ChatInput> _logger
+@implements IDisposable
 
-<div class="message-input-area @(IsArchive ? "archived-status" : "")">
-    @if (!IsArchive)
+<div class="message-input-area @(_isArchive ? "archived-status" : "")">
+    @if (!_isArchive)
     {
     @if (!string.IsNullOrWhiteSpace(_tempImageUrl))
     {
@@ -19,7 +20,7 @@
                     @key="_inputFileKey"
                    class="form-control"
                    placeholder="Napisz wiadomość..."
-                   disabled="@IsLocked"
+                   disabled="@_isArchive"
                    @bind="_messageContent"
                    @bind:event="oninput"
                    @onkeydown="HandleKeyDownAsync" />
@@ -29,10 +30,10 @@
                 <label for="chat-image-icon" disabled="@_isUploading" class="chat-image-icon">
                 🖼️
                 </label>
-            <EmojiComponent
+            <EmojiWindow
                 OnEmojiSelect="HandleAddEmojiToInput" />
                     <button class="btn-primary"
-                    disabled="@(IsLocked || (string.IsNullOrWhiteSpace(_messageContent) && _sendedPhoto == null))"
+                    disabled="@(_isArchive || (string.IsNullOrWhiteSpace(_messageContent) && _sendedPhoto == null))"
                     @onclick="HandleSendMessage">
                 Wyślij
             </button>
@@ -47,28 +48,34 @@
 </div>
 
 @code {
-
-    [Parameter] public bool IsLocked { get; set; } = false;
-    [Parameter] public bool IsArchive { get; set; } = false;
+    private bool _isArchive => _appStateService.CurrentChat?.State.IsArchive ?? false;
     private bool _isUploading = false;
     private string _tempImageUrl = string.Empty;
     private string _messageContent = string.Empty;
     private IBrowserFile _sendedPhoto = null;
     private Guid _inputFileKey = Guid.NewGuid();
+    protected override void OnInitialized()
+    {
+        _chatSettingsActionService.OnStateChanged += HandleStateChange;
+        _chatActionService.OnStateChanged += HandleStateChange;
+    }
     private void ClearSelectedPhoto()
     {
         _sendedPhoto = null;
         _tempImageUrl = string.Empty;
         _inputFileKey = Guid.NewGuid(); 
     }
+    private void HandleStateChange()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
     private async Task HandleKeyDownAsync(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter" && !IsLocked && (!string.IsNullOrWhiteSpace(_messageContent) || _sendedPhoto != null))
+        if (e.Key == "Enter" && !_isArchive && (!string.IsNullOrWhiteSpace(_messageContent) || _sendedPhoto != null))
         {
             await HandleSendMessage();
         }
     }
-
     public async Task OnImageSend(InputFileChangeEventArgs e)
     {
         try
@@ -113,7 +120,6 @@
 
         try
         {
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _appStateService.CurrentUser?.Token);
             if(_sendedPhoto != null)
             {
                 _isUploading = true;
@@ -156,5 +162,12 @@
             await InvokeAsync(StateHasChanged);
 
         }
+
+    }
+    public void Dispose()
+    {
+        _chatSettingsActionService.OnStateChanged -= HandleStateChange;
+        _chatActionService.OnStateChanged -= HandleStateChange;
+
     }
 }

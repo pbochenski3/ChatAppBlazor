@@ -10,18 +10,9 @@ using System.Net.Http.Json;
 public class ChatHubService : IAsyncDisposable
 {
     public HubConnection? HubConnection { get; private set; }
-    public event Action<string>? RegisterStatusMessage;
-    public event Action<string>? OnContactDelete;
-    public event Action<string, UserDTO>? LoginStatusMessage;
-    public event Func<MessageDTO, Task>? OnMessageReceived;
     public event Func<string, Task>? InviteStatusMessage;
-    public event Func<ContactSelectedArgs, Task>? OnChatLoad;
-   // public event Func<ReloadTarget, Task>? OnAppReload;
-    public event Func<Guid, Task>? OnUserInChatReload;
     public event Func<string, Guid, Task>? OnAvatarReload;
     public event Func<string, Guid, Task>? OnGroupAvatarReload;
-    public event Func<Guid, string, Task>? OnChatNameChanged;
-    public event Func<Guid, string, string, Task>? OnLastMessageChanged;
 
     private readonly AppStateService _appStateService;
     private readonly string _baseHubUrl;
@@ -51,28 +42,16 @@ public class ChatHubService : IAsyncDisposable
     private void RegisterHandlers()
     {
         if (HubConnection == null) return;
-
-        HubConnection.On<MessageDTO>("ReceiveMessage", async (message) => await _chatActionService.HandleIncomingMessageAsync(message));
-        HubConnection.On<string>("ReceiveStatus", async (status) => await InviteStatusMessage.Invoke(status));
-        //HubConnection.On<bool>("SideBarReload", async (_) => await TriggerReload(ReloadTarget.Sidebar));
-        //HubConnection.On<bool>("InviteReload", async (_) => await TriggerReload(ReloadTarget.Invite));
+        HubConnection.On("CloseConnection", async () => await StopAsync());
+        HubConnection.On<MessageDTO>("ReceiveMessage", (message) => _chatActionService.HandleIncomingMessageAsync(message));
+        HubConnection.On("SidebarChatsReload",  async () => await _sidebarActionService.HandleChatsLoadAsync());
+        HubConnection.On("SidebarInvitesReload", async () => await _sidebarActionService.HandleInvitesLoadAsync());
         //HubConnection.On<bool>("ContactInviteReload", async (_) => await TriggerReload(ReloadTarget.Global));
-        //HubConnection.On<bool>("ChatClose", async (_) => await TriggerReload(ReloadTarget.Chat));
-        HubConnection.On<Guid, bool>("ChatReload", async (id, force) =>
-        {
-            if (OnChatLoad != null)
-            {
-                await OnChatLoad.Invoke(new ContactSelectedArgs(id, force));
-            }
-        });
+        HubConnection.On("ChatClose",  async () => await _chatActionService.HandleChatCloseAsync());
+        HubConnection.On<Guid, bool>("ChatReload",  async (id, force) => await _chatActionService.HandleChatLoadAsync(new ContactSelectedArgs(id, force)));
         HubConnection.On<Guid>("UsersInChatReload", async (chatId) => await _chatActionService.HandleUserOnGroupLoadAsync(chatId));
-
-        HubConnection.On<Guid, string>("UpdateChatName", async (chatId, newName) => await _sidebarActionService.HandleChatNameReloadAsync(chatId, newName));
-
-        HubConnection.On<Guid, string, string>("UpdateLastMessage", async (chatId, lastSender, lastMessage) =>
-        {
-            await OnLastMessageChanged.Invoke(chatId, lastSender, lastMessage);
-        });
+        HubConnection.On<Guid, string>("UpdateChatName",  async (chatId, newName) => await _sidebarActionService.HandleChatNameReloadAsync(chatId, newName));
+        HubConnection.On<Guid, string, string>("UpdateLastMessage",  async (chatId, lastSender, lastMessage) => await _sidebarActionService.HandleSidebarLastMessageReloadAsync(chatId, lastSender, lastMessage));
         HubConnection.On<string, Guid>("ContactAvatarReload", async (avatarUrl, userId) =>
         {
             await (OnAvatarReload?.Invoke(avatarUrl, userId) ?? Task.CompletedTask);
@@ -81,6 +60,7 @@ public class ChatHubService : IAsyncDisposable
         {
             await (OnGroupAvatarReload?.Invoke(avatarUrl, chatId) ?? Task.CompletedTask);
         });
+        HubConnection.On<string>("ReceiveStatus", async (status) => await InviteStatusMessage.Invoke(status));
 
     }
     public async Task StartAsync()

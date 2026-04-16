@@ -1,4 +1,5 @@
 ﻿@using ChatApp.Application.Events
+@implements IDisposable
 
 <div class="contacts-list">
     <div class="search-container">
@@ -15,7 +16,8 @@
     {
         @foreach (var chat in FilteredSidebar)
         {
-            <div class="contact-item @(SelectedContactId == chat.Identity.ChatID ? "active" : "")"
+            <div @key="chat.Identity.ChatID"
+                class="contact-item @(SelectedContactId == chat.Identity.ChatID ? "active" : "")"
                  @onclick="async () => await SelectContact(chat.Identity.ChatID)">
                 <div class="contact-avatar-container">
                     <img src="@chat.Identity.AvatarUrl" class="contact-img" alt="avatar" />
@@ -44,11 +46,20 @@
 @code {
     private string searchTerm = "";
     protected Guid SelectedContactId;
+
     override protected async Task OnInitializedAsync()
     {
-        await _sidebarActionService.HandleSidebarLoadAsync();
-
+        _sidebarActionService.OnSidebarStateChanged += HandleStateChange;
     }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_sidebarStateService.SidebarItems == null || !_sidebarStateService.SidebarItems.Any())
+        {
+            await _sidebarActionService.HandleChatsLoadAsync();
+        }
+    }
+
     private IEnumerable<UserChatDTO> FilteredSidebar =>
     _sidebarStateService.SidebarItems?.Where(c => string.IsNullOrWhiteSpace(searchTerm) ||
                            c.Identity.ChatName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
@@ -59,5 +70,13 @@
         SelectedContactId = contactId;
         await _chatActionService.HandleChatLoadAsync(new ContactSelectedArgs(contactId));
         StateHasChanged();
+    }
+    private void HandleStateChange()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+    public void Dispose()
+    {
+        _sidebarActionService.OnSidebarStateChanged -= HandleStateChange;
     }
 }

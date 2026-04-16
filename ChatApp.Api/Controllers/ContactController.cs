@@ -47,7 +47,8 @@ namespace ChatApp.Api.Controllers
                     _hubContext.Clients.Users(contactId.ToString()).SendAsync("ReceiveStatus", "Ktoś usunął cie z kontaktów!")
                 );
 
-                await _hubContext.Clients.Users(recipients).SendAsync("ContactInviteReload");
+                await _hubContext.Clients.Users(recipients).SendAsync("SidebarInvitesReload");
+                await _hubContext.Clients.Users(recipients).SendAsync("SidebarChatsReload");
                 return Ok();
             }
             catch (Exception ex)

@@ -30,6 +30,7 @@ namespace ChatApp.Web.Services.Api
                 {
                     var errorMessage = await response.Content.ReadAsStringAsync();
                     _logger.LogError("Failed to leave group chat with ChatId: {ChatId}. Server responded with: {ErrorMessage}", chatId, errorMessage);
+                throw new Exception(errorMessage);
             }
         }
         public async Task<HashSet<UserDTO>> GetChatUsersAsync(Guid chatId)

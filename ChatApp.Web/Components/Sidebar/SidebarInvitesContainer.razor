@@ -1,4 +1,5 @@
 ﻿@using ChatApp.Application.DTO.Requests
+@implements IDisposable
 <div class="invites-list">
     <div class="empty-state-container">
         @if (!_sidebarStateService.ReceivedInvites.Any())
@@ -29,13 +30,23 @@
 </div>
 
 @code {
-    override protected async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        await _sidebarActionService.HandleInvitesLoadAsync();
+        _sidebarActionService.OnSidebarStateChanged += HandleStateChange;
+    }
+    private void HandleStateChange()
+    {
+        _ = InvokeAsync(StateHasChanged);
     }
     private async Task RequestInviteResponse(Guid inviteId, InviteStatus response)
     {
         var chatId = _appStateService.CurrentChat?.Identity?.ChatID ?? Guid.Empty;
         await _sidebarActionService.HandleInviteResponseAsync(new InviteActionRequest(inviteId, response, chatId));
+        
+
+    }
+    public void Dispose()
+    {
+        _sidebarActionService.OnSidebarStateChanged -= HandleStateChange;
     }
 }

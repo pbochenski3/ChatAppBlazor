@@ -14,7 +14,7 @@
                     @if (!_appStateService.CurrentChat.Identity.IsGroup)
                     {
 
-                        <button class="btn-secondary btn-delete" @onclick='_chatSettingsActionService.HandleLoadUsersToAddAsync'>Usuń kontakt</button>
+                        <button class="btn-secondary btn-delete" @onclick=' () => _chatSettingsActionService.RequestContactDelete(_appStateService.CurrentChat.Identity.ChatID)'>Usuń kontakt</button>
                     }
                     else
                     {
@@ -51,7 +51,7 @@
                 </div>
                 @if (ContactsToAdd != null && ContactsToAdd.Any())
                 {
-                    <button class="btn-add-action" @onclick="async () => { _chatStateService.SettingsView = ChatSettingsView.Settings; await CreateGroupAsync(ContactsToAdd); }">Zatwierdź</button>
+                    <button class="btn-add-action" @onclick="async () => { _chatStateService.SettingsView = ChatSettingsView.Settings; await AddUserToGroupAsync(ContactsToAdd); }">Zatwierdź</button>
                 }
                 <button class="btn-add-action" @onclick="() => _chatStateService.SettingsView = ChatSettingsView.Settings">Cofnij</button>
                 break;
@@ -119,10 +119,10 @@
         }
         await Task.CompletedTask;
     }
-    private async Task CreateGroupAsync(HashSet<Guid> usersToAdd)
+    private async Task AddUserToGroupAsync(HashSet<Guid> usersToAdd)
     {
         _chatStateService.SettingsView = ChatSettingsView.Settings;
-        await _chatSettingsActionService.HandleCreateGroupChatAsync(usersToAdd);
+        await _chatSettingsActionService.HandleAddUsersToChatAsync(usersToAdd);
         ContactsToAdd.Clear();
     }
     private async Task HandleChatNameChangeAsync(string name)

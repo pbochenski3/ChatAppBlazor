@@ -20,11 +20,11 @@
         }
     </div>
     <main class="main-layout">
-        <Sidebar ></Sidebar>
-       
+        <Sidebar
+            OnProfileOpen="HandleOpenProfile"/>
         @if (_appStateService.CurrentChat != null)
         {
-            <ChatWindow/>
+            <ChatWindow @key="_appStateService.CurrentChat.Identity.ChatID"/>
         }
         @if(_appStateService.IsProfileOpen)
         {
@@ -68,6 +68,10 @@
         {
             await _chatHubService.StartAsync();
             SubscribeToEvent();
+
+            await _sidebarActionService.HandleInvitesLoadAsync();
+            await _sidebarActionService.HandleChatsLoadAsync();
+
             //await HandleDataReloadAsync(true);
             _isLoading = false;
         }
@@ -83,7 +87,7 @@
     private void SubscribeToEvent()
     {
         _chatHubService.InviteStatusMessage += HandleInviteStatusReceivedAsync;
-  
+        _chatActionService.OnStateChanged += HandleStateChanged;
         _chatHubService.OnAvatarReload += HandleAvatarReloadAsync;
         _chatHubService.OnGroupAvatarReload += HandleGroupAvatarReloadAsync;
 
@@ -91,10 +95,17 @@
     private void UnSubscribeToEvent()
     {
         _chatHubService.InviteStatusMessage -= HandleInviteStatusReceivedAsync;
-
+        _chatActionService.OnStateChanged -= HandleStateChanged;
         _chatHubService.OnAvatarReload -= HandleAvatarReloadAsync;
         _chatHubService.OnGroupAvatarReload -= HandleGroupAvatarReloadAsync;
 
+    }
+    private void HandleStateChanged()
+    {
+        _ = InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
     }
     private async Task HandleOpenProfile(bool open)
     {
@@ -137,12 +148,6 @@
         await Task.Delay(durationInSeconds * 1000); 
 
         _notification = string.Empty;
-        await InvokeAsync(StateHasChanged);
-    }
-    private async Task HandleDataReloadAsync()
-    {
-       // await HandleInviteLoadAsync();
-        await _sidebarActionService.HandleSidebarLoadAsync();
         await InvokeAsync(StateHasChanged);
     }
     private async Task HandleGroupAvatarReloadAsync(string newAvatarUrl, Guid chatId)

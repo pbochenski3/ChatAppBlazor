@@ -37,10 +37,10 @@ namespace ChatApp.Api.Controllers
 
                 if (usersToNotify.Any())
                 {
-                    await _hubContext.Clients.Users(usersToNotify).SendAsync("SideBarReload", true);
+                    await _hubContext.Clients.Users(usersToNotify).SendAsync("SidebarChatsReload");
                 }
 
-                await _hubContext.Clients.Group(newChatId.ToString()).SendAsync("SideBarReload", true);
+                await _hubContext.Clients.Group(newChatId.ToString()).SendAsync("SidebarChatsReload");
                 return Ok();
             }
             catch (Exception ex)
@@ -55,8 +55,14 @@ namespace ChatApp.Api.Controllers
             try
             {
                 var actionResult = await _groupChatService.ProcessAddToGroupChatAsync(chatId, usersToAdd, userId);
-                var usersToNotify = usersToAdd.Select(id => id.ToString()).ToList();
-                await _hubContext.Clients.Users(usersToNotify).SendAsync("SideBarReload", true);
+                var usersToNotify = actionResult.UsersInChat.Select(id => id.ToString()).ToList();
+
+                if (usersToNotify.Any())
+                {
+                    await _hubContext.Clients.Users(usersToNotify).SendAsync("SidebarChatsReload");
+                    await _hubContext.Clients.Users(usersToNotify).SendAsync("ChatReload",chatId, true);
+                }
+
                 await _hubContext.Clients.Group(actionResult.GroupChatId.ToString()).SendAsync("ReceiveMessage", actionResult.SystemMessage);
                 await _hubContext.Clients.Group(actionResult.GroupChatId.ToString()).SendAsync("UsersInChatReload", actionResult.GroupChatId);
                 return Ok();
@@ -73,9 +79,13 @@ namespace ChatApp.Api.Controllers
             try
             {
                 var message = await _groupChatService.ProcessLeaveGroupChatAsync(chatId, userId, username);
-                await _hubContext.Clients.Group(chatId.ToString()).SendAsync("ReceiveMessage", message);
-                await _hubContext.Clients.Group(chatId.ToString()).SendAsync("UsersInChatReload", chatId);
-                await _hubContext.Clients.Client(userId.ToString()).SendAsync("ChatReload", chatId, true);
+                await _hubContext.Clients.User(userId.ToString()).SendAsync("CloseConnection");
+                await Task.WhenAll(
+                _hubContext.Clients.Group(chatId.ToString()).SendAsync("ReceiveMessage", message),
+                _hubContext.Clients.Group(chatId.ToString()).SendAsync("UsersInChatReload", chatId)
+                    );
+
+                //to pozneij do przeniesienia
                 await _hubContext.Clients.Client(userId.ToString()).SendAsync("ReceiveStatus", "Opuściłeś czat!");
 
                 return Ok();

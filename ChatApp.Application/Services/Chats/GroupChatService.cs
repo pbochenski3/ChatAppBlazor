@@ -91,10 +91,14 @@ namespace ChatApp.Application.Services.Chats
         {
             var isGroupChat = await _chatService.IsChatExistingAsync(chatId, userId);
             Guid targetChatId = chatId;
+ 
 
             if (!isGroupChat)
             {
                 targetChatId = await CreateGroupChatAsync(chatId, usersToAdd);
+                var allUsersInChat = await ProccesGetChatUsersAsync(targetChatId);
+                usersToAdd.UnionWith(allUsersInChat.Select(u => u.UserID));
+
             }
             else
             {
@@ -102,9 +106,9 @@ namespace ChatApp.Application.Services.Chats
             }
 
             var admin = await _userService.GetUserByIdAsync(userId);
-            var users = await _userService.GetUsersByIdsAsync(usersToAdd);
+            var addedUsers = await _userService.GetUsersByIdsAsync(usersToAdd);
 
-            string joinedNames = string.Join(", ", users.Select(u => u.Username));
+            string joinedNames = string.Join(", ", addedUsers.Select(u => u.Username));
 
             var systemMessage = new MessageDTO
             {
@@ -117,7 +121,8 @@ namespace ChatApp.Application.Services.Chats
             };
 
             await _messageService.SaveMessageAsync(systemMessage);
-            return new AddToGroupActionResult(targetChatId, systemMessage);
+
+            return new AddToGroupActionResult(targetChatId, systemMessage, usersToAdd);
         }
         public async Task<MessageDTO> ProcessLeaveGroupChatAsync(Guid chatId, Guid userId, string username)
         {

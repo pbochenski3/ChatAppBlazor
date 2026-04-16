@@ -75,7 +75,7 @@ namespace ChatApp.Web.Services.State
             CurrentChat = null;
             Message = "You have been logged out.";
             await _js.InvokeVoidAsync("localStorage.removeItem", UserKey);
-            //await _js.InvokeVoidAsync("localStorage.removeItem", ChatKey);
+            await _js.InvokeVoidAsync("localStorage.removeItem", ChatKey);
             _navManager.NavigateTo("/");
 
         }

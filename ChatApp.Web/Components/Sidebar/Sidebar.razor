@@ -23,7 +23,7 @@
         @switch (_sidebarStateService.SidebarView)
         {
             case SidebarView.Contacts:
-                <SideBarChatsContainer />
+                <SideBarChatsContainer/>
                 break;
             case SidebarView.Invites:
                 <SidebarInvitesContainer/>
@@ -54,14 +54,14 @@
     private int PendingInvitesCount => _sidebarStateService?.ReceivedInvites?.Count ?? 0;
     protected override async Task OnInitializedAsync()
     {
-        _sidebarActionService.OnSidebarStateChanged += SidebarStateChanged;
+        _sidebarActionService.OnSidebarStateChanged += HandleStateChange;
         //_sidebarStateService.OnSidebarStateChanged += SidebarStateChanged;
     }
-    private void SidebarStateChanged()
+   private void HandleStateChange()
     {
-        InvokeAsync(StateHasChanged);
+        _ = InvokeAsync(StateHasChanged);
     }
-   
+
     private async Task OpenProfile()
     {
         await OnProfileOpen.InvokeAsync(true);
@@ -70,7 +70,7 @@
 
     public void Dispose()
     {
-     _sidebarActionService.OnSidebarStateChanged -= SidebarStateChanged;
-    // _sidebarStateService.OnSidebarStateChanged -= SidebarStateChanged;
+        _sidebarActionService.OnSidebarStateChanged -= HandleStateChange;
+        // _sidebarStateService.OnSidebarStateChanged -= SidebarStateChanged;
     }
 }
