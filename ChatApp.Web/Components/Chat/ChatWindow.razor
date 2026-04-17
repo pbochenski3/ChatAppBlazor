@@ -1,0 +1,114 @@
+@using ChatApp.Domain.Enums
+@inject DialogService _dialogService
+@implements IDisposable;
+
+<div class="chat-main-wrapper @(_chatStateService.IsSettingsOpen ? "show-settings" : "")">
+
+    @if (_dialogService.IsVisible)
+    {
+        <ConfirmDialog Title="@_dialogService.Title"
+                       Message="@_dialogService.Message"
+                       OnClose="OnDialogClose" />
+    }
+
+    <div class="chat-content">
+        <div class="top-bar">
+            <div class="user-profile-top">
+                <div class="avatar-wrapper-top">       
+                    <img src="@_appStateService.CurrentChat.Identity.AvatarUrl" class="user-avatar" alt="Avatar" />
+                    <div class="status-dot online"></div>
+                </div>
+                <div class="user-info-text-top">
+                    <span class="user-name">@_appStateService.CurrentChat.Identity.ChatName</span>
+                </div>
+            </div>
+            <div class="contact-config" @onclick="_chatStateService.ToggleSettings">⚙️</div>
+        </div>
+
+        <div class="chat-body">
+            <div class="chat-box" id="chat-window">
+                <div class="chat-messages">
+                    @if (_chatStateService.ReceivedMessages != null && _chatStateService.ReceivedMessages.Any())
+                    {
+                        @foreach (var msg in _chatStateService.ReceivedMessages)
+                        {
+                            <div @key="msg.MessageID"
+                            class="message 
+                            @(IsSystem(msg) ? "system" : "") 
+                            @(IsMyMessage(msg) ? "mine" : "")">
+                                @if (!IsSystem(msg) && !IsMyMessage(msg))
+                                {
+                                <div class="message-info">
+                                <span class="message-time">[@msg.SentAt.ToString("HH:mm")]</span>
+                                <span class="message-user">@msg.SenderUsername:</span>
+                                </div>
+                                }
+                                <div class="message-body">
+                                @if (HasImage(msg.imageUrl))
+                                {
+                                    <img src="@msg.imageUrl" class="chat-image" />
+                                }
+                                @if(HasText(msg.Content))
+                                {
+                                    <span class="message-content">@msg.Content</span>
+                                }
+                                </div>
+                                </div>
+                        }
+                    }
+                </div>
+            </div>
+            <ChatInput/>
+        </div>
+    </div>
+    <ChatSettings/>
+</div>
+
+@code {
+    private Guid chatId => _appStateService.CurrentChat?.Identity.ChatID ?? Guid.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+        SubscribeToEvent();
+        await _chatActionService.HandleUserOnGroupLoadAsync(chatId);
+    }
+    private void SubscribeToEvent()
+    {
+        _dialogService.OnStateChanged += HandleStateChanged;
+        _chatStateService.OnStateChanged += HandleStateChanged;
+        _chatActionService.OnStateChanged += HandleStateChanged;
+        _chatSettingsActionService.OnStateChanged += HandleStateChanged;
+    }
+    private void UnsubscribeToEvent()
+    {
+        _dialogService.OnStateChanged -= HandleStateChanged;
+        _chatStateService.OnStateChanged -= HandleStateChanged;
+        _chatActionService.OnStateChanged -= HandleStateChanged;
+        _chatSettingsActionService.OnStateChanged -= HandleStateChanged;
+    }
+    private void HandleStateChanged()
+    {
+        Console.WriteLine("State changed, invoking StateHasChanged...");
+        _ = InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    private async Task OnDialogClose(bool result)
+    {
+        await _dialogService.HandleClose(result);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JSRuntime.InvokeVoidAsync("scrollToBottom", "chat-window");
+    }
+    private bool IsMyMessage(MessageDTO msg) => msg.SenderUsername == _appStateService.CurrentUser?.Username;
+    private bool IsSystem(MessageDTO msg) => msg.MessageType == MessageType.System;
+    private bool HasImage(string msg) => !string.IsNullOrWhiteSpace(msg);
+    private bool HasText(string msg) => !string.IsNullOrWhiteSpace(msg);
+    public void Dispose()
+    {
+        UnsubscribeToEvent();
+    }
+}

@@ -1,0 +1,53 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.JSInterop
+@using Microsoft.Extensions.Configuration
+@using Microsoft.AspNetCore.SignalR.Client
+
+@* (Domain & Application) *@
+@using ChatApp.Domain.Enums
+@using ChatApp.Application
+@using ChatApp.Application.DTO
+@using ChatApp.Application.DTO.Chats
+
+@* UI  *@
+@using ChatApp.Web
+@using ChatApp.Web.Services
+@using ChatApp.Web.Layout
+@using ChatApp.Web.Components
+@using ChatApp.Web.Services.Api
+@using ChatApp.Web.Services.Api.Interfaces
+@using ChatApp.Web.Services.State
+@using ChatApp.Web.Services.Actions
+@using ChatApp.Web.Components.Chat
+@using ChatApp.Web.Components.Sidebar
+
+
+@* Injecty (trzymaj je w blokach tematycznych) *@
+@inject NavigationManager _navManager
+@inject HttpClient _httpClient
+@inject IJSRuntime JSRuntime
+@inject IConfiguration Configuration
+
+@* Twoje Serwisy *@
+@inject ChatHubService _chatHubService
+@inject ChatStateService _chatStateService
+@inject AppStateService _appStateService
+@inject ChatActionService _chatActionService
+@inject ChatSettingsActionService _chatSettingsActionService
+@inject SidebarActionService _sidebarActionService
+@inject SidebarStateService _sidebarStateService
+@inject DialogService _dialogService
+
+@* API Clients *@
+@inject IAuthClient _authService
+@inject IChatApiClient _chatApiClient
+@inject IContactApiClient _contactApiClient
+@inject IInviteApiClient _inviteApiClient
+@inject IGroupChatApiClient _groupChatApiClient
+@inject IImageApiClient _imageService

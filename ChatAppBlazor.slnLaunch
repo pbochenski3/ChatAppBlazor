@@ -3,14 +3,8 @@
     "Name": "New Profile",
     "Projects": [
       {
-        "Path": "ChatApp.ChatHub\\ChatApp.ChatHub.csproj",
-        "Action": "Start",
-        "DebugTarget": "https"
-      },
-      {
-        "Path": "ChatApp.ChatServer\\ChatApp.ChatServer\\ChatApp.ChatServer.csproj",
-        "Action": "Start",
-        "DebugTarget": "https"
+        "Path": "ChatApp.Api\\ChatApp.Api.csproj",
+        "Action": "Start"
       }
     ]
   }
