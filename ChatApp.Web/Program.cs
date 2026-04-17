@@ -8,9 +8,10 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using ChatApp.Web.Services.Actions.Interfaces;
 using ChatApp.Web.Services.Common;
 using ChatApp.Web.Services.Common.Interfaces;
+using MediatR;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
-builder.Services.AddScoped<ChatHubService>();
+builder.Services.AddMediatR(cfg => { cfg.RegisterServicesFromAssembly(typeof(Program).Assembly); });
 builder.Services.AddScoped<AppStateService>();
 builder.Services.AddScoped<ChatStateService>();
 builder.Services.AddScoped<SidebarStateService>();
@@ -25,6 +26,7 @@ builder.Services.AddScoped<IContactApiClient, ContactApiClient>();
 builder.Services.AddScoped<IInviteApiClient, InviteApiClient>();
 builder.Services.AddScoped<IGroupChatApiClient, GroupChatApiClient>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ChatHubService>();
 builder.Services.AddScoped<ITokenProvider>(sp => sp.GetRequiredService<AppStateService>());
 builder.Services.AddTransient<AuthorizationHandler>();
 builder.Services.AddHttpClient("ChatAPI", client =>

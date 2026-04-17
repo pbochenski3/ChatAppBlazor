@@ -1,11 +1,15 @@
 using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
 using ChatApp.Application.Events;
+using ChatApp.Web.Events;
 using ChatApp.Web.Services.Actions;
 using ChatApp.Web.Services.Actions.Interfaces;
 using ChatApp.Web.Services.State;
+using MediatR;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.Http.Json;
+using static ChatApp.Web.Events.ChatEvents;
+using static ChatApp.Web.Events.SidebarEvents;
 
 
 public class ChatHubService : IAsyncDisposable
@@ -19,37 +23,36 @@ public class ChatHubService : IAsyncDisposable
     private readonly string _baseHubUrl;
     private readonly HttpClient _httpClient;
     private readonly ILogger<ChatHubService> _logger;
-    private readonly IChatActionService _chatActionService;
-    private readonly ISidebarActionService _sidebarActionService;
+    private readonly IMediator _mediator;
 
     public ChatHubService(IConfiguration configuration,
         AppStateService appStateService,
         HttpClient httpClient,
-        IChatActionService chatActionService,
-        ISidebarActionService sidebarActionService,
-        ILogger<ChatHubService> logger)
+        ILogger<ChatHubService> logger,
+        IMediator mediator
+        )
     {
         _appStateService = appStateService;
         _baseHubUrl = configuration["SignalR:HubUrl"] ?? throw new ArgumentNullException("SignalR:HubUrl");
         _httpClient = httpClient;
-        _chatActionService = chatActionService;
-        _sidebarActionService = sidebarActionService;
         _logger = logger;
+        _mediator = mediator;
     }
 
     private void RegisterHandlers()
     {
         if (HubConnection == null) return;
         _appStateService.OnLogoutRequested += StopAsync;
-        HubConnection.On<MessageDTO>("ReceiveMessage", (message) => _chatActionService.HandleIncomingMessageAsync(message));
-        HubConnection.On("SidebarChatsReload",  async () => await _sidebarActionService.HandleChatsLoadAsync());
-        HubConnection.On("SidebarInvitesReload", async () => await _sidebarActionService.HandleInvitesLoadAsync());
-        //HubConnection.On<bool>("ContactInviteReload", async (_) => await TriggerReload(ReloadTarget.Global));
-        HubConnection.On("ChatClose",  async () => await _chatActionService.HandleChatCloseAsync());
-        HubConnection.On<Guid, bool>("ChatReload",  async (id, force) => await _chatActionService.HandleChatLoadAsync(new ContactSelectedArgs(id, force)));
-        HubConnection.On<Guid>("UsersInChatReload", async (chatId) => await _chatActionService.HandleUserOnGroupLoadAsync(chatId));
-        HubConnection.On<Guid, string>("UpdateChatName",  async (chatId, newName) => await _sidebarActionService.HandleChatNameReloadAsync(chatId, newName));
-        HubConnection.On<Guid, string, string>("UpdateLastMessage",  async (chatId, lastSender, lastMessage) => await _sidebarActionService.HandleSidebarLastMessageReloadAsync(chatId, lastSender, lastMessage));
+        HubConnection.On<MessageDTO>("ReceiveMessage", async (message) => await _mediator.Publish(new IncomingMessageReceived(message)));
+        HubConnection.On("ChatClose",  async () => await _mediator.Publish(new ChatRoomClosed()));
+        HubConnection.On<Guid, bool>("ChatReload",  async (id, force) => await _mediator.Publish(new ChatUpdated(id, force)));
+        HubConnection.On<Guid>("UsersInChatReload", async (chatId) => await _mediator.Publish(new UsersInChatUpdated(chatId)));
+
+        HubConnection.On<Guid, string>("UpdateChatName", async (chatId, newName) => await _mediator.Publish(new ChatNameChanged(chatId, newName)));
+        HubConnection.On("SidebarChatsReload",  async () => await _mediator.Publish(new ChatListChanged()));
+        HubConnection.On("SidebarInvitesReload", async () => await _mediator.Publish(new InvitesListChanged()));
+        HubConnection.On<Guid, string, string>("UpdateLastMessage",  async (chatId, lastSender, lastMessage) => await _mediator.Publish(new SidebarLastMessageChanged(chatId, lastSender, lastMessage)));
+
         HubConnection.On<string, Guid>("ContactAvatarReload", async (avatarUrl, userId) =>
         {
             await (OnAvatarReload?.Invoke(avatarUrl, userId) ?? Task.CompletedTask);
@@ -81,17 +84,8 @@ public class ChatHubService : IAsyncDisposable
                 })
                 .WithAutomaticReconnect()
                 .Build();
-        SubscribeToEvent();
         RegisterHandlers();
         await HubConnection.StartAsync();
-    }
-    public void SubscribeToEvent()
-    {
-        _chatActionService.OnJoinGroupRequested += JoinChatGroupSignalAsync;
-    }
-    public void UnsubscribeFromEvent()
-    {
-        _chatActionService.OnJoinGroupRequested -= JoinChatGroupSignalAsync;
     }
     public async Task StopAsync()
     {
@@ -102,11 +96,6 @@ public class ChatHubService : IAsyncDisposable
             HubConnection = null;
         }
     }
-    //public async Task<List<UserChatDTO>> GetUserChatListAsync()
-    //{
-    //    if (HubConnection == null) return new List<UserChatDTO>();
-    //    return await HubConnection.InvokeAsync<List<UserChatDTO>>("GetUserChatListAsync");
-    //}
     public async Task JoinChatGroupSignalAsync(Guid chatId)
     {
         if (HubConnection == null) return;
@@ -118,14 +107,11 @@ public class ChatHubService : IAsyncDisposable
     }
     public async ValueTask DisposeAsync()
     {
-        if(_chatActionService != null)
-        {
-            _chatActionService.OnJoinGroupRequested -= JoinChatGroupSignalAsync;
-        }    
         if (HubConnection is not null)
         {
             await HubConnection.DisposeAsync();
         }
         _appStateService.OnLogoutRequested -= StopAsync;
     }
+
 }

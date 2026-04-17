@@ -6,6 +6,9 @@ using ChatApp.Web.Services.State;
 using ChatApp.Application.DTO.Requests;
 using ChatApp.Web.Services.Actions.Interfaces;
 using ChatApp.Web.Services.Common;
+using MediatR;
+using ChatApp.Web.Events;
+using static ChatApp.Web.Events.SidebarEvents;
 
 namespace ChatApp.Web.Services.Actions
 {
@@ -15,16 +18,12 @@ namespace ChatApp.Web.Services.Actions
         private readonly IContactApiClient _contactApiClient;
         private readonly IInviteApiClient _inviteApiClient;
         private readonly AppStateService _appStateService;
-        private readonly DialogService _dialogService;
-        private readonly IGroupChatApiClient _groupChatApi;
         private readonly ILogger<SidebarActionService> _logger;
         public SidebarActionService(
             ILogger<SidebarActionService> logger,
             SidebarStateService sidebarStateService,
             IContactApiClient contactApiClient,
             AppStateService appStateService,
-            DialogService dialogService,
-            IGroupChatApiClient groupChatApi,
             IInviteApiClient inviteApiClient
             )
         {
@@ -32,8 +31,6 @@ namespace ChatApp.Web.Services.Actions
             _appStateService = appStateService;
             _sidebarStateService = sidebarStateService;
             _contactApiClient = contactApiClient;
-            _dialogService = dialogService;
-            _groupChatApi = groupChatApi;
             _inviteApiClient = inviteApiClient;
         }
         public event Action? OnSidebarStateChanged;

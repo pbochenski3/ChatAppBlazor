@@ -1,13 +1,16 @@
 ﻿
 using ChatApp.Domain.Enums;
+using ChatApp.Web.Events;
 using ChatApp.Web.Services.Actions.Interfaces;
 using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.Common;
 using ChatApp.Web.Services.State;
+using MediatR;
 
 namespace ChatApp.Web.Services.Actions
 {
-    public class ChatSettingsActionService : IChatSettingsActionService
+    public class ChatSettingsActionService : 
+        IChatSettingsActionService
     {
         private readonly ChatStateService _chatStateService;
         private readonly AppStateService _appStateService;
@@ -130,5 +133,6 @@ namespace ChatApp.Web.Services.Actions
             }
         }
 
+  
     }
 }

@@ -79,7 +79,6 @@
     }
     private void SubscribeToEvent()
     {
-        _chatHubService.InviteStatusMessage += HandleInviteStatusReceivedAsync;
         _chatActionService.OnStateChanged += HandleStateChanged;
         _chatHubService.OnAvatarReload += HandleAvatarReloadAsync;
         _chatHubService.OnGroupAvatarReload += HandleGroupAvatarReloadAsync;
@@ -87,7 +86,6 @@
     }
     private void UnSubscribeToEvent()
     {
-        _chatHubService.InviteStatusMessage -= HandleInviteStatusReceivedAsync;
         _chatActionService.OnStateChanged -= HandleStateChanged;
         _chatHubService.OnAvatarReload -= HandleAvatarReloadAsync;
         _chatHubService.OnGroupAvatarReload -= HandleGroupAvatarReloadAsync;
@@ -106,32 +104,6 @@
         _appStateService.IsProfileOpen = open;
         await InvokeAsync(StateHasChanged);
     }
-    private async Task HandleInviteStatusReceivedAsync(string status)
-    {
-        var notifyTask = ShowNotificationAsync(status);
-    }
-    // private async Task HandleUnifiedReloadAsync(ReloadTarget target)
-    // {
-    //     await InvokeAsync(async () =>
-    //     {
-    //         switch (target)
-    //         {
-    //             case ReloadTarget.Sidebar:
-    //                 await _sidebarActionService.HandleSidebarLoadAsync(true);
-    //                 break;
-    //             case ReloadTarget.Invite:
-    //                 await HandleInviteLoadAsync(true);
-    //                 break;
-    //             case ReloadTarget.Global:
-    //                 await HandleDataReloadAsync(true);
-    //                 break;
-    //             case ReloadTarget.Chat:
-    //                 await _chatActionService.HandleChatClose(true);
-    //                 break;
-    //         }
-    //         StateHasChanged();
-    //     });
-    // }
 
     private async Task ShowNotificationAsync(string message, int durationInSeconds = 5)
     {
