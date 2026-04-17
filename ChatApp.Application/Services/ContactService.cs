@@ -1,11 +1,14 @@
 using ChatApp.Application.DTO;
+using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
 using ChatApp.Domain.Models;
+using ChatApp.Domain.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace ChatApp.Application.Services
 {
@@ -15,14 +18,16 @@ namespace ChatApp.Application.Services
         private readonly IUserRepository _userRepo;
         private readonly IContactRepository _contactRepo;
         private readonly IChatRepository _chatRepo;
-        private readonly ChatApp.Domain.Repository.IUserChatRepository _userChatRepo;
+        private readonly IUserChatRepository _userChatRepo;
+        private readonly ITransactionProvider _transactionProvider;
 
-        public ContactService(IContactRepository contactRepo, IMessageRepository messageRepo, IUserRepository userRepo, IChatRepository chatRepo, ChatApp.Domain.Repository.IUserChatRepository userChatRepo)
+        public ContactService(IContactRepository contactRepo, IMessageRepository messageRepo, IUserRepository userRepo, IChatRepository chatRepo,IUserChatRepository userChatRepo, ITransactionProvider transactionProvider)
         {
             _messageRepo = messageRepo;
             _userRepo = userRepo;
             _chatRepo = chatRepo;
             _contactRepo = contactRepo;
+            _transactionProvider = transactionProvider;
             _userChatRepo = userChatRepo;
         }
 
@@ -61,19 +66,22 @@ namespace ChatApp.Application.Services
 
         public async Task CreateContactAsync(Guid userId1, Guid userId2)
         {
-            var contact1 = new Contact
+             await _transactionProvider.ExecuteInTransactionAsync(async () =>
             {
-                UserID = userId1,
-                ContactUserID = userId2,
-            };
-            await _contactRepo.AddContactAsync(contact1);
+                var contact1 = new Contact
+                {
+                    UserID = userId1,
+                    ContactUserID = userId2,
+                };
+                await _contactRepo.AddContactAsync(contact1);
 
-            var contact2 = new Contact
-            {
-                UserID = userId2,
-                ContactUserID = userId1
-            };
-            await _contactRepo.AddContactAsync(contact2);
+                var contact2 = new Contact
+                {
+                    UserID = userId2,
+                    ContactUserID = userId1
+                };
+                await _contactRepo.AddContactAsync(contact2);
+            });
         }
 
         public async Task AddContactAsync(Guid userId, Guid contactUserId)

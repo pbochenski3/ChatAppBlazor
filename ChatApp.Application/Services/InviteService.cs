@@ -1,6 +1,7 @@
 using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Requests;
 using ChatApp.Application.DTO.Results;
+using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
@@ -15,15 +16,17 @@ namespace ChatApp.Application.Services
 {
     public class InviteService : IInviteService
     {
+        private readonly ITransactionProvider _transactionProvider;
         private readonly IContactService _contactService;
         private readonly IInviteRepository _inviteRepo;
         private readonly IPrivateChatService _privateChatService;
 
-        public InviteService(IInviteRepository inviteRepo, IContactService contactService, IPrivateChatService privateChatService   )
+        public InviteService(IInviteRepository inviteRepo, IContactService contactService, IPrivateChatService privateChatService, ITransactionProvider transactionProvider)
         {
             _inviteRepo = inviteRepo;
             _contactService = contactService;
             _privateChatService = privateChatService;
+            _transactionProvider = transactionProvider;
         }
 
         public async Task SendInviteAsync(Guid senderId, Guid receiverId)
@@ -57,23 +60,24 @@ namespace ChatApp.Application.Services
         }
         public async Task<InviteActionResultDto> ProcessInviteActionAsync(Guid inviteId, InviteStatus response, CancellationToken ct)
         {
-            Guid chatId;
             var invite = await _inviteRepo.GetInviteByIdAsync(inviteId);
+
             if (invite == null)
             {
                 throw new KeyNotFoundException("Invite not found");
             }
 
-            if (response == InviteStatus.Accepted)
+            return await _transactionProvider.ExecuteAsync(async () =>
             {
-                await _contactService.AddContactAsync(invite.SenderID, invite.ReceiverID);
-                chatId = await _privateChatService.CreatePrivateChatAsync(invite.SenderID, invite.ReceiverID);
-            }
-            else
-            {
-                chatId = Guid.Empty;
-            }
-                return new InviteActionResultDto(invite.SenderID,invite.ReceiverID, chatId);
+                Guid chatId = Guid.Empty;
+
+                if (response == InviteStatus.Accepted)
+                {
+                    await _contactService.AddContactAsync(invite.SenderID, invite.ReceiverID);
+                    chatId = await _privateChatService.CreatePrivateChatAsync(invite.SenderID, invite.ReceiverID);
+                }
+                return new InviteActionResultDto(invite.SenderID, invite.ReceiverID, chatId);
+            });
         }
     }
 }

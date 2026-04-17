@@ -95,6 +95,8 @@ builder.Services.AddScoped<IChatReadStatusService, ChatReadStatusService>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 //SignalR - UserIdProvider
 builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+//Transaction provider for managing transactions across multiple repositories
+builder.Services.AddScoped<ITransactionProvider, TransactionProvider>();
 // Connection tracker for debugging SignalR connections
 builder.Services.AddSingleton<ConnectionTracker>();
 //JWT
