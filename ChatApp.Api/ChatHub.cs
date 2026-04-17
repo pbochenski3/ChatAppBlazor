@@ -52,6 +52,11 @@ namespace ChatApp.Api
 
             return base.OnConnectedAsync();
         }
+        public async Task RemoveMeFromChatGroup(Guid chatId)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatId.ToString());
+            _logger.LogInformation("Connection {ConnId} left group {ChatId}", Context.ConnectionId, chatId);
+        }
 
         public override Task OnDisconnectedAsync(Exception? exception)
         {
@@ -76,10 +81,10 @@ namespace ChatApp.Api
             }
             catch (Exception ex)
             {
-                _logger.LogDebug(ex, "Failed to log JoinChatGroupSignalAsync");
+                _logger.LogDebug(ex, "Failed to add user to group");
             }
         }
-  
+
         public async Task<string> GetUserAvatarUrlAsync()
         {
             return await _userService.GetAvatarUrlAsync(UserId);

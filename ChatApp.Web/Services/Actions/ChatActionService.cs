@@ -67,7 +67,7 @@ namespace ChatApp.Web.Services.Actions
         }
         public async Task HandleChatLoadAsync(ContactSelectedArgs args)
         {
-
+            _logger.LogDebug("Commence chat load");
             bool isSameChat = _appStateService.CurrentChat?.Identity.ChatID == args.ChatId;
 
             if (!args.Force && isSameChat)

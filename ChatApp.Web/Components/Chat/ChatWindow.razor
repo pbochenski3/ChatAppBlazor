@@ -76,12 +76,14 @@
         _dialogService.OnStateChanged += HandleStateChanged;
         _chatStateService.OnStateChanged += HandleStateChanged;
         _chatActionService.OnStateChanged += HandleStateChanged;
+        _chatSettingsActionService.OnStateChanged += HandleStateChanged;
     }
     private void UnsubscribeToEvent()
     {
         _dialogService.OnStateChanged -= HandleStateChanged;
         _chatStateService.OnStateChanged -= HandleStateChanged;
         _chatActionService.OnStateChanged -= HandleStateChanged;
+        _chatSettingsActionService.OnStateChanged -= HandleStateChanged;
     }
     private void HandleStateChanged()
     {

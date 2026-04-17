@@ -67,7 +67,7 @@
     }
     private void HandleStateChange()
     {
-        _ = InvokeAsync(StateHasChanged);
+        InvokeAsync(StateHasChanged);
     }
     private async Task HandleKeyDownAsync(KeyboardEventArgs e)
     {

@@ -42,7 +42,6 @@ public class ChatHubService : IAsyncDisposable
     private void RegisterHandlers()
     {
         if (HubConnection == null) return;
-        HubConnection.On("CloseConnection", async () => await StopAsync());
         HubConnection.On<MessageDTO>("ReceiveMessage", (message) => _chatActionService.HandleIncomingMessageAsync(message));
         HubConnection.On("SidebarChatsReload",  async () => await _sidebarActionService.HandleChatsLoadAsync());
         HubConnection.On("SidebarInvitesReload", async () => await _sidebarActionService.HandleInvitesLoadAsync());
@@ -61,6 +60,10 @@ public class ChatHubService : IAsyncDisposable
             await (OnGroupAvatarReload?.Invoke(avatarUrl, chatId) ?? Task.CompletedTask);
         });
         HubConnection.On<string>("ReceiveStatus", async (status) => await InviteStatusMessage.Invoke(status));
+        HubConnection.On<Guid>("RequestLeaveGroupSignalR", async (chatId) =>
+        {
+            await HubConnection.InvokeAsync("RemoveMeFromChatGroup", chatId);
+        });
 
     }
     public async Task StartAsync()
