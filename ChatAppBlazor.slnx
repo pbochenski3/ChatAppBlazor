@@ -1,8 +1,7 @@
 <Solution>
   <Project Path="ChatApp.Application/ChatApp.Application.csproj" />
-  <Project Path="ChatApp.ChatHub/ChatApp.ChatHub.csproj" />
-  <Project Path="ChatApp.ChatServer/ChatApp.ChatServer.Client/ChatApp.ChatServer.Client.csproj" />
-  <Project Path="ChatApp.ChatServer/ChatApp.ChatServer/ChatApp.ChatServer.csproj" />
+  <Project Path="ChatApp.Web/ChatApp.Web.csproj" />
+  <Project Path="ChatApp.Api/ChatApp.Api.csproj" />
   <Project Path="ChatApp.Domain/ChatApp.Domain.csproj" />
   <Project Path="ChatApp.Infrastructure/ChatApp.Infrastructure.csproj" />
 </Solution>
