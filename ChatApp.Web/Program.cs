@@ -1,12 +1,13 @@
 using ChatApp.Application.Interfaces;
 using ChatApp.Application.Handlers;
-using ChatApp.Web.Services;
 using ChatApp.Web.Services.Actions;
 using ChatApp.Web.Services.Api;
 using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.State;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using ChatApp.Web.Services.Actions.Interfaces;
+using ChatApp.Web.Services.Common;
+using ChatApp.Web.Services.Common.Interfaces;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddScoped<ChatHubService>();
@@ -23,6 +24,7 @@ builder.Services.AddScoped<IChatApiClient, ChatApiClient>();
 builder.Services.AddScoped<IContactApiClient, ContactApiClient>();
 builder.Services.AddScoped<IInviteApiClient, InviteApiClient>();
 builder.Services.AddScoped<IGroupChatApiClient, GroupChatApiClient>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ITokenProvider>(sp => sp.GetRequiredService<AppStateService>());
 builder.Services.AddTransient<AuthorizationHandler>();
 builder.Services.AddHttpClient("ChatAPI", client =>

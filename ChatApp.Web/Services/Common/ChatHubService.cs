@@ -2,6 +2,7 @@ using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
 using ChatApp.Application.Events;
 using ChatApp.Web.Services.Actions;
+using ChatApp.Web.Services.Actions.Interfaces;
 using ChatApp.Web.Services.State;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.Http.Json;
@@ -18,16 +19,14 @@ public class ChatHubService : IAsyncDisposable
     private readonly string _baseHubUrl;
     private readonly HttpClient _httpClient;
     private readonly ILogger<ChatHubService> _logger;
-    private readonly ChatActionService _chatActionService;
-    private readonly SidebarActionService _sidebarActionService;
-    private readonly ChatSettingsActionService _chatSettingsActionService;
+    private readonly IChatActionService _chatActionService;
+    private readonly ISidebarActionService _sidebarActionService;
 
     public ChatHubService(IConfiguration configuration,
         AppStateService appStateService,
         HttpClient httpClient,
-        ChatActionService chatActionService,
-        SidebarActionService sidebarActionService,
-        ChatSettingsActionService chatSettingsActionService,
+        IChatActionService chatActionService,
+        ISidebarActionService sidebarActionService,
         ILogger<ChatHubService> logger)
     {
         _appStateService = appStateService;
@@ -35,7 +34,6 @@ public class ChatHubService : IAsyncDisposable
         _httpClient = httpClient;
         _chatActionService = chatActionService;
         _sidebarActionService = sidebarActionService;
-        _chatSettingsActionService = chatSettingsActionService;
         _logger = logger;
     }
 
