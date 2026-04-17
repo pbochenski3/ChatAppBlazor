@@ -1,6 +1,5 @@
 @page "/register"
 
-<NotificationWindow />
 
 <div class="login-page">
     <div class="login-card">
@@ -69,12 +68,12 @@
         {
             _isProcessing = true;
             await _authService.RegisterUserAsync(_registerModel);
-            _notificationService.Notify("Rejestracja przebiegła pomyślnie!", NotificationType.Success, "Rejestracja");
+            _notificationService.Notify("Rejestracja przebiegła pomyślnie!", NotificationType.Info);
 
         }
         catch (Exception ex)
         {
-            _notificationService.Notify(ex.Message,NotificationType.Error,"Rejestracja");
+            _notificationService.Notify(ex.Message,NotificationType.Warning);
             _isProcessing = false;
         }
         finally

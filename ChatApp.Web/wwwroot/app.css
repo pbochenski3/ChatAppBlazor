@@ -1268,6 +1268,12 @@ body {
             color: var(--warning);
             border-bottom-color: var(--warning);
         }
+        .notification-toast.info {
+            color: var(--warning);
+        }
+        .notification-toast.System {
+            color: #1E90FF;
+        }
 
     .toast-close {
         background: transparent;

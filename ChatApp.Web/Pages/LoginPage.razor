@@ -1,5 +1,4 @@
 @page "/"
-    <NotificationWindow/>
 <div class="login-page">
     <div class="login-card">
         <div class="login-header">
@@ -67,7 +66,6 @@
     {
         _notification = string.Empty;
         _isProcessing = true;
-        StateHasChanged();
         try
         {
             _isProcessing = true;
@@ -76,11 +74,12 @@
             if (_appStateService.CurrentUser != null)
             {
                 _navManager.NavigateTo("/hub");
-                _appStateService.Message = "Zostałeś zalogowany!";
+
             }
             else
             {
-                _notification = "Invalid login attempt.";
+                _notificationService.Notify("Logowanie się nie powiodło!", NotificationType.Warning);
+                StateHasChanged();
             }
 
         }

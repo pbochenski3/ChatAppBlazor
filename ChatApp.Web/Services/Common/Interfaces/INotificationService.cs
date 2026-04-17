@@ -6,6 +6,6 @@ namespace ChatApp.Web.Services.Common.Interfaces
     public interface INotificationService
     {
         event Action<NotificationMessage> OnShow;
-        void Notify(string message, NotificationType type = NotificationType.Info, string title = "");
+        void Notify(string message, NotificationType type = NotificationType.Info);
     }
 }

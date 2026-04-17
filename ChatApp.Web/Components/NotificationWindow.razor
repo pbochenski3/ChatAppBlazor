@@ -4,7 +4,6 @@
     @foreach (var note in _activeNotifications)
     {
         <div class="notification-toast @note.Type.ToString().ToLower()">
-            <strong>@note.Title</strong>
             <p>@note.Message</p>
         </div>
     }

@@ -11,7 +11,6 @@
 
 @if (_isLoading == false)
 {
-    <NotificationWindow />
     <main class="main-layout">
         <Sidebar
             OnProfileOpen="HandleOpenProfile"/>
@@ -51,12 +50,7 @@
         _currentUser = _appStateService.CurrentUser;
         _notification = _appStateService.Message;
 
-        if (!string.IsNullOrEmpty(_notification))
-        {
-            _appStateService.Message = null;
-            _ = ShowNotificationAsync(_notification);
-        }
-
+        _notificationService.Notify($"{_currentUser.Username} witaj ponownie!", NotificationType.System);
         try
         {
             await _chatHubService.StartAsync();

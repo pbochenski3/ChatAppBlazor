@@ -9,6 +9,6 @@ namespace ChatApp.Domain.Enums
         Info,
         Warning,
         Error,
-        Success
+        System,
     }
 }

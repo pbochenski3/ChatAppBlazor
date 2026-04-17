@@ -7,13 +7,12 @@ namespace ChatApp.Web.Services.Common
     public class NotificationService : INotificationService
     {
         public event Action<NotificationMessage>? OnShow;
-        public void Notify(string message, NotificationType type = NotificationType.Info, string title = "")
+        public void Notify(string message, NotificationType type = NotificationType.Info)
         {
             var notification = new NotificationMessage
             {
                 Message = message,
                 Type =  type,
-                Title = title
             };
 
             OnShow?.Invoke(notification);
