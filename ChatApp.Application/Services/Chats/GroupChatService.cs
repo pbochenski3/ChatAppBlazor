@@ -137,8 +137,6 @@ namespace ChatApp.Application.Services.Chats
                     else
                         systemMessage.Content = $"{admin?.Username} dodał użytkowników: {joinedNames} do czatu.";
                 }
-
-                throw new Exception("TEST ROLLBACKU - Baza powinna być pusta!");
                 systemMessage.ChatID = targetChatId;
                 systemMessage.MessageID = Guid.CreateVersion7();
                 systemMessage.SenderUsername = "SYSTEM";
