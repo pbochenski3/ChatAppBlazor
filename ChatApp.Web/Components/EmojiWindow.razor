@@ -1,0 +1,34 @@
+﻿<div class="emoji-open" onclick="@OpenEmojiMenu">😊</div>
+
+@if(_isOpen)
+{
+    <div class="emoji-picker-container">
+    <div class="emoji-picker">
+        @foreach (var emoji in _smileysList)
+        {
+            <button type="button"
+                    class="emoji-btn"
+                    @onclick="() => OnEmojiSelect.InvokeAsync(emoji)">
+                @emoji
+            </button>
+        }
+    </div>
+    </div>
+}
+
+@code {
+    [Parameter] public EventCallback<string>  OnEmojiSelect { get; set; }
+    private static readonly List<string> _smileysList = new()
+    {
+        "😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇", "🙂", "🙃", "😉",
+        "🥰", "😍", "🤩", "😘", "😗", "😚", "😙", "😋", "😛", "😜", "🤪", "😝", "🤑",
+        "🤗", "🤭", "🤫", "🤔", "🤐", "🤨", "😐", "😑", "😶", "😏", "😒", "🙄", "😬",
+        "🤥", "😌", "😔", "😪", "🤤", "😴", "😷", "🤒", "🤕", "🤢", "🤮", "🤧", "🥵"
+    };
+    private bool _isOpen = false;
+    private void OpenEmojiMenu()
+    {
+        _isOpen = !_isOpen;
+    }
+
+}

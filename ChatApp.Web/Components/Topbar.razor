@@ -1,0 +1,21 @@
+﻿<div class="top-bar">
+    <div class="user-profile">
+        <div class="avatar-wrapper">
+            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=@User"
+                 class="user-avatar"
+                 alt="Avatar" />
+            <div class="status-dot online"></div>
+        </div>
+
+        <div class="user-info-text">
+            <span class="user-name">@User</span>
+            <span class="chat-separator">|</span>
+            <span class="chat-name">@ChatName</span>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string User { get; set; } = "Unknown User";
+    [Parameter] public string ChatName { get; set; } = "Unknown Chat";
+}

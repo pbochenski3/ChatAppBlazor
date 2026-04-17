@@ -1,0 +1,99 @@
+﻿﻿@using ChatApp.Application.DTO.Chats
+@using ChatApp.Domain.Enums
+@inject ILogger<ImageComponent> Logger
+<div class="profile-wrapper">
+    <div class="avatar-wrapper">
+        @if (_tempAvatarUrl != string.Empty)
+        {
+            <img src="@_tempAvatarUrl" alt="avatarTemp" />
+        }
+        else
+        {
+            <img src="@AvatarUrl" alt="avatar" />
+        }
+        <span class="online-badge"></span>
+    </div>
+    <p class="profile-username">@Name</p>
+    <p class="profile-role">@LabelRole</p>
+    <div class="profile-divider"></div>
+    <div class="avatar-upload-container">
+        <InputFile id="avatar-upload" OnChange="OnInputFileChange"
+                   style="display:none;" accept=".jpg,.jpeg,.png,.jfif" />
+        <label for="avatar-upload" disabled="@isUploading" class="user-profile-icon">
+            <p class="user-icon">Wybierz plik</p>
+        </label>
+        @if (selectedFile != null )
+        {
+            <button disabled="@isUploading" class="btn-upload" @onclick="HandleSaveClick">
+                @(isUploading ? "Przesyłanie..." : "Zapisz zmiany")
+            </button>
+            <span class="file-name">Wybrano: @selectedFile.Name</span>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string AvatarUrl { get; set; } = string.Empty;
+    [Parameter] public string Name { get; set; } = string.Empty;
+    [Parameter] public string LabelRole { get; set; } = string.Empty;
+    [Parameter] public bool IsGroup { get; set; } = false;
+    private IBrowserFile? selectedFile;
+    private bool isUploading = false;
+    public enum PhotoType { Private, Group };
+    private string _tempAvatarUrl { get; set; } = string.Empty;
+    private Guid _uploadKey = Guid.NewGuid();
+    public async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            selectedFile = await _imageService.GetBrowserFileAsync(e);
+            var base64 = await _imageService.GetImageStringAsync(selectedFile);
+            _tempAvatarUrl = $"data:{selectedFile.ContentType};base64,{base64}";
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Błąd podczas przetwarzania obrazu.");
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+    private async Task HandleSaveClick()
+    {
+        if (selectedFile == null) return;
+        try
+        {
+            isUploading = true;
+            var fileData = await _imageService.GetFileDataAsync(selectedFile);
+            var uploadType = UploadType.UserAvatar;
+            Guid? targetId = null;
+            if (IsGroup)
+            {
+                uploadType = UploadType.GroupAvatar;
+                targetId = _appStateService.CurrentChat.Identity.ChatID;
+            }
+            await _imageService
+        .UploadImageAsync
+        (
+            fileData,
+            selectedFile.Name,
+            _appStateService.CurrentUser.Token,
+            uploadType,
+            targetId
+        );
+
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Błąd podczas przesyłania obrazu.");
+            isUploading = false;
+        }
+        finally
+        {
+            selectedFile = null;
+            isUploading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+}

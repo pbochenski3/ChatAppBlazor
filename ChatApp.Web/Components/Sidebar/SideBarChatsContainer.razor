@@ -1,0 +1,82 @@
+﻿@using ChatApp.Application.Events
+@implements IDisposable
+
+<div class="contacts-list">
+    <div class="search-container">
+        <input type="text" class="form-control search-input"
+               placeholder="Szukaj na liście..."
+               @bind="searchTerm"
+               @bind:event="oninput" />
+    </div>
+    @if (_sidebarStateService.SidebarItems == null || !FilteredSidebar.Any())
+    {
+        <p class="section-hint">Nie znaleziono kontaktów.</p>
+    }
+    else
+    {
+        @foreach (var chat in FilteredSidebar)
+        {
+            <div @key="chat.Identity.ChatID"
+                class="contact-item @(SelectedContactId == chat.Identity.ChatID ? "active" : "")"
+                 @onclick="async () => await SelectContact(chat.Identity.ChatID)">
+                <div class="contact-avatar-container">
+                    <img src="@chat.Identity.AvatarUrl" class="contact-img" alt="avatar" />
+                </div>
+                <div class="contact-info">
+                    <p class="contact-name">@chat.Identity.ChatName</p>
+                    @if (chat.LastMessage.LastMessageContent != null)
+                    {
+                        <p class="contact-name">
+                            @((chat.LastMessage.LastMessageSender == _appStateService.CurrentUser.Username)
+                                            ? $"Ty: {chat.LastMessage.LastMessageContent}"
+                                            : $"{chat.LastMessage.LastMessageSender}: {chat.LastMessage.LastMessageContent}")
+                        </p>
+
+                    }
+                    @if (chat.State.UnreadMessageCount > 0)
+                    {
+                        <p class="contact-name">@chat.State.UnreadMessageCount nowe wiadomości!</p>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private string searchTerm = "";
+    protected Guid SelectedContactId;
+
+    override protected async Task OnInitializedAsync()
+    {
+        _sidebarActionService.OnSidebarStateChanged += HandleStateChange;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_sidebarStateService.SidebarItems == null || !_sidebarStateService.SidebarItems.Any())
+        {
+            await _sidebarActionService.HandleChatsLoadAsync();
+        }
+    }
+
+    private IEnumerable<UserChatDTO> FilteredSidebar =>
+    _sidebarStateService.SidebarItems?.Where(c => string.IsNullOrWhiteSpace(searchTerm) ||
+                           c.Identity.ChatName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+    ?? Enumerable.Empty<UserChatDTO>();
+
+    private async Task SelectContact(Guid contactId)
+    {
+        SelectedContactId = contactId;
+        await _chatActionService.HandleChatLoadAsync(new ContactSelectedArgs(contactId));
+        StateHasChanged();
+    }
+    private void HandleStateChange()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+    public void Dispose()
+    {
+        _sidebarActionService.OnSidebarStateChanged -= HandleStateChange;
+    }
+}
