@@ -1,0 +1,16 @@
+﻿namespace ChatApp.Web.Services.Actions.Interfaces
+{
+    public interface IChatSettingsActionService
+    {
+        event Action? OnStateChanged;
+        void RequestDeleteChat();
+        Task HandleChatDeleteAsync();
+        void RequestLeaveChat();
+        Task HandleChatLeaveAsync();
+        void RequestContactDelete(Guid chatId);
+        Task HandleContactDeleteAsync(Guid chatId);
+        Task HandleLoadUsersToAddAsync();
+        Task HandleChangeChatNameAsync(string chatName);
+        Task HandleAddUsersToChatAsync(HashSet<Guid> usersToAdd);
+    }
+}

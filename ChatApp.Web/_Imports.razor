@@ -1,5 +1,6 @@
 ﻿@using System.Net.Http
 @using System.Net.Http.Json
+@using ChatApp.Web.Services.Actions.Interfaces
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Web
@@ -38,9 +39,9 @@
 @inject ChatHubService _chatHubService
 @inject ChatStateService _chatStateService
 @inject AppStateService _appStateService
-@inject ChatActionService _chatActionService
-@inject ChatSettingsActionService _chatSettingsActionService
-@inject SidebarActionService _sidebarActionService
+@inject IChatActionService _chatActionService
+@inject IChatSettingsActionService _chatSettingsActionService
+@inject ISidebarActionService _sidebarActionService
 @inject SidebarStateService _sidebarStateService
 @inject DialogService _dialogService
 

@@ -22,4 +22,8 @@
     <ProjectReference Include="..\ChatApp.Application\ChatApp.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\State\Interfaces\" />
+  </ItemGroup>
+
 </Project>

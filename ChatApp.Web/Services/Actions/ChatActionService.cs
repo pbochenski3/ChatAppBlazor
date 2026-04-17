@@ -1,12 +1,13 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.Events;
+using ChatApp.Web.Services.Actions.Interfaces;
 using ChatApp.Web.Services.Api;
 using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.State;
 
 namespace ChatApp.Web.Services.Actions
 {
-    public class ChatActionService
+    public class ChatActionService : IChatActionService
     {
         private readonly AppStateService _appStateService;
         private readonly ChatStateService _chatStateService;
@@ -30,8 +31,9 @@ namespace ChatApp.Web.Services.Actions
             _logger = logger;
             _sidebarActionService = sidebarActionService;
         }
+
+        public event Action? OnStateChanged;
         public event Func<Guid, Task>? OnJoinGroupRequested;
-        public Action? OnStateChanged;
         private CancellationTokenSource? _chatLoadingCts;
         public async Task HandleIncomingMessageAsync(MessageDTO dto)
         {
@@ -54,7 +56,7 @@ namespace ChatApp.Web.Services.Actions
             OnStateChanged?.Invoke();
         }
 
-        private async void MarkAsRead(Guid chatId, Guid messageId)
+        public async void MarkAsRead(Guid chatId, Guid messageId)
         {
             try
             {

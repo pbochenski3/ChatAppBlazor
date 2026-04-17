@@ -122,8 +122,6 @@ namespace ChatApp.Application.Services.Chats
                     addedUsers = await _userService.GetUsersByIdsAsync(usersToAdd);
                     joinedNames = string.Join(", ", addedUsers.Where(u => u.UserID != userId).Select(u => u.Username));
                     systemMessage.Content = $"{admin?.Username} stworzył czat z: {joinedNames}.";
-
-
                 }
                 else
                 {

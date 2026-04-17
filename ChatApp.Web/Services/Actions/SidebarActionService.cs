@@ -5,10 +5,11 @@ using ChatApp.Web.Services;
 using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.State;
 using ChatApp.Application.DTO.Requests;
+using ChatApp.Web.Services.Actions.Interfaces;
 
 namespace ChatApp.Web.Services.Actions
 {
-    public class SidebarActionService
+    public class SidebarActionService : ISidebarActionService
     {
         private readonly SidebarStateService _sidebarStateService;
         private readonly IContactApiClient _contactApiClient;
@@ -134,7 +135,7 @@ namespace ChatApp.Web.Services.Actions
             OnSidebarStateChanged?.Invoke();
 
         }
-        public async Task HandleSidebarLock()
+        public async Task HandleSidebarLockAsync()
         {
             _sidebarStateService.IsPending = !_sidebarStateService.IsPending;
         }
