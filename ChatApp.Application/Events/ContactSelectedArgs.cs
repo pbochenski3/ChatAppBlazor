@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChatApp.Application.DTO
+namespace ChatApp.Application.Events
 {
     public record ContactSelectedArgs(
         Guid ChatId,

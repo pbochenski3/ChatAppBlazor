@@ -6,6 +6,7 @@ namespace ChatApp.Application.DTO.Results
 {
     public record AddToGroupActionResult(
         Guid GroupChatId,
-        MessageDTO SystemMessage
+        MessageDTO SystemMessage,
+        HashSet<Guid> UsersInChat
         );
 }
