@@ -11,14 +11,7 @@
 
 @if (_isLoading == false)
 {
-    <div class="toast-container">
-        @if (!string.IsNullOrEmpty(_notification))
-        {
-            <div class="notification-toast">
-                <div>@_notification</div>
-            </div>
-        }
-    </div>
+    <NotificationWindow />
     <main class="main-layout">
         <Sidebar
             OnProfileOpen="HandleOpenProfile"/>
