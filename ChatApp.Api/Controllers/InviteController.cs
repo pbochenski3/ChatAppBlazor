@@ -65,7 +65,9 @@ namespace ChatApp.Api.Controllers
                 );
                 await Task.WhenAll(
                     _hubContext.Clients.User(receiverId.ToString()).SendAsync("SidebarInvitesReload"),
-                    _hubContext.Clients.User(actionUserId.ToString()).SendAsync("SidebarInvitesReload")
+                    _hubContext.Clients.User(actionUserId.ToString()).SendAsync("SidebarInvitesReload"),
+                    _hubContext.Clients.User(actionUserId.ToString()).SendAsync("SidebarChatsReload"),
+                    _hubContext.Clients.User(receiverId.ToString()).SendAsync("SidebarChatsReload")
                 );
 
                 if (invite.chatId == request.chatId)

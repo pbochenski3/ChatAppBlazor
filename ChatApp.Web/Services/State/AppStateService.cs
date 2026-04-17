@@ -25,6 +25,7 @@ namespace ChatApp.Web.Services.State
         public UserDTO? CurrentUser { get; set; } = null;
         public UserChatDTO? CurrentChat { get; set; } = null;
         public bool IsProfileOpen { get; set; } = false;
+        public event Func<Task>? OnLogoutRequested;
         public async Task LoadSessionAsync()
         {
             IsInitialized = false;
@@ -71,12 +72,13 @@ namespace ChatApp.Web.Services.State
 
         public async Task Logout()
         {
+            OnLogoutRequested?.Invoke();
             CurrentUser = null;
             CurrentChat = null;
             Message = "You have been logged out.";
             await _js.InvokeVoidAsync("localStorage.removeItem", UserKey);
             await _js.InvokeVoidAsync("localStorage.removeItem", ChatKey);
-            _navManager.NavigateTo("/");
+            _navManager.NavigateTo("/", forceLoad: true);
 
         }
     }

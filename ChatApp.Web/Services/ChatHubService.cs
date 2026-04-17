@@ -42,6 +42,7 @@ public class ChatHubService : IAsyncDisposable
     private void RegisterHandlers()
     {
         if (HubConnection == null) return;
+        _appStateService.OnLogoutRequested += StopAsync;
         HubConnection.On<MessageDTO>("ReceiveMessage", (message) => _chatActionService.HandleIncomingMessageAsync(message));
         HubConnection.On("SidebarChatsReload",  async () => await _sidebarActionService.HandleChatsLoadAsync());
         HubConnection.On("SidebarInvitesReload", async () => await _sidebarActionService.HandleInvitesLoadAsync());
@@ -127,5 +128,6 @@ public class ChatHubService : IAsyncDisposable
         {
             await HubConnection.DisposeAsync();
         }
+        _appStateService.OnLogoutRequested -= StopAsync;
     }
 }
