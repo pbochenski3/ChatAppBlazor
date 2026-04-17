@@ -60,6 +60,7 @@ namespace ChatApp.Api.Controllers
                 if (usersToNotify.Any())
                 {
                     await _hubContext.Clients.Users(usersToNotify).SendAsync("ChatReload",actionResult.GroupChatId, true);
+                    await _hubContext.Clients.Users(usersToNotify).SendAsync("SidebarChatsReload");
                 }
 
                 await _hubContext.Clients.Group(actionResult.GroupChatId.ToString()).SendAsync("ReceiveMessage", actionResult.SystemMessage);

@@ -145,6 +145,10 @@ namespace ChatApp.Web.Services.Actions
                 }
             }
         }
+        public async Task Refresh()
+        {
+            OnStateChanged?.Invoke();
+        }
         public async Task HandleUserOnGroupLoadAsync(Guid chatId)
         {
             if (_appStateService.CurrentChat?.Identity.ChatID != chatId)

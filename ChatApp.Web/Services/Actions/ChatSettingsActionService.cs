@@ -118,6 +118,7 @@ namespace ChatApp.Web.Services.Actions
             {
                 await _chatApi.ChangeChatNameAsync(chatId.Value, chatName, adminName);
             }
+            OnStateChanged?.Invoke();
         }
         public async Task HandleAddUsersToChatAsync(HashSet<Guid> usersToAdd)
         {

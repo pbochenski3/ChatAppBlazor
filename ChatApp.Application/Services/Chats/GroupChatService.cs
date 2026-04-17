@@ -89,36 +89,44 @@ namespace ChatApp.Application.Services.Chats
         }
         public async Task<AddToGroupActionResult> ProcessAddToGroupChatAsync(Guid chatId, HashSet<Guid> usersToAdd, Guid userId)
         {
+            MessageDTO systemMessage = new MessageDTO();
             var isGroupChat = await _chatService.IsChatExistingAsync(chatId, userId);
             Guid targetChatId = chatId;
- 
+            var admin = await _userService.GetUserByIdAsync(userId);
+            HashSet<UserDTO> addedUsers = new HashSet<UserDTO>();
+            string joinedNames = string.Empty;
+
 
             if (!isGroupChat)
             {
                 targetChatId = await CreateGroupChatAsync(chatId, usersToAdd);
                 var allUsersInChat = await ProccesGetChatUsersAsync(targetChatId);
                 usersToAdd.UnionWith(allUsersInChat.Select(u => u.UserID));
+                addedUsers = await _userService.GetUsersByIdsAsync(usersToAdd);
+                joinedNames = string.Join(", ", addedUsers.Where(u => u.UserID != userId).Select(u => u.Username));
+                systemMessage.Content = $"{admin?.Username} stworzył czat z: {joinedNames}.";
+
 
             }
             else
             {
                 await AddUsersToGroupChatAsync(chatId, usersToAdd);
+                addedUsers = await _userService.GetUsersByIdsAsync(usersToAdd);
+                joinedNames = string.Join(", ", addedUsers.Where(u => u.UserID != userId).Select(u => u.Username));
+                if (addedUsers.Count == 1)
+                {
+                    systemMessage.Content = $"{admin?.Username} dodał użytkownika: {joinedNames} do czatu.";
+                }
+                 else
+                systemMessage.Content = $"{admin?.Username} dodał użytkowników: {joinedNames} do czatu.";
             }
 
-            var admin = await _userService.GetUserByIdAsync(userId);
-            var addedUsers = await _userService.GetUsersByIdsAsync(usersToAdd);
 
-            string joinedNames = string.Join(", ", addedUsers.Select(u => u.Username));
-
-            var systemMessage = new MessageDTO
-            {
-                ChatID = targetChatId,
-                MessageID = Guid.CreateVersion7(),
-                Content = $"{admin?.Username} dodał użytkowników: {joinedNames} do czatu.",
-                SenderUsername = "SYSTEM",
-                MessageType = MessageType.System,
-                SentAt = DateTime.UtcNow,
-            };
+            systemMessage.ChatID = targetChatId;
+            systemMessage.MessageID = Guid.CreateVersion7();
+            systemMessage.SenderUsername = "SYSTEM";
+            systemMessage.MessageType = MessageType.System;
+            systemMessage.SentAt = DateTime.UtcNow;
 
             await _messageService.SaveMessageAsync(systemMessage);
 

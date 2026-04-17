@@ -161,11 +161,16 @@
         {
             _appStateService.CurrentChat.Identity.AvatarUrl = newAvatarUrl;
         }
-        await InvokeAsync(StateHasChanged);
+        await _chatActionService.Refresh();
+        await _sidebarActionService.Refresh();
     }
     private async Task HandleAvatarReloadAsync(string newAvatarUrl,Guid userId)
     {
+        var currentUserId = _appStateService.CurrentUser?.UserID;
+        if (currentUserId == userId)
+        {
         _appStateService.CurrentUser.AvatarUrl = newAvatarUrl;
+        }
         var userInChat = _chatStateService.UsersInChat.FirstOrDefault(u => u.UserID == userId);
         if (userInChat != null)
         {
@@ -184,7 +189,8 @@
                 item.Identity.AvatarUrl = newAvatarUrl;
             }
         }
-        await InvokeAsync(StateHasChanged);
+        await _chatActionService.Refresh();
+        await _sidebarActionService.Refresh();
     }
     public async ValueTask DisposeAsync()
     {

@@ -138,6 +138,10 @@ namespace ChatApp.Web.Services.Actions
         {
             _sidebarStateService.IsPending = !_sidebarStateService.IsPending;
         }
+        public async Task Refresh()
+        {
+            OnSidebarStateChanged?.Invoke();
+        }
     }
 
 }
