@@ -1,0 +1,35 @@
+﻿@using ChatApp.Domain.Models
+@implements IDisposable
+<div class="toast-container">
+    @foreach (var note in _activeNotifications)
+    {
+        <div class="notification-toast @note.Type.ToString().ToLower()">
+            <strong>@note.Title</strong>
+            <p>@note.Message</p>
+        </div>
+    }
+</div>
+
+@code {
+    private List<NotificationMessage> _activeNotifications = new();
+    protected override void OnInitialized()
+    {
+        _notificationService.OnShow += HandleNotification;
+    }
+    private void HandleNotification(NotificationMessage note)
+    {
+        _activeNotifications.Add(note);
+        StateHasChanged();
+
+        Task.Delay(5000).ContinueWith(_ =>
+        {
+            _activeNotifications.Remove(note);
+            InvokeAsync(StateHasChanged);
+        });
+    }
+    public void Dispose()
+    {
+        _notificationService.OnShow -= HandleNotification;
+
+    }
+}

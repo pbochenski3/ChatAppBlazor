@@ -1,11 +1,5 @@
 @page "/"
-@if (!string.IsNullOrEmpty(_notification))
-{
-    <div class="notification-toast">
-        <div>@_notification</div>
-    </div>
-}
-
+    <NotificationWindow/>
 <div class="login-page">
     <div class="login-card">
         <div class="login-header">
