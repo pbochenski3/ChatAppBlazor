@@ -69,6 +69,7 @@
             _isProcessing = true;
             await _authService.RegisterUserAsync(_registerModel);
             _notificationService.Notify("Rejestracja przebiegła pomyślnie!", NotificationType.Info);
+            _navManager.NavigateTo("/");
 
         }
         catch (Exception ex)

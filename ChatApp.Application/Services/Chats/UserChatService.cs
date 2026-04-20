@@ -3,6 +3,7 @@ using ChatApp.Application.DTO.Requests;
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Notifications;
+using ChatApp.Application.Notifications.Chat;
 using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
 using MediatR;

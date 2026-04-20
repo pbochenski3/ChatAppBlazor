@@ -42,7 +42,7 @@ namespace ChatApp.Infrastructure.Persistence
                     m => new MessagePreview
                     {
                         Content = m.Content,
-                        Author = m.Sender.Username
+                        Author = m.Sender?.Username ?? ""
                     }
                 );
         }
