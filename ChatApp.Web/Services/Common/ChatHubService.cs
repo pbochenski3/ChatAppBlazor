@@ -1,5 +1,6 @@
 using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
+using ChatApp.Application.Events;
 using ChatApp.Web.Events;
 using ChatApp.Web.Services.Actions;
 using ChatApp.Web.Services.Actions.Interfaces;

@@ -1,5 +1,4 @@
-﻿
-using ChatApp.Application.DTO;
+﻿using ChatApp.Application.Events;
 using ChatApp.Web.Events;
 using ChatApp.Web.Services.Actions.Interfaces;
 using MediatR;
