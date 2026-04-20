@@ -1,8 +1,8 @@
-﻿using ChatApp.Application.Notifications;
+﻿using ChatApp.Application.Notifications.Chat;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;
 
-namespace ChatApp.Api.Handlers
+namespace ChatApp.Api.Handlers.Chat
 {
     public class ChatDeletedHandler : INotificationHandler<ChatDeletedNotification>
     {

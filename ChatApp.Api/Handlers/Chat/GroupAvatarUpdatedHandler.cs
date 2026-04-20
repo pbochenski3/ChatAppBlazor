@@ -1,13 +1,13 @@
 ﻿using ChatApp.Api;
 using ChatApp.Application.Interfaces.Chats;
-using ChatApp.Application.Notifications;
+using ChatApp.Application.Notifications.Chat;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChatApp.Application.Handlers
+namespace ChatApp.Api.Handlers.Chat
 {
     public class GroupAvatarUpdatedHandler : INotificationHandler<GroupAvatarUpdatedNotification>
     {

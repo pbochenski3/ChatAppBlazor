@@ -40,15 +40,6 @@ namespace ChatApp.Api.Controllers
             try
             {
                 await _contactService.RemoveContactAsync(contactId, userId, privateChatId);
-                var recipients = new List<string> { userId.ToString(), contactId.ToString() };
-                await _hubContext.Clients.Users(recipients).SendAsync("ChatReload", privateChatId, true);
-                await Task.WhenAll(
-                    _hubContext.Clients.Users(userId.ToString()).SendAsync("ReceiveStatus", "Kontakt został usunięty!"),
-                    _hubContext.Clients.Users(contactId.ToString()).SendAsync("ReceiveStatus", "Ktoś usunął cie z kontaktów!")
-                );
-
-                await _hubContext.Clients.Users(recipients).SendAsync("SidebarInvitesReload");
-                await _hubContext.Clients.Users(recipients).SendAsync("SidebarChatsReload");
                 return Ok();
             }
             catch (Exception ex)

@@ -22,7 +22,7 @@ using ChatApp.Api.Components;
 using ChatApp.Api.Services;
 using ChatApp.Api;
 using ChatApp.Api.Controllers;
-using ChatApp.Application.Notifications;
+using ChatApp.Application.Notifications.Chat;
 
 var builder = WebApplication.CreateBuilder(args);
 

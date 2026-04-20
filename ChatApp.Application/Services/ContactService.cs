@@ -2,8 +2,10 @@ using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
+using ChatApp.Application.Notifications.Contact;
 using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,8 +22,16 @@ namespace ChatApp.Application.Services
         private readonly IChatRepository _chatRepo;
         private readonly IUserChatRepository _userChatRepo;
         private readonly ITransactionProvider _transactionProvider;
+        private readonly IMediator _mediator;
 
-        public ContactService(IContactRepository contactRepo, IMessageRepository messageRepo, IUserRepository userRepo, IChatRepository chatRepo,IUserChatRepository userChatRepo, ITransactionProvider transactionProvider)
+        public ContactService(
+            IContactRepository contactRepo,
+            IMessageRepository messageRepo,
+            IUserRepository userRepo, IChatRepository chatRepo,
+            IUserChatRepository userChatRepo,
+            ITransactionProvider transactionProvider,
+            IMediator mediator
+            )
         {
             _messageRepo = messageRepo;
             _userRepo = userRepo;
@@ -29,6 +39,7 @@ namespace ChatApp.Application.Services
             _contactRepo = contactRepo;
             _transactionProvider = transactionProvider;
             _userChatRepo = userChatRepo;
+            _mediator = mediator;
         }
 
         public async Task<ContactDTO?> GetContactByIdAsync(Guid contactUserId, Guid userId)
@@ -104,8 +115,12 @@ namespace ChatApp.Application.Services
 
         public async Task RemoveContactAsync(Guid contactUserId, Guid userId, Guid chatId)
         {
+            await _transactionProvider.ExecuteInTransactionAsync(async () =>
+            {
             await _contactRepo.DeleteContactAsync(contactUserId, userId);
             await _userChatRepo.ArchivePrivateChatAsync(chatId, userId, contactUserId);
+            await _mediator.Publish(new ContactDeletedNotification(contactUserId,userId,chatId));
+            });
         }
     }
 }

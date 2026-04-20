@@ -2,7 +2,7 @@
 using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Service;
-using ChatApp.Application.Notifications;
+using ChatApp.Application.Notifications.Chat;
 using ChatApp.Application.Services;
 using ChatApp.Application.Services.Chats;
 using ChatApp.Domain.Enums;
@@ -10,7 +10,7 @@ using ChatApp.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;
 
-namespace ChatApp.Api.Handlers
+namespace ChatApp.Api.Handlers.Chat
 {
     public class ChatNameUpdatedHandler : INotificationHandler<ChatNameUpdatedNotification>
     {
