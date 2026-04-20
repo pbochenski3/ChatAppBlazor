@@ -119,6 +119,15 @@ namespace ChatApp.Web.Services.Actions
         }
         private async Task HandleContactDeleteAsync(Guid chatId)
         {
+            try
+            {
+                await _contactApi.RemoveContactAsync(chatId);
+                _notification.Notify("Pomyślnie usunięto kontakt!", NotificationType.Info);
+
+            }
+            catch (Exception ex)
+            {
+                _notification.Notify("Nie udało się usunąć kontaktu!", NotificationType.Warning);
 
                 _logger.LogError($"[ChatSettingsService] HandleContactDelete {ex}");
             }
