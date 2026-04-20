@@ -5,10 +5,6 @@ using ChatApp.Web.Services.Api;
 using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.State;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using ChatApp.Web.Services.Actions.Interfaces;
-using ChatApp.Web.Services.Common;
-using ChatApp.Web.Services.Common.Interfaces;
-using MediatR;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddMediatR(cfg => { cfg.RegisterServicesFromAssembly(typeof(Program).Assembly); });

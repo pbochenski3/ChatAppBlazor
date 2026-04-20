@@ -1,7 +1,5 @@
 ﻿
 using ChatApp.Domain.Enums;
-using ChatApp.Web.Events;
-using ChatApp.Web.Services.Actions.Interfaces;
 using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.Common;
 using ChatApp.Web.Services.Common.Interfaces;
@@ -11,8 +9,7 @@ using static ChatApp.Web.Events.ChatEvents;
 
 namespace ChatApp.Web.Services.Actions
 {
-    public class ChatSettingsActionService : 
-        IChatSettingsActionService
+    public class ChatSettingsActionService
     {
         private readonly ChatStateService _chatStateService;
         private readonly AppStateService _appStateService;
@@ -120,7 +117,7 @@ namespace ChatApp.Web.Services.Actions
         async () => await HandleContactDeleteAsync(chatId)
         );
         }
-        public async Task HandleContactDeleteAsync(Guid chatId)
+        private async Task HandleContactDeleteAsync(Guid chatId)
         {
             try
             {
