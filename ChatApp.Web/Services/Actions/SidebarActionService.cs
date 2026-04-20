@@ -1,39 +1,44 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Web.Services.Api;
 using ChatApp.Domain.Enums;
-using ChatApp.Web.Services;
 using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.State;
 using ChatApp.Application.DTO.Requests;
+using ChatApp.Web.Services.Actions.Interfaces;
+using ChatApp.Web.Services.Common;
+using MediatR;
+using ChatApp.Web.Events;
+using static ChatApp.Web.Events.SidebarEvents;
+using System.Linq.Expressions;
+using ChatApp.Web.Services.Common.Interfaces;
 
 namespace ChatApp.Web.Services.Actions
 {
-    public class SidebarActionService
+    public class SidebarActionService : ISidebarActionService
     {
         private readonly SidebarStateService _sidebarStateService;
         private readonly IContactApiClient _contactApiClient;
         private readonly IInviteApiClient _inviteApiClient;
         private readonly AppStateService _appStateService;
-        private readonly DialogService _dialogService;
-        private readonly IGroupChatApiClient _groupChatApi;
         private readonly ILogger<SidebarActionService> _logger;
+        private readonly INotificationService _notification;
         public SidebarActionService(
             ILogger<SidebarActionService> logger,
             SidebarStateService sidebarStateService,
             IContactApiClient contactApiClient,
             AppStateService appStateService,
-            DialogService dialogService,
-            IGroupChatApiClient groupChatApi,
-            IInviteApiClient inviteApiClient
+            IInviteApiClient inviteApiClient,
+            INotificationService notification
+
             )
         {
             _logger = logger;
             _appStateService = appStateService;
             _sidebarStateService = sidebarStateService;
             _contactApiClient = contactApiClient;
-            _dialogService = dialogService;
-            _groupChatApi = groupChatApi;
             _inviteApiClient = inviteApiClient;
+            _notification = notification;
+
         }
         public event Action? OnSidebarStateChanged;
         public event Action? OnInvitesStateChanged;
@@ -47,6 +52,8 @@ namespace ChatApp.Web.Services.Actions
             }
             catch (Exception ex)
             {
+                _notification.Notify("Wystąpił bład podczas ładowania listy!", NotificationType.Error);
+
                 _logger.LogError(ex, "Error during sidebar reload");
             }
             finally
@@ -134,7 +141,7 @@ namespace ChatApp.Web.Services.Actions
             OnSidebarStateChanged?.Invoke();
 
         }
-        public async Task HandleSidebarLock()
+        public async Task HandleSidebarLockAsync()
         {
             _sidebarStateService.IsPending = !_sidebarStateService.IsPending;
         }

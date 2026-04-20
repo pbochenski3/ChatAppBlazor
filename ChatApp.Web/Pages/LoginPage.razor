@@ -1,11 +1,4 @@
 @page "/"
-@if (!string.IsNullOrEmpty(_notification))
-{
-    <div class="notification-toast">
-        <div>@_notification</div>
-    </div>
-}
-
 <div class="login-page">
     <div class="login-card">
         <div class="login-header">
@@ -56,7 +49,6 @@
 
 @code {
     private bool _isProcessing = false;
-    private string? _notification = string.Empty;
     private UserDTO _loginModel = new UserDTO();
 
     protected override async Task OnInitializedAsync()
@@ -65,15 +57,11 @@
         {
             _navManager.NavigateTo("/hub");
         }
-        _notification = _appStateService.Message;
-        _notification = string.Empty;
     }
 
     private async Task HandleLoginAsync()
     {
-        _notification = string.Empty;
         _isProcessing = true;
-        StateHasChanged();
         try
         {
             _isProcessing = true;
@@ -82,17 +70,13 @@
             if (_appStateService.CurrentUser != null)
             {
                 _navManager.NavigateTo("/hub");
-                _appStateService.Message = "Zostałeś zalogowany!";
-            }
-            else
-            {
-                _notification = "Invalid login attempt.";
+
             }
 
         }
         catch (Exception ex)
         {
-            _notification = $"{ex.Message}";
+            _notificationService.Notify($"{ex.Message}",NotificationType.Warning);
         }
         finally
         {
