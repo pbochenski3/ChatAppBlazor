@@ -1,5 +1,4 @@
 using ChatApp.Application.DTO;
-using ChatApp.Application.DTO.Results;
 using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Repository;

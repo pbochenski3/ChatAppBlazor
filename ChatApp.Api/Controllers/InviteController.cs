@@ -34,13 +34,6 @@ namespace ChatApp.Api.Controllers
         {
             var senderId = CurrentUserId;
             await _inviteService.SendInviteAsync(senderId, receiverId);
-            _logger.LogInformation("SendContactInvite: sender={SenderId}, receiver={ReceiverId}", senderId, receiverId);
-            await Task.WhenAll(
-                _hubContext.Clients.User(senderId.ToString()).SendAsync("ReceiveStatus", "Zaproszenie wysłane!"),
-                _hubContext.Clients.User(receiverId.ToString()).SendAsync("SidebarInvitesReload"),
-                _hubContext.Clients.User(receiverId.ToString()).SendAsync("ReceiveStatus", "Otrzymałeś nowe zaproszenie!")
-            );
-            _logger.LogDebug("Invite notifications sent for invite from {SenderId} to {ReceiverId}", senderId, receiverId);
             return Ok();
         }
         [HttpPost("action")]
@@ -49,35 +42,7 @@ namespace ChatApp.Api.Controllers
             try
             {
                 var actionUserId = CurrentUserId;
-                await _inviteService.UpdateInviteStatusAsync(request.InviteId, request.Response);
-                await _hubContext.Clients.User(actionUserId.ToString()).SendAsync("SidebarInvitesReload");
-                var invite = await _inviteService.ProcessInviteActionAsync(request.InviteId, request.Response, ct);
-
-                if (invite == null)
-                {
-                    return NotFound("Invite not found");
-                }
-
-                var receiverId = invite.senderId;
-                await Task.WhenAll(
-                    _hubContext.Clients.User(receiverId.ToString()).SendAsync("ReceiveStatus", $"Twoje zaproszenie zostało {(request.Response == InviteStatus.Accepted ? "zaakceptowane" : "odrzucone")}"),
-                    _hubContext.Clients.User(actionUserId.ToString()).SendAsync("ReceiveStatus", $"{(request.Response == InviteStatus.Accepted ? "Zaakceptowałeś" : "Odrzuciłeś")} zaproszenie!")
-                );
-                await Task.WhenAll(
-                    _hubContext.Clients.User(receiverId.ToString()).SendAsync("SidebarInvitesReload"),
-                    _hubContext.Clients.User(actionUserId.ToString()).SendAsync("SidebarInvitesReload"),
-                    _hubContext.Clients.User(actionUserId.ToString()).SendAsync("SidebarChatsReload"),
-                    _hubContext.Clients.User(receiverId.ToString()).SendAsync("SidebarChatsReload")
-                );
-
-                if (invite.chatId == request.chatId)
-                {
-                    await Task.WhenAll(
-                        _hubContext.Clients.User(actionUserId.ToString()).SendAsync("ChatReload", invite.chatId, true),
-                        _hubContext.Clients.User(receiverId.ToString()).SendAsync("ChatReload", invite.chatId, true)
-                    );
-                }
-
+                await _inviteService.ProcessInviteActionAsync(request, ct);
                 return Ok();
             }
             catch (KeyNotFoundException knf)

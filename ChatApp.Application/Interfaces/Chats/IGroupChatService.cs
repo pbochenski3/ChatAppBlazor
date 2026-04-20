@@ -1,5 +1,4 @@
 using ChatApp.Application.DTO;
-using ChatApp.Application.DTO.Results;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

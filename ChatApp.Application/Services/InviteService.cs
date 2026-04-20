@@ -1,12 +1,13 @@
 using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Requests;
-using ChatApp.Application.DTO.Results;
 using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
+using ChatApp.Application.Notifications.Invite;
 using ChatApp.Domain.Enums;
 using ChatApp.Domain.Models;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,18 +21,22 @@ namespace ChatApp.Application.Services
         private readonly IContactService _contactService;
         private readonly IInviteRepository _inviteRepo;
         private readonly IPrivateChatService _privateChatService;
+        private readonly IMediator _mediator;
 
-        public InviteService(IInviteRepository inviteRepo, IContactService contactService, IPrivateChatService privateChatService, ITransactionProvider transactionProvider)
+        public InviteService(IInviteRepository inviteRepo, IContactService contactService, IPrivateChatService privateChatService, ITransactionProvider transactionProvider,IMediator mediator)
         {
             _inviteRepo = inviteRepo;
             _contactService = contactService;
             _privateChatService = privateChatService;
             _transactionProvider = transactionProvider;
+            _mediator = mediator;
         }
 
         public async Task SendInviteAsync(Guid senderId, Guid receiverId)
         {
             await _inviteRepo.AddInviteAsync(senderId, receiverId);
+            await _mediator.Publish(new ContactInviteSendedNotification(senderId, receiverId));
+
         }
 
         public async Task<List<InviteDTO>> GetUserInvitesAsync(Guid userId)
@@ -58,25 +63,27 @@ namespace ChatApp.Application.Services
             invite.Status = status;
             await _inviteRepo.UpdateInviteStatusAsync(invite);
         }
-        public async Task<InviteActionResultDto> ProcessInviteActionAsync(Guid inviteId, InviteStatus response, CancellationToken ct)
+        public async Task ProcessInviteActionAsync(InviteActionRequest request, CancellationToken ct)
         {
-            var invite = await _inviteRepo.GetInviteByIdAsync(inviteId);
+            await UpdateInviteStatusAsync(request.InviteId, request.Response);
+            var invite = await _inviteRepo.GetInviteByIdAsync(request.InviteId);
 
             if (invite == null)
             {
                 throw new KeyNotFoundException("Invite not found");
             }
 
-            return await _transactionProvider.ExecuteAsync(async () =>
+            await _transactionProvider.ExecuteInTransactionAsync(async () =>
             {
-                Guid chatId = Guid.Empty;
+                Guid newChatId = Guid.Empty;
 
-                if (response == InviteStatus.Accepted)
+                if (request.Response == InviteStatus.Accepted)
                 {
                     await _contactService.AddContactAsync(invite.SenderID, invite.ReceiverID);
-                    chatId = await _privateChatService.CreatePrivateChatAsync(invite.SenderID, invite.ReceiverID);
+                    newChatId = await _privateChatService.CreatePrivateChatAsync(invite.SenderID, invite.ReceiverID);
                 }
-                return new InviteActionResultDto(invite.SenderID, invite.ReceiverID, chatId);
+                await _mediator.Publish(new InviteActionNotification(invite.SenderID,invite.ReceiverID,request.chatId,newChatId,request.Response));
+
             });
         }
     }

@@ -1,6 +1,5 @@
 using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Requests;
-using ChatApp.Application.DTO.Results;
 using ChatApp.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -13,6 +12,6 @@ namespace ChatApp.Application.Interfaces.Service
         Task UpdateInviteStatusAsync(Guid inviteId, InviteStatus status);
         Task<List<InviteDTO>> GetUserInvitesAsync(Guid userId);
         Task SendInviteAsync(Guid senderId, Guid receiverId);
-        Task<InviteActionResultDto> ProcessInviteActionAsync(Guid inviteId, InviteStatus response, CancellationToken ct);
+        Task ProcessInviteActionAsync(InviteActionRequest request, CancellationToken ct);
     }
 }
