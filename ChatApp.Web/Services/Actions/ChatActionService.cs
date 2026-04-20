@@ -1,9 +1,11 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.Events;
+using ChatApp.Domain.Enums;
 using ChatApp.Web.Events;
 using ChatApp.Web.Services.Actions.Interfaces;
 using ChatApp.Web.Services.Api;
 using ChatApp.Web.Services.Api.Interfaces;
+using ChatApp.Web.Services.Common.Interfaces;
 using ChatApp.Web.Services.State;
 using MediatR;
 using static ChatApp.Web.Events.ChatEvents;
@@ -20,13 +22,17 @@ namespace ChatApp.Web.Services.Actions
         private readonly IGroupChatApiClient _groupChatApi;
         private readonly ILogger<ChatActionService> _logger;
         private readonly IMediator _mediator;
+        private readonly INotificationService _notification;
+        
         public ChatActionService(
             AppStateService appStateService,
             ChatStateService chatStateService,
             IChatApiClient chatApi,
             IGroupChatApiClient groupChatApi,
             ILogger<ChatActionService> logger,
-            IMediator mediator
+            IMediator mediator,
+            INotificationService notification
+            
             )
         {
             _appStateService = appStateService;
@@ -35,6 +41,7 @@ namespace ChatApp.Web.Services.Actions
             _groupChatApi = groupChatApi;
             _logger = logger;
             _mediator = mediator;
+            _notification = notification;
         }
 
         public event Action? OnStateChanged;
@@ -103,6 +110,7 @@ namespace ChatApp.Web.Services.Actions
 
                 if (_appStateService.CurrentChat == null)
                 {
+                    _notification.Notify("Wystąpił bład podczas ładowania czatu!", NotificationType.Error);
                     _logger.LogError("[BLAZORHUB] Chat not found: {Id}", args.ChatId);
                     return;
                 }
@@ -166,6 +174,8 @@ namespace ChatApp.Web.Services.Actions
             }
             catch (Exception ex)
             {
+                _notification.Notify("Wystąpił bład podczas ładowania użytkowników!", NotificationType.Error);
+
                 _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", chatId);
             }
         }

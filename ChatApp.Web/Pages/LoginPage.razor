@@ -49,7 +49,6 @@
 
 @code {
     private bool _isProcessing = false;
-    private string? _notification = string.Empty;
     private UserDTO _loginModel = new UserDTO();
 
     protected override async Task OnInitializedAsync()
@@ -58,13 +57,10 @@
         {
             _navManager.NavigateTo("/hub");
         }
-        _notification = _appStateService.Message;
-        _notification = string.Empty;
     }
 
     private async Task HandleLoginAsync()
     {
-        _notification = string.Empty;
         _isProcessing = true;
         try
         {
@@ -76,16 +72,11 @@
                 _navManager.NavigateTo("/hub");
 
             }
-            else
-            {
-                _notificationService.Notify("Logowanie się nie powiodło!", NotificationType.Warning);
-                StateHasChanged();
-            }
 
         }
         catch (Exception ex)
         {
-            _notification = $"{ex.Message}";
+            _notificationService.Notify($"{ex.Message}",NotificationType.Warning);
         }
         finally
         {

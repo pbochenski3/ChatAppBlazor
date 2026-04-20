@@ -9,6 +9,8 @@ using ChatApp.Web.Services.Common;
 using MediatR;
 using ChatApp.Web.Events;
 using static ChatApp.Web.Events.SidebarEvents;
+using System.Linq.Expressions;
+using ChatApp.Web.Services.Common.Interfaces;
 
 namespace ChatApp.Web.Services.Actions
 {
@@ -19,12 +21,15 @@ namespace ChatApp.Web.Services.Actions
         private readonly IInviteApiClient _inviteApiClient;
         private readonly AppStateService _appStateService;
         private readonly ILogger<SidebarActionService> _logger;
+        private readonly INotificationService _notification;
         public SidebarActionService(
             ILogger<SidebarActionService> logger,
             SidebarStateService sidebarStateService,
             IContactApiClient contactApiClient,
             AppStateService appStateService,
-            IInviteApiClient inviteApiClient
+            IInviteApiClient inviteApiClient,
+            INotificationService notification
+
             )
         {
             _logger = logger;
@@ -32,6 +37,8 @@ namespace ChatApp.Web.Services.Actions
             _sidebarStateService = sidebarStateService;
             _contactApiClient = contactApiClient;
             _inviteApiClient = inviteApiClient;
+            _notification = notification;
+
         }
         public event Action? OnSidebarStateChanged;
         public event Action? OnInvitesStateChanged;
@@ -45,6 +52,8 @@ namespace ChatApp.Web.Services.Actions
             }
             catch (Exception ex)
             {
+                _notification.Notify("Wystąpił bład podczas ładowania listy!", NotificationType.Error);
+
                 _logger.LogError(ex, "Error during sidebar reload");
             }
             finally

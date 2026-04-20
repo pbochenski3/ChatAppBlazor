@@ -4,6 +4,7 @@ using ChatApp.Web.Events;
 using ChatApp.Web.Services.Actions.Interfaces;
 using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.Common;
+using ChatApp.Web.Services.Common.Interfaces;
 using ChatApp.Web.Services.State;
 using MediatR;
 using static ChatApp.Web.Events.ChatEvents;
@@ -20,6 +21,7 @@ namespace ChatApp.Web.Services.Actions
         private readonly IGroupChatApiClient _groupChatApi;
         private readonly DialogService _dialogService;
         private readonly IMediator _mediator;
+        private readonly INotificationService _notification;
 
         private readonly ILogger<ChatSettingsActionService> _logger;
         public ChatSettingsActionService(
@@ -30,7 +32,9 @@ namespace ChatApp.Web.Services.Actions
             DialogService dialogService,
             IContactApiClient contactApi,
             IMediator mediator,
-            ILogger<ChatSettingsActionService> logger)
+            ILogger<ChatSettingsActionService> logger,
+            INotificationService notification
+            )
         {
             _chatStateService = chatStateService;
             _appStateService = appStateService;
@@ -40,6 +44,7 @@ namespace ChatApp.Web.Services.Actions
             _contactApi = contactApi;
             _logger = logger;
             _mediator = mediator;
+            _notification = notification;
         }
         public event Action? OnStateChanged;
         public void RequestDeleteChat()
@@ -59,12 +64,13 @@ namespace ChatApp.Web.Services.Actions
                 if (_appStateService.CurrentChat != null)
                 {
                     await _chatApi.DeleteChatAsync(_appStateService.CurrentChat.Identity.ChatID);
-                    await _mediator.Publish(new ChatDeleted());
+                    _notification.Notify("Czat został pomyślnie usunięty!", NotificationType.Info);
                 }
             }
             catch (Exception ex)
             {
-                await _mediator.Publish(new ChatDeletionFailed());
+                _notification.Notify("Nie udało się usunąć czatu!!", NotificationType.Error);
+
                 _logger.LogError($"[ChatSettingsService] HandleChatDelete {ex}");
 
             }
@@ -89,14 +95,16 @@ namespace ChatApp.Web.Services.Actions
                     var username = _appStateService.CurrentUser.Username;
                     await _groupChatApi.LeaveGroupChatAsync(chatId, username);
                     _appStateService.CurrentChat.State.IsArchive = true;
-                    await _mediator.Publish(new ChatLeft());
+                    _notification.Notify("Pomyślnie opuszczono czat!", NotificationType.Info);
+
                     OnStateChanged?.Invoke();
                 }
                     
             }
             catch (Exception ex)
             {
-                await _mediator.Publish(new ChatLeavingFailed());
+                _notification.Notify("Nie udało się opuścić czatu!", NotificationType.Warning);
+
                 _logger.LogError($"[ChatSettingsService] HandleChatLeave {ex}");
 
 
@@ -117,11 +125,13 @@ namespace ChatApp.Web.Services.Actions
             try
             {
                 await _contactApi.RemoveContactAsync(chatId);
-                await _mediator.Publish(new ContactDeleted());
+                _notification.Notify("Pomyślnie usunięto kontakt!", NotificationType.Info);
+
             }
             catch (Exception ex)
             {
-                await _mediator.Publish(new ContactDeletionFailed());
+                _notification.Notify("Nie udało się usunąć kontaktu!", NotificationType.Warning);
+
                 _logger.LogError($"[ChatSettingsService] HandleContactDelete {ex}");
             }
 
@@ -136,7 +146,8 @@ namespace ChatApp.Web.Services.Actions
             }
             catch(Exception ex)
             {
-                await _mediator.Publish(new LoadingFailed());
+                _notification.Notify("Nie udało się załadować kontaktów!", NotificationType.Warning);
+
                 _logger.LogError($"[ChatSettingsService] HandleLoadUsersToAdd {ex}");
 
             }
@@ -151,12 +162,14 @@ namespace ChatApp.Web.Services.Actions
                 try
                 {
                 await _chatApi.ChangeChatNameAsync(chatId.Value, chatName, adminName);
-                    await _mediator.Publish(new ChatNameChange(chatName));
+                    _notification.Notify("Nazwa czatu zmieniona pomyślnie!", NotificationType.Info);
+
 
                 }
                 catch (Exception ex)
                 {
-                    await _mediator.Publish(new LoadingFailed());
+                    _notification.Notify("Nie udało się zmienić nazwy czatu!", NotificationType.Warning);
+
                     _logger.LogError($"[ChatSettingsService] HandleChangeChatNameAsync {ex}");
                 }
             }
@@ -172,7 +185,8 @@ namespace ChatApp.Web.Services.Actions
                 }
                 catch(Exception ex)
                 {
-                    await _mediator.Publish(new AddingUsersToGroupFailed());
+                    _notification.Notify("Nie udało się dodać użytkownika do czatu!", NotificationType.Warning);
+
                     _logger.LogError($"[ChatSettingsService] HandleAddUsersToChat {ex}");
 
                 }

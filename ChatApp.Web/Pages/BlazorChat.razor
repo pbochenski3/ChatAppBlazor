@@ -31,12 +31,9 @@
 }
 
 @code {
-    #region Private Fields
     private string? _notification = string.Empty;
     private UserDTO _currentUser = new UserDTO();
     private bool _isLoading = true;
-
-    #endregion
 
     protected override async Task OnInitializedAsync()
     {
@@ -50,7 +47,6 @@
         _currentUser = _appStateService.CurrentUser;
         _notification = _appStateService.Message;
 
-        _notificationService.Notify($"{_currentUser.Username} witaj ponownie!", NotificationType.System);
         try
         {
             await _chatHubService.StartAsync();
@@ -58,9 +54,8 @@
 
             await _sidebarActionService.HandleInvitesLoadAsync();
             await _sidebarActionService.HandleChatsLoadAsync();
-
-            //await HandleDataReloadAsync(true);
             _isLoading = false;
+            _notificationService.Notify($"{_currentUser.Username} witaj ponownie!", NotificationType.System);
         }
         catch (Exception ex)
         {
