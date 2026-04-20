@@ -25,7 +25,7 @@
         </div>
 
         <div class="chat-body">
-            <div class="chat-box" id="chat-window">
+            <div @ref="chatContainer" class="chat-box" id="chat-window">
                 <div class="chat-messages">
                     @if (_chatStateService.ReceivedMessages != null && _chatStateService.ReceivedMessages.Any())
                     {
@@ -64,6 +64,7 @@
 </div>
 
 @code {
+    private ElementReference chatContainer;
     private Guid chatId => _appStateService.CurrentChat?.Identity.ChatID ?? Guid.Empty;
     protected override async Task OnInitializedAsync()
     {
@@ -100,7 +101,13 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await JSRuntime.InvokeVoidAsync("scrollToBottom", "chat-window");
+        if (firstRender)
+        {
+
+            await JSRuntime.InvokeVoidAsync("setupSmartScroll", chatContainer);
+            await Task.Delay(100);
+            await JSRuntime.InvokeVoidAsync("scrollToElement", chatContainer);
+        }
     }
     private bool IsMyMessage(MessageDTO msg) => msg.SenderUsername == _appStateService.CurrentUser?.Username;
     private bool IsSystem(MessageDTO msg) => msg.MessageType == MessageType.System;

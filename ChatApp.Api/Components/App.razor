@@ -18,16 +18,31 @@
 <body>
     <Routes @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
     <script>
-        window.scrollToBottom = (elementId) => {
-            var element = document.getElementById(elementId);
-            if (element) {
-     
-                element.scrollTo({
-                    top: element.scrollHeight,
-                    behavior: 'smooth'
+                window.setupSmartScroll = (container) => {
+            if (!container) return;
+
+            const doScroll = (isSmooth) => {
+                container.scrollTo({
+                    top: container.scrollHeight,
+                    behavior: isSmooth ? 'smooth' : 'auto'
                 });
-            }
+            };
+
+            doScroll(false);
+
+            const observer = new MutationObserver(() => {
+                doScroll(true);
+                container.querySelectorAll('img:not([data-loaded])').forEach(img => {
+                    img.setAttribute('data-loaded', 'true');
+                    img.addEventListener('load', () => {
+                        doScroll(true);
+                    });
+                });
+            });
+
+            observer.observe(container, { childList: true, subtree: true });
         };
+        window.scrollToElement = (el) => el.scrollTop = el.scrollHeight;
     </script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
