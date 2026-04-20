@@ -2,7 +2,11 @@ using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Repository;
+using ChatApp.Application.Notifications;
+using ChatApp.Domain.Enums;
 using ChatApp.Domain.Repository;
+using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -17,18 +21,21 @@ namespace ChatApp.Application.Services.Chats
         private readonly ILogger<ChatService> _logger;
         private readonly IChatRepository _chatRepo;
         private readonly IUserChatRepository _userChatRepo;
+        private readonly IMediator _mediator;
 
-        public ChatService(ILogger<ChatService> logger, IChatRepository chatRepo, IUserChatRepository userChatRepo, ITransactionProvider transactionProvider)
+        public ChatService(ILogger<ChatService> logger, IChatRepository chatRepo, IUserChatRepository userChatRepo, ITransactionProvider transactionProvider,IMediator mediator)
         {
             _logger = logger;
             _chatRepo = chatRepo;
             _userChatRepo = userChatRepo;
             _transactionProvider = transactionProvider;
+            _mediator = mediator;
         }
         public async Task UpdateGroupAvatarUrl(Guid chatId,string avatarUrl)
         {
         
             await _chatRepo.UpdateGroupAvatarUrl(chatId, avatarUrl);
+            await _mediator.Publish(new GroupAvatarUpdatedNotification(chatId, avatarUrl));
         }
 
         public async Task<HashSet<Guid>> GetUsersInChatIdAsync(Guid chatId)
@@ -45,7 +52,8 @@ namespace ChatApp.Application.Services.Chats
                 { 
                 await _userChatRepo.MarkChatAsDeletedAsync(chatId, userId);
                 await _chatRepo.TryDeleteChatIfEmptyAsync(chatId);
-                    });
+                await _mediator.Publish(new ChatDeletedNotification(chatId, userId));
+                });
         }
 
         public async Task<bool> IsChatExistingAsync(Guid chatId, Guid userId)

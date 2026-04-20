@@ -1,5 +1,4 @@
 ﻿using ChatApp.Application.DTO;
-using ChatApp.Application.Events;
 
 namespace ChatApp.Web.Services.Actions.Interfaces
 {

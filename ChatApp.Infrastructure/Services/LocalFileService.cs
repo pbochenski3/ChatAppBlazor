@@ -1,5 +1,6 @@
 ﻿using ChatApp.Application.Interfaces;
 using ChatApp.Domain.Enums;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -48,6 +49,22 @@ namespace ChatApp.Infrastructure.Services
                 await fileStream.CopyToAsync(destinationStream);
             }
             return $"{_baseUrl}/cdn/ChatImages/{chatId}/{userId}/{fileName}";
+        }
+        public async Task<string> SaveImageAsync(IFormFile file, UploadType type, Guid? chatId = null, Guid? userId = null)
+        {
+            var url = string.Empty;
+            var extension = Path.GetExtension(file.FileName).ToLower();
+            using var stream = file.OpenReadStream();
+            switch (type)
+            {
+                case UploadType.GroupAvatar:
+                    url = await SaveAvatar(stream, extension, type);
+                    break;
+                case UploadType.ChatImage:
+                    url = await SaveChatImage(stream, extension, chatId, userId);
+                    break;
+            }
+            return url;
         }
     }
 }

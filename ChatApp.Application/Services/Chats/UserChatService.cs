@@ -1,8 +1,11 @@
 using ChatApp.Application.DTO.Chats;
+using ChatApp.Application.DTO.Requests;
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Repository;
+using ChatApp.Application.Notifications;
 using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,12 +19,15 @@ namespace ChatApp.Application.Services.Chats
         private readonly IUserChatRepository _userChatRepo;
         private readonly IMessageRepository _messageRepo;
         private readonly IChatRepository _chatRepo;
+        private readonly IMediator _mediator;
 
-        public UserChatService(IUserChatRepository userChatRepo, IMessageRepository messageRepo,IChatRepository chatRepo)
+
+        public UserChatService(IUserChatRepository userChatRepo, IMessageRepository messageRepo,IChatRepository chatRepo,IMediator mediator)
         {
             _userChatRepo = userChatRepo;
             _messageRepo = messageRepo;
             _chatRepo = chatRepo;
+            _mediator = mediator;
         }
 
         public async Task<List<UserChatDTO>> GetUserChatListAsync(Guid userId)
@@ -107,9 +113,10 @@ namespace ChatApp.Application.Services.Chats
         {
             await _userChatRepo.ArchiveChatAsync(chatId, userId);
         }
-        public async Task UpdateChatNameAsync(Guid chatId, string chatName)
+        public async Task UpdateChatNameAsync(Guid chatId, ChangeChatNameRequest request)
         {
-            await _chatRepo.UpdateChatNameAsync(chatId, chatName);
+            await _chatRepo.UpdateChatNameAsync(chatId, request.NewName);
+            await _mediator.Publish(new ChatNameUpdatedNotification(chatId, request));
         }
     }
 }

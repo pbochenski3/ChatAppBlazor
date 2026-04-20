@@ -1,4 +1,5 @@
 using ChatApp.Application.DTO.Chats;
+using ChatApp.Application.DTO.Requests;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -12,6 +13,6 @@ namespace ChatApp.Application.Interfaces.Chats
         Task<UserChatDTO?> GetUserChatDetailsAsync(Guid chatId, Guid userId, CancellationToken token);
         Task<bool> IsChatArchivedAsync(Guid chatId, Guid userId);
         Task ArchiveUserChatAsync(Guid chatId, Guid userId);
-        Task UpdateChatNameAsync(Guid chatId, string chatName);
+        Task UpdateChatNameAsync(Guid chatId, ChangeChatNameRequest request);
     }
 }
