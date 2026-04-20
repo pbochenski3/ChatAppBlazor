@@ -4,13 +4,6 @@ using ChatApp.Domain.Enums;
 using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.State;
 using ChatApp.Application.DTO.Requests;
-using ChatApp.Web.Services.Actions.Interfaces;
-using ChatApp.Web.Services.Common;
-using MediatR;
-using ChatApp.Web.Events;
-using static ChatApp.Web.Events.SidebarEvents;
-using System.Linq.Expressions;
-using ChatApp.Web.Services.Common.Interfaces;
 
 namespace ChatApp.Web.Services.Actions
 {
