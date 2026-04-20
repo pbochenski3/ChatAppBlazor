@@ -19,7 +19,7 @@ builder.Services.AddScoped<IChatSettingsActionService,ChatSettingsActionService>
 builder.Services.AddScoped<IChatActionService,ChatActionService>();
 builder.Services.AddScoped<DialogService>();
 builder.Services.AddScoped<IImageApiClient, ImageApiClient>();
-builder.Services.AddScoped<IAuthClient, AuthClient>();
+builder.Services.AddScoped<IAuthClient, AuthApiClient>();
 builder.Services.AddScoped<IChatApiClient, ChatApiClient>();
 builder.Services.AddScoped<IContactApiClient, ContactApiClient>();
 builder.Services.AddScoped<IInviteApiClient, InviteApiClient>();

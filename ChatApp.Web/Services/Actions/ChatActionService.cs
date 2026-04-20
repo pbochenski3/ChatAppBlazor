@@ -41,7 +41,6 @@ namespace ChatApp.Web.Services.Actions
             _mediator = mediator;
             _notification = notification;
         }
-        public event Func<Guid, Task>? OnJoinGroupRequested;
         public event Action? OnStateChanged;
         private CancellationTokenSource? _chatLoadingCts;
         public async Task HandleIncomingMessageAsync(MessageDTO dto)

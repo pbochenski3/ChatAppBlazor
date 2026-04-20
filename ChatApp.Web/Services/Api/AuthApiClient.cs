@@ -5,16 +5,15 @@ using System.Net.Http.Json;
 
 namespace ChatApp.Web.Services.Api
 {
-    public class AuthClient : IAuthClient
+    public class AuthApiClient : IAuthClient
     {
         private readonly AppStateService _appStateService;
         private readonly HttpClient _httpClient;
-        private readonly ILogger<AuthClient> _logger;
-        public event Func<Guid, Task>? OnStartHubRequested;
+        private readonly ILogger<AuthApiClient> _logger;
 
 
 
-        public AuthClient(AppStateService appStateService, HttpClient httpClient, ILogger<AuthClient> logger)
+        public AuthApiClient(AppStateService appStateService, HttpClient httpClient, ILogger<AuthApiClient> logger)
         {
             _appStateService = appStateService;
             _httpClient = httpClient;
