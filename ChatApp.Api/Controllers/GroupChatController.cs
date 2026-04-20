@@ -38,6 +38,7 @@ namespace ChatApp.Api.Controllers
         [HttpPost("{chatId}/add-users")]
         public async Task<IActionResult> AddUsersToGroupChatAsync([FromBody] HashSet<Guid> usersToAdd, [FromRoute] Guid chatId, CancellationToken ct)
         {
+
             var userId = CurrentUserId;
             try
             {

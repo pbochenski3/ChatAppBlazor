@@ -21,7 +21,10 @@
                     <span class="user-name">@_appStateService.CurrentChat.Identity.ChatName</span>
                 </div>
             </div>
+            @if(_appStateService.CurrentChat.State.IsArchive == false)
+            {
             <div class="contact-config" @onclick="_chatStateService.ToggleSettings">⚙️</div>
+            }
         </div>
 
         <div class="chat-body">

@@ -1,5 +1,6 @@
 ﻿using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Service;
+using ChatApp.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
@@ -11,14 +12,21 @@ namespace ChatApp.Api.Controllers
     {
         private readonly IContactService _contactService;
         private readonly IPrivateChatService _privateChatService;
-        public ContactController(IContactService contactService, IPrivateChatService privateChatService)
+        private readonly IChatService _chatService;
+        public ContactController(IContactService contactService, IPrivateChatService privateChatService, IChatService chatService)
         {
             _contactService = contactService;
             _privateChatService = privateChatService;
+            _chatService = chatService;
         }
-        [HttpGet]
-        public async Task<IActionResult> GetUserContactsAsync(CancellationToken ct)
+        [HttpGet("{chatId}")]
+        public async Task<IActionResult> GetUserContactsAsync([FromRoute] Guid chatId,CancellationToken ct)
         {
+            var isArchive = await _chatService.IsChatArchive(chatId);
+            if(isArchive == true)
+            {
+                return BadRequest();
+            }
             var contacts = await _contactService.GetUserContactsAsync(CurrentUserId);
             return Ok(contacts);
         }

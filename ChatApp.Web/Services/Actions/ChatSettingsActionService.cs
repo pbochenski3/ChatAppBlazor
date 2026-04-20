@@ -67,7 +67,7 @@ namespace ChatApp.Web.Services.Actions
             }
             catch (Exception ex)
             {
-                _notification.Notify("Nie udało się usunąć czatu!!", NotificationType.Error);
+                _notification.Notify("Nie udało się usunąć czatu!", NotificationType.Error);
 
                 _logger.LogError($"[ChatSettingsService] HandleChatDelete {ex}");
 
@@ -94,7 +94,6 @@ namespace ChatApp.Web.Services.Actions
                     await _groupChatApi.LeaveGroupChatAsync(chatId, username);
                     _appStateService.CurrentChat.State.IsArchive = true;
                     _notification.Notify("Pomyślnie opuszczono czat!", NotificationType.Info);
-
                     OnStateChanged?.Invoke();
                 }
                     
@@ -139,7 +138,8 @@ namespace ChatApp.Web.Services.Actions
         {
             try
             {
-                _chatStateService.ReceivedContacts = await _contactApi.GetContactListAsync();
+                var chatId = _appStateService.CurrentChat.Identity.ChatID;
+                _chatStateService.ReceivedContacts = await _contactApi.GetContactListAsync(chatId);
                 _chatStateService.SettingsView = ChatSettingsView.AddUsers;
             }
             catch(Exception ex)

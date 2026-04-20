@@ -114,6 +114,13 @@ namespace ChatApp.Web.Services.Actions
 
                 token.ThrowIfCancellationRequested();
 
+
+                _chatStateService.SetMessageList(await _chatApi.GetChatMessageHistoryAsync(_appStateService.CurrentChat.Identity.ChatID, token));
+                token.ThrowIfCancellationRequested();
+
+               // await _appStateService.SetChatAsync(_appStateService.CurrentChat);
+                if (!_appStateService.CurrentChat.State.IsArchive)
+                {
                 try
                 {
                     _chatStateService.UsersInChat = await _groupChatApi.GetChatUsersAsync(_appStateService.CurrentChat.Identity.ChatID);
@@ -122,13 +129,6 @@ namespace ChatApp.Web.Services.Actions
                 {
                     _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", args.ChatId);
                 }
-
-                _chatStateService.SetMessageList(await _chatApi.GetChatMessageHistoryAsync(_appStateService.CurrentChat.Identity.ChatID, token));
-                token.ThrowIfCancellationRequested();
-
-               // await _appStateService.SetChatAsync(_appStateService.CurrentChat);
-                if (!_appStateService.CurrentChat.State.IsArchive)
-                {
                     await _mediator.Publish(new RequestToJoinSignalR(args.ChatId));
                     await _chatApi.MarkAllMessagesAsReadAsync(_appStateService.CurrentChat.Identity.ChatID, token);
                     await _mediator.Publish(new SidebarCounterUpdated(args.ChatId, true));

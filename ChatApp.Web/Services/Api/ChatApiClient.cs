@@ -100,6 +100,7 @@ namespace ChatApp.Web.Services.Api
             }
             else
             {
+                throw new Exception();
                 _logger.LogError("Failed to change chat name for ChatId: {ChatId}. Status Code: {StatusCode}", chatId, response.StatusCode);
             }
         }

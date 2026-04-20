@@ -1,5 +1,6 @@
 using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces;
+using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
 using ChatApp.Application.Notifications.Contact;
@@ -19,7 +20,7 @@ namespace ChatApp.Application.Services
         private readonly IMessageRepository _messageRepo;
         private readonly IUserRepository _userRepo;
         private readonly IContactRepository _contactRepo;
-        private readonly IChatRepository _chatRepo;
+        private readonly IChatService _chatService;
         private readonly IUserChatRepository _userChatRepo;
         private readonly ITransactionProvider _transactionProvider;
         private readonly IMediator _mediator;
@@ -27,7 +28,8 @@ namespace ChatApp.Application.Services
         public ContactService(
             IContactRepository contactRepo,
             IMessageRepository messageRepo,
-            IUserRepository userRepo, IChatRepository chatRepo,
+            IUserRepository userRepo,
+            IChatService chatService,
             IUserChatRepository userChatRepo,
             ITransactionProvider transactionProvider,
             IMediator mediator
@@ -35,7 +37,7 @@ namespace ChatApp.Application.Services
         {
             _messageRepo = messageRepo;
             _userRepo = userRepo;
-            _chatRepo = chatRepo;
+            _chatService = chatService;
             _contactRepo = contactRepo;
             _transactionProvider = transactionProvider;
             _userChatRepo = userChatRepo;
@@ -115,6 +117,11 @@ namespace ChatApp.Application.Services
 
         public async Task RemoveContactAsync(Guid contactUserId, Guid userId, Guid chatId)
         {
+            var isArchive = await _chatService.IsChatArchive(chatId);
+            if(isArchive == true)
+            {
+                throw new Exception("Kontakt nie istnieje!");
+            }
             await _transactionProvider.ExecuteInTransactionAsync(async () =>
             {
             await _contactRepo.DeleteContactAsync(contactUserId, userId);

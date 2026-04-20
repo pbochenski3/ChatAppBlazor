@@ -22,7 +22,15 @@ namespace ChatApp.Infrastructure.Persistence
             _contextFactory = contextFactory;
             _logger = logger;
         }
-
+        public async Task<bool> CheckIfChatIsArchive(Guid chatId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            bool? result =  await context.UserChat
+                .Where(ch => ch.ChatID == chatId)
+                .Select(ch => ch.IsArchive)
+                .FirstOrDefaultAsync();
+            return result ?? false;
+        }
         public async Task<bool> CheckIfGroupExist(Guid chatId, Guid userId)
         {
             using var context = _contextFactory.CreateDbContext();

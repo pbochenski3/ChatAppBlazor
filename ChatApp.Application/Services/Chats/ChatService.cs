@@ -61,5 +61,9 @@ namespace ChatApp.Application.Services.Chats
         {
             return await _chatRepo.CheckIfGroupExist(chatId, userId);
         }
+        public async Task<bool> IsChatArchive(Guid chatId)
+        {
+            return await _chatRepo.CheckIfChatIsArchive(chatId);
+        }
     }
 }

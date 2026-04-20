@@ -84,6 +84,11 @@ namespace ChatApp.Api.Controllers
             if (chatId == Guid.Empty) return BadRequest();
             try
             {
+                var isArchive = await _chatService.IsChatArchive(chatId);
+                if(isArchive == true)
+                {
+                    return BadRequest();
+                }
                 await _chatService.DeleteChatAsync(chatId, userId);
                 return Ok();
             }
@@ -97,6 +102,11 @@ namespace ChatApp.Api.Controllers
         {
             var userId = CurrentUserId;
             if (chatId == Guid.Empty) return BadRequest();
+            var isArchive = await _chatService.IsChatArchive(chatId);
+            if(isArchive == true)
+            {
+                return BadRequest();
+            }
             try
             {
                 await _userChatService.UpdateChatNameAsync(chatId, request);

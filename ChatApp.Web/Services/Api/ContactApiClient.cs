@@ -19,9 +19,9 @@ namespace ChatApp.Web.Services.Api
             _httpClient = httpClient;
             _logger = logger;
         }
-        public async Task<List<ContactDTO>> GetContactListAsync()
+        public async Task<List<ContactDTO>> GetContactListAsync(Guid chatId)
         {
-            var contacts = await _httpClient.GetFromJsonAsync<List<ContactDTO>>("api/contact")
+            var contacts = await _httpClient.GetFromJsonAsync<List<ContactDTO>>($"api/contact/{chatId}")
                            ?? new List<ContactDTO>();
             return contacts;
         }
@@ -40,7 +40,11 @@ namespace ChatApp.Web.Services.Api
         public async Task RemoveContactAsync(Guid chatId)
         {
     
-            await _httpClient.DeleteAsync($"api/contact/delete/by-chat/{chatId}");
+            var response = await _httpClient.DeleteAsync($"api/contact/delete/by-chat/{chatId}");
+            if(!response.IsSuccessStatusCode)
+            {
+                throw new Exception();
+            }
         }
     }
 }

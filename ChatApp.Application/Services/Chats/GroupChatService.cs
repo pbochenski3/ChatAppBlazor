@@ -114,6 +114,11 @@ namespace ChatApp.Application.Services.Chats
         {
              await _transactionProvider.ExecuteInTransactionAsync(async () =>
             {
+                var canAdd = await _chatService.IsChatArchive(chatId);
+                if(canAdd == false)
+                {
+                    throw new Exception("Nie można usunąć czatu!");
+                }
                 MessageDTO systemMessage = new MessageDTO();
                 var isGroupChat = await _chatService.IsChatExistingAsync(chatId, userId);
                 Guid targetChatId = chatId;
@@ -158,6 +163,11 @@ namespace ChatApp.Application.Services.Chats
         {
              await _transactionProvider.ExecuteInTransactionAsync(async () =>
             {
+                var isArchive = await _chatService.IsChatArchive(chatId);
+                if(isArchive == true)
+                {
+                    throw new Exception("Chat który chcesz opuścić nie istnieje!");
+                }
                 await _userChatService.ArchiveUserChatAsync(chatId, userId);
 
                 var systemMessage = new MessageDTO
