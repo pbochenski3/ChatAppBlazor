@@ -37,11 +37,6 @@ namespace ChatApp.Api.Controllers
                 if (dto.ChatID == Guid.Empty) return BadRequest();
 
                 await _messageService.SaveMessageAsync(dto);
-                await _readStatusService.SaveLastSentMessageIdAsync(dto.ChatID, dto.MessageID);
-                await _hubContext.Clients.Group(dto.ChatID.ToString()).SendAsync("ReceiveMessage", dto);
-                var chat = await _chatService.GetUsersInChatIdAsync(dto.ChatID);
-                var participants = chat.Select(id => id.ToString()).ToList();
-                await _hubContext.Clients.Users(participants).SendAsync("UpdateLastMessage", dto.ChatID, dto.SenderUsername, dto.Content);
                 return Ok();
             }
             catch (Exception ex)

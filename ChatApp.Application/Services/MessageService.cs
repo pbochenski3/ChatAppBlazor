@@ -1,9 +1,12 @@
 using ChatApp.Application.DTO;
+using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
+using ChatApp.Application.Notifications.Message;
 using ChatApp.Domain.Enums;
 using ChatApp.Domain.Models;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,14 +20,22 @@ namespace ChatApp.Application.Services
         private readonly IMessageRepository _messageRepo;
         private readonly IUserChatService _userChatService;
         private readonly IChatReadStatusService _readStatusService;
+        private readonly IMediator _mediator;
+        private readonly ITransactionProvider _transactionProvider;
 
-        public MessageService(IMessageRepository messageRepo,
+        public MessageService(
+            IMessageRepository messageRepo,
             IUserChatService userChatService,
-            IChatReadStatusService readStatusService)
+            IChatReadStatusService readStatusService,
+            IMediator mediator,
+            ITransactionProvider transactionProvider
+            )
         {
             _messageRepo = messageRepo;
             _userChatService = userChatService;
             _readStatusService = readStatusService;
+            _mediator = mediator;
+            _transactionProvider = transactionProvider;
         }
 
         public async Task SaveMessageAsync(MessageDTO messageDto)
@@ -45,7 +56,12 @@ namespace ChatApp.Application.Services
                 MessageType = messageDto.MessageType,
 
             };
-            await _messageRepo.AddMessageAsync(message);
+            await _transactionProvider.ExecuteInTransactionAsync(async () =>
+            {
+                await _messageRepo.AddMessageAsync(message);
+                await _readStatusService.SaveLastSentMessageIdAsync(messageDto.ChatID, messageDto.MessageID);
+                await _mediator.Publish(new ChatMessageSendedNotification(messageDto));
+            });
         }
 
         public async Task<List<MessageDTO>> GetChatMessageHistoryAsync(Guid userId, Guid chatId, CancellationToken token)
