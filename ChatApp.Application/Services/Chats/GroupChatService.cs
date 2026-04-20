@@ -4,9 +4,11 @@ using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
+using ChatApp.Application.Notifications.GroupChat;
 using ChatApp.Domain.Enums;
 using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -28,6 +30,7 @@ namespace ChatApp.Application.Services.Chats
         private readonly IUserService _userService;
         private readonly IMessageService _messageService;
         private readonly IUserChatService _userChatService;
+        private readonly IMediator _mediator;
 
         public GroupChatService(
             ITransactionProvider transactionProvider,
@@ -37,7 +40,9 @@ namespace ChatApp.Application.Services.Chats
             IChatService chatService,
             IUserService userService,
             IMessageService messageService,
-            IUserChatService userChatService)
+            IUserChatService userChatService,
+            IMediator mediator
+            )
         {
             _logger = logger;
             _chatRepo = chatRepo;
@@ -47,6 +52,8 @@ namespace ChatApp.Application.Services.Chats
             _messageService = messageService;
             _userChatService = userChatService;
             _transactionProvider = transactionProvider;
+            _mediator = mediator;
+
         }
 
         public async Task AddUsersToGroupChatAsync(Guid chatId, HashSet<Guid> userIdsToAdd)
@@ -85,7 +92,7 @@ namespace ChatApp.Application.Services.Chats
                 IsGroup = true,
                 ChatName = $"Chat#{number:D5}",
                 UserChats = new List<UserChat>(),
-                AvatarUrl = "https://localhost:7255/cdn/avatars/default-group-avatar.png"
+                AvatarUrl = "https://localhost:7255/cdn/GroupAvatars/default-group-avatar.png"
             };
 
             foreach (var userId in usersInGroup)
@@ -100,11 +107,13 @@ namespace ChatApp.Application.Services.Chats
             }
 
             await _chatRepo.AddChatAsync(newChat);
+            await _mediator.Publish(new GroupChatCreatedNotification(newChat.ChatID));
             return newChat.ChatID;
+            
         }
-        public async Task<AddToGroupActionResult> ProcessAddToGroupChatAsync(Guid chatId, HashSet<Guid> usersToAdd, Guid userId)
+        public async Task ProcessAddToGroupChatAsync(Guid chatId, HashSet<Guid> usersToAdd, Guid userId)
         {
-            return await _transactionProvider.ExecuteAsync(async () =>
+             await _transactionProvider.ExecuteInTransactionAsync(async () =>
             {
                 MessageDTO systemMessage = new MessageDTO();
                 var isGroupChat = await _chatService.IsChatExistingAsync(chatId, userId);
@@ -142,13 +151,13 @@ namespace ChatApp.Application.Services.Chats
                 systemMessage.SentAt = DateTime.UtcNow;
 
                 await _messageService.SaveMessageAsync(systemMessage);
+                await _mediator.Publish(new UsersAddedToGroupChatNotification(targetChatId, systemMessage, usersToAdd));
 
-                return new AddToGroupActionResult(targetChatId, systemMessage, usersToAdd);
             });
         }
-        public async Task<MessageDTO> ProcessLeaveGroupChatAsync(Guid chatId, Guid userId, string username)
+        public async Task ProcessLeaveGroupChatAsync(Guid chatId, Guid userId, string username)
         {
-            return await _transactionProvider.ExecuteAsync(async () =>
+             await _transactionProvider.ExecuteInTransactionAsync(async () =>
             {
                 await _userChatService.ArchiveUserChatAsync(chatId, userId);
 
@@ -163,7 +172,7 @@ namespace ChatApp.Application.Services.Chats
                 };
 
                 await _messageService.SaveMessageAsync(systemMessage);
-                return systemMessage;
+                await _mediator.Publish(new UserLeavedGroupNotification(chatId, systemMessage, userId));
             });
         }
         public async Task<HashSet<UserDTO>> ProccesGetChatUsersAsync(Guid chatId)

@@ -10,8 +10,8 @@ namespace ChatApp.Application.Interfaces.Chats
     {
         Task<Guid> CreateGroupChatAsync(Guid existingChatId, HashSet<Guid> userIdsToAdd);
         Task AddUsersToGroupChatAsync(Guid chatId, HashSet<Guid> userIdsToAdd);
-        Task<AddToGroupActionResult> ProcessAddToGroupChatAsync(Guid chatId, HashSet<Guid> usersToAdd, Guid userId);
-        Task<MessageDTO> ProcessLeaveGroupChatAsync(Guid chatId, Guid userId, string username);
+        Task ProcessAddToGroupChatAsync(Guid chatId, HashSet<Guid> usersToAdd, Guid userId);
+        Task ProcessLeaveGroupChatAsync(Guid chatId, Guid userId, string username);
         Task<HashSet<UserDTO>> ProccesGetChatUsersAsync(Guid chatId);
     }
 }

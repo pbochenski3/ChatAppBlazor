@@ -27,20 +27,7 @@ namespace ChatApp.Api.Controllers
         {
             try
             {
-                _logger.LogInformation("CreateGroupChatAsync called by user {UserId} for existingChatId={ChatId} with {Count} usersToAdd", CurrentUserId, chatId, usersToAdd?.Count ?? 0);
-                var newChatId = await _groupChatService.CreateGroupChatAsync(chatId, usersToAdd);
-                _logger.LogInformation("New group chat created: {NewChatId}", newChatId);
-
-                var usersInNewChat = await _groupChatService.ProccesGetChatUsersAsync(newChatId);
-                var usersToNotify = usersInNewChat.Select(u => u.UserID.ToString()).ToList();
-                _logger.LogDebug("Users to notify for new chat {NewChatId}: {Users}", newChatId, string.Join(',', usersToNotify));
-
-                if (usersToNotify.Any())
-                {
-                    await _hubContext.Clients.Users(usersToNotify).SendAsync("SidebarChatsReload");
-                }
-
-                await _hubContext.Clients.Group(newChatId.ToString()).SendAsync("SidebarChatsReload");
+                await _groupChatService.CreateGroupChatAsync(chatId, usersToAdd);
                 return Ok();
             }
             catch (Exception ex)
@@ -54,17 +41,7 @@ namespace ChatApp.Api.Controllers
             var userId = CurrentUserId;
             try
             {
-                var actionResult = await _groupChatService.ProcessAddToGroupChatAsync(chatId, usersToAdd, userId);
-                var usersToNotify = actionResult.UsersInChat.Select(id => id.ToString()).ToList();
-
-                if (usersToNotify.Any())
-                {
-                    await _hubContext.Clients.Users(usersToNotify).SendAsync("ChatReload",actionResult.GroupChatId, true);
-                    await _hubContext.Clients.Users(usersToNotify).SendAsync("SidebarChatsReload");
-                }
-
-                await _hubContext.Clients.Group(actionResult.GroupChatId.ToString()).SendAsync("ReceiveMessage", actionResult.SystemMessage);
-                await _hubContext.Clients.Group(actionResult.GroupChatId.ToString()).SendAsync("UsersInChatReload", actionResult.GroupChatId);
+                await _groupChatService.ProcessAddToGroupChatAsync(chatId, usersToAdd, userId);
                 return Ok();
             }
             catch (Exception ex)
@@ -78,16 +55,7 @@ namespace ChatApp.Api.Controllers
             var userId = CurrentUserId;
             try
             {
-                var message = await _groupChatService.ProcessLeaveGroupChatAsync(chatId, userId, username);
-                await _hubContext.Clients.Client(userId.ToString()).SendAsync("ReceiveStatus", "Opuściłeś czat!");
-                await _hubContext.Clients.User(userId.ToString()).SendAsync("RequestLeaveGroupSignalR", chatId);
-                await Task.WhenAll(
-                _hubContext.Clients.Group(chatId.ToString()).SendAsync("ReceiveMessage", message),
-                _hubContext.Clients.Group(chatId.ToString()).SendAsync("UsersInChatReload", chatId)
-                    );
-
-                //to pozneij do przeniesienia
-
+                await _groupChatService.ProcessLeaveGroupChatAsync(chatId, userId, username);
                 return Ok();
             }
             catch (Exception ex)

@@ -10,12 +10,10 @@ namespace ChatApp.Api.Controllers
     public class ContactController : AppControllerBase
     {
         private readonly IContactService _contactService;
-        private readonly IHubContext<ChatHub> _hubContext;
         private readonly IPrivateChatService _privateChatService;
-        public ContactController(IContactService contactService, IHubContext<ChatHub> hubContext, IPrivateChatService privateChatService)
+        public ContactController(IContactService contactService, IPrivateChatService privateChatService)
         {
             _contactService = contactService;
-            _hubContext = hubContext;
             _privateChatService = privateChatService;
         }
         [HttpGet]
