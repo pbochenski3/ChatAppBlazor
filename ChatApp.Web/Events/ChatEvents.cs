@@ -1,5 +1,4 @@
 ﻿using ChatApp.Application.DTO;
-using ChatApp.Application.Events;
 using MediatR;
 
 namespace ChatApp.Web.Events

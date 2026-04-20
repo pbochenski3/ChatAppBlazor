@@ -22,6 +22,7 @@ using ChatApp.Api.Components;
 using ChatApp.Api.Services;
 using ChatApp.Api;
 using ChatApp.Api.Controllers;
+using ChatApp.Application.Notifications;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,11 +76,11 @@ builder.Services.AddAuthentication(options =>
             }
         };
     });
-builder.Services.AddMediatR(cfg =>
-{
-    builder.Services.AddMediatR(cfg => { cfg.RegisterServicesFromAssembly(typeof(Program).Assembly); });
-    builder.Services.AddMediatR(cfg => { cfg.RegisterServicesFromAssembly(typeof(AppControllerBase).Assembly); });
-
+builder.Services.AddMediatR(cfg => {
+    cfg.RegisterServicesFromAssemblies(
+        typeof(Program).Assembly,                                
+        typeof(ChatDeletedNotification).Assembly 
+    );
 });
 //Messagesne()
 builder.Services.AddScoped<IMessageService, MessageService>();
