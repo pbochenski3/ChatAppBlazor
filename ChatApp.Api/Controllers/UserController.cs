@@ -44,14 +44,7 @@ namespace ChatApp.Api.Controllers
             var userId = CurrentUserId;
             try
             {
-                var extension = Path.GetExtension(file.FileName).ToLower();
-                using var stream = file.OpenReadStream();
-                string avatarUrl = await _fileService.SaveAvatar(stream, extension,UploadType.UserAvatar);
-                await _userService.UpdateUserAvatarAsync(userId, avatarUrl);
-                var contacts = await _contactService.GetUserContactsAsync(userId);
-                var contactsToNofitify = contacts.Select(c => c.ContactUserID.ToString()).ToList();
-                var allRecipients = contactsToNofitify.Append(userId.ToString()).ToList();
-                await _hubContext.Clients.Users(allRecipients).SendAsync("ContactAvatarReload", avatarUrl, userId);
+                await _userService.UpdateUserAvatarAsync(userId, file);
                 return Ok();
                     }
             catch (Exception ex)

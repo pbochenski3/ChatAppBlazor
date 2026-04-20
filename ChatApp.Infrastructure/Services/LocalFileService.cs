@@ -57,6 +57,9 @@ namespace ChatApp.Infrastructure.Services
             using var stream = file.OpenReadStream();
             switch (type)
             {
+                case UploadType.UserAvatar:
+                    url = await SaveAvatar(stream, extension, type);
+                    break;
                 case UploadType.GroupAvatar:
                     url = await SaveAvatar(stream, extension, type);
                     break;

@@ -1,7 +1,12 @@
 using ChatApp.Application.DTO;
+using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
+using ChatApp.Application.Notifications.User;
+using ChatApp.Domain.Enums;
 using ChatApp.Domain.Models;
+using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -18,11 +23,17 @@ namespace ChatApp.Application.Services
     {
         private readonly JwtSettings _jwtSettings;
         private readonly IUserRepository _userRepo;
+        private readonly IFileService _fileService;
+        private readonly ITransactionProvider _transactionProvider;
+        private readonly IMediator _mediator;
 
-        public UserService(IUserRepository userRepo, IOptions<JwtSettings> jwtSettings)
+        public UserService(IUserRepository userRepo, IOptions<JwtSettings> jwtSettings,IFileService fileService,ITransactionProvider transactionProvider,IMediator mediator)
         {
             _userRepo = userRepo;
             _jwtSettings = jwtSettings.Value;
+            _fileService = fileService;
+            _transactionProvider = transactionProvider;
+            _mediator = mediator;
         }
 
         public async Task RegisterUserAsync(UserDTO userDto)
@@ -116,13 +127,19 @@ namespace ChatApp.Application.Services
                 IsOnline = user.IsOnline
             };
         }
-        public async Task UpdateUserAvatarAsync(Guid userId,string avatarUrl)
+        public async Task UpdateUserAvatarAsync(Guid userId,IFormFile avatarFile)
         {
-            if (string.IsNullOrWhiteSpace(avatarUrl) || !Uri.IsWellFormedUriString(avatarUrl, UriKind.RelativeOrAbsolute))
+            await _transactionProvider.ExecuteInTransactionAsync(async () =>
             {
-                throw new Exception("Invalid avatar URL.");
-            }
-            await _userRepo.UpdateAvatarAsync(userId, avatarUrl);
+                var avatarUrl = await _fileService.SaveImageAsync(avatarFile, UploadType.UserAvatar);
+                if (string.IsNullOrWhiteSpace(avatarUrl) || !Uri.IsWellFormedUriString(avatarUrl, UriKind.RelativeOrAbsolute))
+                {
+                    throw new Exception("Invalid avatar URL.");
+                }
+                await _userRepo.UpdateAvatarAsync(userId, avatarUrl);
+                await _mediator.Publish(new UserAvatarUploadedNotification(userId,avatarUrl));
+
+            });
         }
         public async Task<string> GetAvatarUrlAsync(Guid userId)
         {
