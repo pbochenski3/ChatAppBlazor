@@ -1,4 +1,4 @@
-﻿namespace ChatApp.Web.Services
+﻿namespace ChatApp.Web.Services.Common
 {
     public class DialogService
     {

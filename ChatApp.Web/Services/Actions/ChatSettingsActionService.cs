@@ -1,12 +1,15 @@
 ﻿
 using ChatApp.Domain.Enums;
-using ChatApp.Web.Services.Actions.Interfaces;
 using ChatApp.Web.Services.Api.Interfaces;
+using ChatApp.Web.Services.Common;
+using ChatApp.Web.Services.Common.Interfaces;
 using ChatApp.Web.Services.State;
+using MediatR;
+using static ChatApp.Web.Events.ChatEvents;
 
 namespace ChatApp.Web.Services.Actions
 {
-    public class ChatSettingsActionService : IChatSettingsActionService
+    public class ChatSettingsActionService
     {
         private readonly ChatStateService _chatStateService;
         private readonly AppStateService _appStateService;
@@ -14,6 +17,8 @@ namespace ChatApp.Web.Services.Actions
         private readonly IContactApiClient _contactApi;
         private readonly IGroupChatApiClient _groupChatApi;
         private readonly DialogService _dialogService;
+        private readonly IMediator _mediator;
+        private readonly INotificationService _notification;
 
         private readonly ILogger<ChatSettingsActionService> _logger;
         public ChatSettingsActionService(
@@ -23,7 +28,10 @@ namespace ChatApp.Web.Services.Actions
             IGroupChatApiClient groupChatApi,
             DialogService dialogService,
             IContactApiClient contactApi,
-            ILogger<ChatSettingsActionService> logger)
+            IMediator mediator,
+            ILogger<ChatSettingsActionService> logger,
+            INotificationService notification
+            )
         {
             _chatStateService = chatStateService;
             _appStateService = appStateService;
@@ -32,6 +40,8 @@ namespace ChatApp.Web.Services.Actions
             _dialogService = dialogService;
             _contactApi = contactApi;
             _logger = logger;
+            _mediator = mediator;
+            _notification = notification;
         }
         public event Action? OnStateChanged;
         public void RequestDeleteChat()
@@ -51,12 +61,15 @@ namespace ChatApp.Web.Services.Actions
                 if (_appStateService.CurrentChat != null)
                 {
                     await _chatApi.DeleteChatAsync(_appStateService.CurrentChat.Identity.ChatID);
-                    //await ShowNotificationAsync("Czat został usunięty!");
+                    _notification.Notify("Czat został pomyślnie usunięty!", NotificationType.Info);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during chat deletion");
+                _notification.Notify("Nie udało się usunąć czatu!!", NotificationType.Error);
+
+                _logger.LogError($"[ChatSettingsService] HandleChatDelete {ex}");
+
             }
         }
         public void RequestLeaveChat()
@@ -79,14 +92,19 @@ namespace ChatApp.Web.Services.Actions
                     var username = _appStateService.CurrentUser.Username;
                     await _groupChatApi.LeaveGroupChatAsync(chatId, username);
                     _appStateService.CurrentChat.State.IsArchive = true;
+                    _notification.Notify("Pomyślnie opuszczono czat!", NotificationType.Info);
+
                     OnStateChanged?.Invoke();
                 }
                     
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during leaving chat group");
-                // _ = ShowNotificationAsync($"{ex.Message}");
+                _notification.Notify("Nie udało się opuścić czatu!", NotificationType.Warning);
+
+                _logger.LogError($"[ChatSettingsService] HandleChatLeave {ex}");
+
+
             }
         }
         public void RequestContactDelete(Guid chatId)
@@ -99,17 +117,29 @@ namespace ChatApp.Web.Services.Actions
         async () => await HandleContactDeleteAsync(chatId)
         );
         }
-        public async Task HandleContactDeleteAsync(Guid chatId)
+        private async Task HandleContactDeleteAsync(Guid chatId)
         {
 
-            await _contactApi.RemoveContactAsync(chatId);
+                _logger.LogError($"[ChatSettingsService] HandleContactDelete {ex}");
+            }
 
         }
 
         public async Task HandleLoadUsersToAddAsync()
         {
-            _chatStateService.ReceivedContacts =  await _contactApi.GetContactListAsync();
-            _chatStateService.SettingsView = ChatSettingsView.AddUsers;
+            try
+            {
+                _chatStateService.ReceivedContacts = await _contactApi.GetContactListAsync();
+                _chatStateService.SettingsView = ChatSettingsView.AddUsers;
+            }
+            catch(Exception ex)
+            {
+                _notification.Notify("Nie udało się załadować kontaktów!", NotificationType.Warning);
+
+                _logger.LogError($"[ChatSettingsService] HandleLoadUsersToAdd {ex}");
+
+            }
+
         }
         public async Task HandleChangeChatNameAsync(string chatName)
         {
@@ -117,7 +147,19 @@ namespace ChatApp.Web.Services.Actions
             var adminName = _appStateService.CurrentUser?.Username;
             if (chatId != null && adminName != null)
             {
+                try
+                {
                 await _chatApi.ChangeChatNameAsync(chatId.Value, chatName, adminName);
+                    _notification.Notify("Nazwa czatu zmieniona pomyślnie!", NotificationType.Info);
+
+
+                }
+                catch (Exception ex)
+                {
+                    _notification.Notify("Nie udało się zmienić nazwy czatu!", NotificationType.Warning);
+
+                    _logger.LogError($"[ChatSettingsService] HandleChangeChatNameAsync {ex}");
+                }
             }
             OnStateChanged?.Invoke();
         }
@@ -125,9 +167,20 @@ namespace ChatApp.Web.Services.Actions
         {
             if (_appStateService.CurrentChat != null)
             {
+                try
+                {
                 await _groupChatApi.AddUsersToGroupChatAsync(_appStateService.CurrentChat.Identity.ChatID, usersToAdd);
+                }
+                catch(Exception ex)
+                {
+                    _notification.Notify("Nie udało się dodać użytkownika do czatu!", NotificationType.Warning);
+
+                    _logger.LogError($"[ChatSettingsService] HandleAddUsersToChat {ex}");
+
+                }
             }
         }
 
+  
     }
 }

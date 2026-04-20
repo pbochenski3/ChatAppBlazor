@@ -1,27 +1,34 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.Events;
-using ChatApp.Web.Services.Actions.Interfaces;
 using ChatApp.Web.Services.Api;
 using ChatApp.Web.Services.Api.Interfaces;
+using ChatApp.Web.Services.Common.Interfaces;
 using ChatApp.Web.Services.State;
+using MediatR;
+using static ChatApp.Web.Events.ChatEvents;
+using static ChatApp.Web.Events.SidebarEvents;
 
 namespace ChatApp.Web.Services.Actions
 {
-    public class ChatActionService : IChatActionService
+    public class ChatActionService
     {
         private readonly AppStateService _appStateService;
         private readonly ChatStateService _chatStateService;
-        private readonly SidebarActionService _sidebarActionService;
         private readonly IChatApiClient _chatApi;
         private readonly IGroupChatApiClient _groupChatApi;
         private readonly ILogger<ChatActionService> _logger;
+        private readonly IMediator _mediator;
+        private readonly INotificationService _notification;
+        
         public ChatActionService(
             AppStateService appStateService,
             ChatStateService chatStateService,
             IChatApiClient chatApi,
             IGroupChatApiClient groupChatApi,
             ILogger<ChatActionService> logger,
-            SidebarActionService sidebarActionService
+            IMediator mediator,
+            INotificationService notification
+            
             )
         {
             _appStateService = appStateService;
@@ -29,11 +36,11 @@ namespace ChatApp.Web.Services.Actions
             _chatApi = chatApi;
             _groupChatApi = groupChatApi;
             _logger = logger;
-            _sidebarActionService = sidebarActionService;
+            _mediator = mediator;
+            _notification = notification;
         }
-
-        public event Action? OnStateChanged;
         public event Func<Guid, Task>? OnJoinGroupRequested;
+        public Action? OnStateChanged;
         private CancellationTokenSource? _chatLoadingCts;
         public async Task HandleIncomingMessageAsync(MessageDTO dto)
         {
@@ -51,7 +58,7 @@ namespace ChatApp.Web.Services.Actions
             }
             else if (dto.SenderID != _appStateService.CurrentUser.UserID)
             {
-                await _sidebarActionService.HandleCounterUpdateAsync(dto.ChatID, false);
+                await _mediator.Publish(new SidebarCounterUpdated(dto.ChatID, true));
             }
             OnStateChanged?.Invoke();
         }
@@ -99,6 +106,7 @@ namespace ChatApp.Web.Services.Actions
 
                 if (_appStateService.CurrentChat == null)
                 {
+                    _notification.Notify("Wystąpił bład podczas ładowania czatu!", NotificationType.Error);
                     _logger.LogError("[BLAZORHUB] Chat not found: {Id}", args.ChatId);
                     return;
                 }
@@ -120,12 +128,9 @@ namespace ChatApp.Web.Services.Actions
                // await _appStateService.SetChatAsync(_appStateService.CurrentChat);
                 if (!_appStateService.CurrentChat.State.IsArchive)
                 {
-                    if (OnJoinGroupRequested != null)
-                    {
-                        await OnJoinGroupRequested.Invoke(_appStateService.CurrentChat.Identity.ChatID);
-                    }
+                    await _mediator.Publish(new RequestToJoinSignalR(args.ChatId));
                     await _chatApi.MarkAllMessagesAsReadAsync(_appStateService.CurrentChat.Identity.ChatID, token);
-                    await _sidebarActionService.HandleCounterUpdateAsync(_appStateService.CurrentChat.Identity.ChatID, true);
+                    await _mediator.Publish(new SidebarCounterUpdated(args.ChatId, true));
                 }
 
             }
@@ -165,6 +170,8 @@ namespace ChatApp.Web.Services.Actions
             }
             catch (Exception ex)
             {
+                _notification.Notify("Wystąpił bład podczas ładowania użytkowników!", NotificationType.Error);
+
                 _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", chatId);
             }
         }
@@ -173,5 +180,6 @@ namespace ChatApp.Web.Services.Actions
             await _appStateService.SetChatAsync(null);
         }
 
+     
     }
 }

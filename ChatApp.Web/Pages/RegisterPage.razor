@@ -1,11 +1,5 @@
 @page "/register"
 
-@if (!string.IsNullOrEmpty(_notification))
-{
-    <div class="notification-toast">
-        <div>@_notification</div>
-    </div>
-}
 
 <div class="login-page">
     <div class="login-card">
@@ -57,7 +51,6 @@
 
 @code {
     private bool _isProcessing = false;
-    private string? _notification = string.Empty;
     private UserDTO _registerModel = new UserDTO();
 
     protected override async Task OnInitializedAsync()
@@ -66,28 +59,26 @@
         {
             _navManager.NavigateTo("/hub");
         }
-        _notification = _appStateService.Message;
-        _notification = string.Empty;
-
     }
 
     private async Task HandleRegisterAsync()
     {
-        _notification = string.Empty;
         StateHasChanged();
         try
         {
             _isProcessing = true;
             await _authService.RegisterUserAsync(_registerModel);
+            _notificationService.Notify("Rejestracja przebiegła pomyślnie!", NotificationType.Info);
+
         }
         catch (Exception ex)
         {
-            _notification = $"{ex.Message}";
+            _notificationService.Notify(ex.Message,NotificationType.Warning);
             _isProcessing = false;
         }
         finally
         {
-            _isProcessing = false;    
+            _isProcessing = false;
             StateHasChanged();
         }
     }

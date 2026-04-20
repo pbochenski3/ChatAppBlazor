@@ -11,14 +11,6 @@
 
 @if (_isLoading == false)
 {
-    <div class="toast-container">
-        @if (!string.IsNullOrEmpty(_notification))
-        {
-            <div class="notification-toast">
-                <div>@_notification</div>
-            </div>
-        }
-    </div>
     <main class="main-layout">
         <Sidebar
             OnProfileOpen="HandleOpenProfile"/>
@@ -39,12 +31,9 @@
 }
 
 @code {
-    #region Private Fields
     private string? _notification = string.Empty;
     private UserDTO _currentUser = new UserDTO();
     private bool _isLoading = true;
-
-    #endregion
 
     protected override async Task OnInitializedAsync()
     {
@@ -58,12 +47,6 @@
         _currentUser = _appStateService.CurrentUser;
         _notification = _appStateService.Message;
 
-        if (!string.IsNullOrEmpty(_notification))
-        {
-            _appStateService.Message = null;
-            _ = ShowNotificationAsync(_notification);
-        }
-
         try
         {
             await _chatHubService.StartAsync();
@@ -71,9 +54,8 @@
 
             await _sidebarActionService.HandleInvitesLoadAsync();
             await _sidebarActionService.HandleChatsLoadAsync();
-
-            //await HandleDataReloadAsync(true);
             _isLoading = false;
+            _notificationService.Notify($"{_currentUser.Username} witaj ponownie!", NotificationType.System);
         }
         catch (Exception ex)
         {
@@ -86,7 +68,6 @@
     }
     private void SubscribeToEvent()
     {
-        _chatHubService.InviteStatusMessage += HandleInviteStatusReceivedAsync;
         _chatActionService.OnStateChanged += HandleStateChanged;
         _chatHubService.OnAvatarReload += HandleAvatarReloadAsync;
         _chatHubService.OnGroupAvatarReload += HandleGroupAvatarReloadAsync;
@@ -94,7 +75,6 @@
     }
     private void UnSubscribeToEvent()
     {
-        _chatHubService.InviteStatusMessage -= HandleInviteStatusReceivedAsync;
         _chatActionService.OnStateChanged -= HandleStateChanged;
         _chatHubService.OnAvatarReload -= HandleAvatarReloadAsync;
         _chatHubService.OnGroupAvatarReload -= HandleGroupAvatarReloadAsync;
@@ -113,32 +93,6 @@
         _appStateService.IsProfileOpen = open;
         await InvokeAsync(StateHasChanged);
     }
-    private async Task HandleInviteStatusReceivedAsync(string status)
-    {
-        var notifyTask = ShowNotificationAsync(status);
-    }
-    // private async Task HandleUnifiedReloadAsync(ReloadTarget target)
-    // {
-    //     await InvokeAsync(async () =>
-    //     {
-    //         switch (target)
-    //         {
-    //             case ReloadTarget.Sidebar:
-    //                 await _sidebarActionService.HandleSidebarLoadAsync(true);
-    //                 break;
-    //             case ReloadTarget.Invite:
-    //                 await HandleInviteLoadAsync(true);
-    //                 break;
-    //             case ReloadTarget.Global:
-    //                 await HandleDataReloadAsync(true);
-    //                 break;
-    //             case ReloadTarget.Chat:
-    //                 await _chatActionService.HandleChatClose(true);
-    //                 break;
-    //         }
-    //         StateHasChanged();
-    //     });
-    // }
 
     private async Task ShowNotificationAsync(string message, int durationInSeconds = 5)
     {
