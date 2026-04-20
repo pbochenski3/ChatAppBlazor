@@ -1,5 +1,7 @@
 ﻿using ChatApp.Application.DTO;
-using ChatApp.Application.Events;
+using ChatApp.Application.Interfaces.Chats;
+using ChatApp.Domain.Enums;
+using ChatApp.Web.Services.Actions.Interfaces;
 using ChatApp.Web.Services.Api;
 using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.Common.Interfaces;
@@ -10,7 +12,7 @@ using static ChatApp.Web.Events.SidebarEvents;
 
 namespace ChatApp.Web.Services.Actions
 {
-    public class ChatActionService
+    public class ChatActionService : IChatActionService
     {
         private readonly AppStateService _appStateService;
         private readonly ChatStateService _chatStateService;
@@ -19,7 +21,7 @@ namespace ChatApp.Web.Services.Actions
         private readonly ILogger<ChatActionService> _logger;
         private readonly IMediator _mediator;
         private readonly INotificationService _notification;
-        
+
         public ChatActionService(
             AppStateService appStateService,
             ChatStateService chatStateService,
@@ -40,7 +42,7 @@ namespace ChatApp.Web.Services.Actions
             _notification = notification;
         }
         public event Func<Guid, Task>? OnJoinGroupRequested;
-        public Action? OnStateChanged;
+        public event Action? OnStateChanged;
         private CancellationTokenSource? _chatLoadingCts;
         public async Task HandleIncomingMessageAsync(MessageDTO dto)
         {
