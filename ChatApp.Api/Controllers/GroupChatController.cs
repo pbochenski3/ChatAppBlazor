@@ -1,4 +1,9 @@
-﻿using ChatApp.Application.Feature.GroupChat.CreateGroupChat;
+﻿using ChatApp.Application.DTO;
+using ChatApp.Application.Feature.Chat.GetChatUsers;
+using ChatApp.Application.Feature.GroupChat.AddUsersToGroupChat;
+using ChatApp.Application.Feature.GroupChat.CreateGroupChat;
+using ChatApp.Application.Feature.GroupChat.GetChatUsers;
+using ChatApp.Application.Feature.GroupChat.LeaveGroupChatAsync;
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Services.Chats;
 using ChatApp.Domain.Models;
@@ -39,7 +44,7 @@ namespace ChatApp.Api.Controllers
             var userId = CurrentUserId;
             try
             {
-                await _groupChatService.ProcessAddToGroupChatAsync(chatId, usersToAdd, userId);
+                await _mediator.Send(new AddUsersToGroupChatCommand(chatId, usersToAdd,userId));
                 return Ok();
             }
             catch (Exception ex)
@@ -53,7 +58,8 @@ namespace ChatApp.Api.Controllers
             var userId = CurrentUserId;
             try
             {
-                await _groupChatService.ProcessLeaveGroupChatAsync(chatId, userId, username);
+                await _mediator.Send(new LeaveGroupChatCommand(chatId,userId,username));
+
                 return Ok();
             }
             catch (Exception ex)
@@ -66,7 +72,8 @@ namespace ChatApp.Api.Controllers
         {
             try
             {
-                var users = await _groupChatService.ProccesGetChatUsersAsync(chatId);
+                HashSet<UserDTO> users = await _mediator.Send(new GetChatUsersQuery(chatId));
+
                 return Ok(users);
             }
             catch (Exception ex)

@@ -102,7 +102,7 @@ namespace ChatApp.Api.Controllers
         [HttpGet("{chatId}/usersId")]
         public async Task<IActionResult> GetChatUsersAsync([FromRoute] Guid chatId, CancellationToken ct)
         {
-            var ids = await _mediator.Send(new GetChatUsersQuery(chatId));
+            var ids = await _mediator.Send(new GetChatUsersIdsQuery(chatId));
                 return Ok(ids);
 
         }

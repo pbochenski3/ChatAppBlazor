@@ -53,7 +53,7 @@ namespace ChatApp.Application.Feature.GroupChat.CreateGroupChat
             }
 
             await _chatRepo.AddChatAsync(newChat);
-            await _mediator.Publish(new GroupChatCreatedNotification(newChat.ChatID));
+            await _mediator.Publish(new GroupChatCreatedNotification(newChat.ChatID, usersInGroup));
             return true;
 
         }

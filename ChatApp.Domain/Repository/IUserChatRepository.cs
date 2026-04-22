@@ -27,7 +27,7 @@ namespace ChatApp.Domain.Repository
         #region Queries & Membership
         Task<DateTime?> GetLastMessageDateAsync(Guid userId, Guid chatId);
         Task<bool> ExistsAsync(Guid chatId);
-        Task<List<Guid>> GetUsersInChatIdAsync(Guid chatId);
+        Task<HashSet<Guid>> GetUsersInChatIdAsync(Guid chatId);
         Task<List<UserChat>?> GetAllUserChatsAsync(Guid userId);
         Task<UserChat?> GetUserChatAsync(Guid chatId, Guid userId, CancellationToken token);
         Task<Guid> GetReceiverUserIdAsync(Guid chatId, Guid userId, CancellationToken token);

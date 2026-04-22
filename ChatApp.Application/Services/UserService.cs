@@ -103,30 +103,30 @@ namespace ChatApp.Application.Services
                 AvatarUrl = u.AvatarUrl
             }).ToList();
         }
-        public async Task<HashSet<UserDTO>> GetUsersByIdsAsync(HashSet<Guid> userIds)
-        {
-            var users = await _userRepo.GetUsersByIdsAsync(userIds);
-            return users.Select(u => new UserDTO
-            {
-                UserID = u.UserID,
-                Username = u.Username,
-                AvatarUrl = u.AvatarUrl,
-                IsOnline = u.IsOnline
-            }).ToHashSet();
-        }
-        public async Task<UserDTO?> GetUserByIdAsync(Guid userId)
-        {
-            var user = await _userRepo.GetByIdAsync(userId);
-            if (user == null) return null;
+        //public async Task<HashSet<UserDTO>> GetUsersByIdsAsync(List<Guid> userIds)
+        //{
+        //    var users = await _userRepo.GetUsersByIdsAsync(userIds);
+        //    return users.Select(u => new UserDTO
+        //    {
+        //        UserID = u.UserID,
+        //        Username = u.Username,
+        //        AvatarUrl = u.AvatarUrl,
+        //        IsOnline = u.IsOnline
+        //    }).ToHashSet();
+        //}
+        //public async Task<UserDTO?> GetUserByIdAsync(Guid userId)
+        //{
+        //    var user = await _userRepo.GetByIdAsync(userId);
+        //    if (user == null) return null;
 
-            return new UserDTO
-            {
-                UserID = user.UserID,
-                Username = user.Username,
-                AvatarUrl = user.AvatarUrl,
-                IsOnline = user.IsOnline
-            };
-        }
+        //    return new UserDTO
+        //    {
+        //        UserID = user.UserID,
+        //        Username = user.Username,
+        //        AvatarUrl = user.AvatarUrl,
+        //        IsOnline = user.IsOnline
+        //    };
+        //}
         public async Task UpdateUserAvatarAsync(Guid userId,IFormFile avatarFile)
         {
             await _transactionProvider.ExecuteInTransactionAsync(async () =>

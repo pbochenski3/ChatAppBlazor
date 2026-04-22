@@ -11,8 +11,8 @@ namespace ChatApp.Application.Interfaces.Service
         Task RegisterUserAsync(UserDTO userDto);
         Task<UserDTO?> LoginUserAsync(UserDTO userDto);
         Task<List<UserDTO>> GetUsersToInviteAsync(Guid currentUserId, string query);
-        Task<HashSet<UserDTO>> GetUsersByIdsAsync(HashSet<Guid> userIds);
-        Task<UserDTO?> GetUserByIdAsync(Guid userId);
+        //Task<List<UserDTO>> GetUsersByIdsAsync(HashSet<Guid> userIds);
+        //Task<UserDTO?> GetUserByIdAsync(Guid userId);
         Task UpdateUserAvatarAsync(Guid userId, IFormFile avatarFile);
         Task<string> GetAvatarUrlAsync(Guid userId);
 

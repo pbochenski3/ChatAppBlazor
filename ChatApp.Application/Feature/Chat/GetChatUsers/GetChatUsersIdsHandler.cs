@@ -7,14 +7,14 @@ using System.Text;
 
 namespace ChatApp.Application.Feature.Chat.GetChatUsers
 {
-    public class GetChatUsersHandler : IRequestHandler<GetChatUsersQuery, HashSet<Guid>>
+    public class GetChatUsersIdsHandler : IRequestHandler<GetChatUsersIdsQuery, HashSet<Guid>>
     {
         private readonly IUserChatRepository _userChatRepo;
-        public GetChatUsersHandler(IUserChatRepository userChatRepo)
+        public GetChatUsersIdsHandler(IUserChatRepository userChatRepo)
         {
             _userChatRepo = userChatRepo;
         }
-        public async Task<HashSet<Guid>> Handle(GetChatUsersQuery r, CancellationToken cancellationToken)
+        public async Task<HashSet<Guid>> Handle(GetChatUsersIdsQuery r, CancellationToken cancellationToken)
         {
             return await _userChatRepo.GetUsersInChatIdAsync(r.ChatId);
         }

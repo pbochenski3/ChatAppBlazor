@@ -30,7 +30,7 @@ namespace ChatApp.Application.Feature.Message.SendChatMessage
                 throw new Exception("Message content cannot be empty");
             }
 
-            var message = new Message
+            var message = new Domain.Models.Message
             {
                 Content = messageDto.Content,
                 imageUrl = messageDto.imageUrl,

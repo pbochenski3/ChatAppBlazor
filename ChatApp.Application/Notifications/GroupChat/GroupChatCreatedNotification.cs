@@ -5,5 +5,5 @@ using System.Text;
 
 namespace ChatApp.Application.Notifications.GroupChat
 {
-    public record GroupChatCreatedNotification(Guid chatId) : INotification;
+    public record GroupChatCreatedNotification(Guid chatId,HashSet<Guid> usersToNofity) : INotification;
 }
