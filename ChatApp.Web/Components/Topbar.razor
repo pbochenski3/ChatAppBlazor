@@ -1,21 +1,35 @@
-﻿<div class="top-bar">
-    <div class="user-profile">
-        <div class="avatar-wrapper">
-            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=@User"
-                 class="user-avatar"
-                 alt="Avatar" />
+﻿@implements IDisposable;
+
+<div class="top-bar">
+    <div class="user-profile-top">
+        <div class="avatar-wrapper-top">
+            <img src="@_appStateService.CurrentChat.Identity.AvatarUrl" class="user-avatar" alt="Avatar" />
             <div class="status-dot online"></div>
         </div>
-
-        <div class="user-info-text">
-            <span class="user-name">@User</span>
-            <span class="chat-separator">|</span>
-            <span class="chat-name">@ChatName</span>
+        <div class="user-info-text-top">
+            <span class="user-name">@_appStateService.CurrentChat.Identity.ChatName</span>
         </div>
     </div>
+    @if (_appStateService.CurrentChat.State.IsArchive == false)
+    {
+        <div class="contact-config" @onclick="_chatStateService.ToggleSettings">⚙️</div>
+    }
 </div>
 
+
 @code {
-    [Parameter] public string User { get; set; } = "Unknown User";
-    [Parameter] public string ChatName { get; set; } = "Unknown Chat";
+    protected override async Task OnInitializedAsync()
+    {
+        _chatSettingsActionService.OnStateChanged += HandleStateChanged;
+
+    }
+    private async void HandleStateChanged()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+    public void Dispose()
+    {
+        _chatSettingsActionService.OnStateChanged += HandleStateChanged;
+
+    }
 }

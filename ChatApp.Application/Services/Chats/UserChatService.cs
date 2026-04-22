@@ -45,13 +45,12 @@ namespace ChatApp.Application.Services.Chats
             .ToList();
 
             var contentDict = await _messageRepo.GetMessagePreviewsAsync(messageIds);
-
             return chatEntries.Select(uc => new UserChatDTO
             {
                 Identity = new ChatIdentityDTO
                 {
                     ChatID = uc.ChatID,
-                    ChatName = uc.ChatName,
+                    ChatName = uc.Chat.IsGroup ? uc.ChatName: uc.Chat.ChatName,
                     IsGroup = uc.Chat.IsGroup,
                     AvatarUrl = uc.Chat.IsGroup
                         ? uc.Chat.AvatarUrl
@@ -114,9 +113,23 @@ namespace ChatApp.Application.Services.Chats
         {
             await _userChatRepo.ArchiveChatAsync(chatId, userId);
         }
-        public async Task UpdateChatNameAsync(Guid chatId, ChangeChatNameRequest request)
+        public async Task UpdateChatNameAsync(Guid chatId, Guid userId, ChangeChatNameRequest request)
         {
+            var isArchive = await _chatRepo.CheckIfChatIsArchive(chatId,userId);
+            if (isArchive)
+            {
+                throw new Exception("Nie można zmienić nazwy czatu!");
+            }
+            var isGroup = await _chatRepo.IsChatGroupAsync(chatId);
+            if (isGroup == true)
+            {
             await _chatRepo.UpdateChatNameAsync(chatId, request.NewName);
+            }
+            else
+            {
+                await _userChatRepo.SetNewChatNameAsync(chatId, userId, request.NewName);
+            }
+
             await _mediator.Publish(new ChatNameUpdatedNotification(chatId, request));
         }
     }

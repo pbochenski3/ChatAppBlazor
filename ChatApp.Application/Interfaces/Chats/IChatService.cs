@@ -12,6 +12,5 @@ namespace ChatApp.Application.Interfaces.Chats
         Task DeleteChatAsync(Guid chatId, Guid userId);
         Task<bool> IsChatExistingAsync(Guid chatId, Guid userId);
         Task<string> GetGroupAvatarUrlAsync(Guid chatId);
-        Task<bool> IsChatArchive(Guid chatId);
     }
 }

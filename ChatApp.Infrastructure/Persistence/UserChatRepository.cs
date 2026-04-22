@@ -142,6 +142,15 @@ namespace ChatApp.Infrastructure.Persistence
                                c.UserID == userId &&
                                c.IsArchive == true);
         }
+        public async Task SetNewChatNameAsync(Guid chatId,Guid userId, string newName)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            await context.UserChat
+                .Where(uc => uc.ChatID == chatId && uc.UserID != userId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(uc => uc.ChatName, newName));
+        }
+
         public async Task<bool> GetChatStatusById(Guid chatId, Guid userId)
         {
             using var context = _contextFactory.CreateDbContext();

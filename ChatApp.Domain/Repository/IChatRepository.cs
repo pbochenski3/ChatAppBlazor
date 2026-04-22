@@ -18,6 +18,7 @@ namespace ChatApp.Application.Interfaces.Repository
         Task UpdateChatNameAsync(Guid chatId, string chatName);
         Task UpdateGroupAvatarUrl(Guid chatId, string avatarUrl);
         Task<string> GetGroupAvatarUrlAsync(Guid chatId);
-        Task<bool> CheckIfChatIsArchive(Guid chatId);
+        Task<bool> CheckIfChatIsArchive(Guid chatId,Guid userId);
+        Task<bool> IsChatGroupAsync(Guid chatId);
     }
 }

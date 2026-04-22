@@ -22,11 +22,11 @@ namespace ChatApp.Infrastructure.Persistence
             _contextFactory = contextFactory;
             _logger = logger;
         }
-        public async Task<bool> CheckIfChatIsArchive(Guid chatId)
+        public async Task<bool> CheckIfChatIsArchive(Guid chatId,Guid userId)
         {
             using var context = _contextFactory.CreateDbContext();
             bool? result =  await context.UserChat
-                .Where(ch => ch.ChatID == chatId)
+                .Where(ch => ch.ChatID == chatId && ch.UserID == userId)
                 .Select(ch => ch.IsArchive)
                 .FirstOrDefaultAsync();
             return result ?? false;
@@ -166,6 +166,13 @@ namespace ChatApp.Infrastructure.Persistence
                 .Where(c => c.ChatID == chatId)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(c => c.ChatName, chatName));
+        }
+        public async Task<bool> IsChatGroupAsync(Guid chatId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Chats
+                .AnyAsync(c => c.ChatID == chatId &&
+                               c.IsGroup == true);
         }
     }
 }

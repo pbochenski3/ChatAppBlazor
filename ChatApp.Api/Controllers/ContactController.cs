@@ -22,12 +22,7 @@ namespace ChatApp.Api.Controllers
         [HttpGet("{chatId}")]
         public async Task<IActionResult> GetUserContactsAsync([FromRoute] Guid chatId,CancellationToken ct)
         {
-            var isArchive = await _chatService.IsChatArchive(chatId);
-            if(isArchive == true)
-            {
-                return BadRequest();
-            }
-            var contacts = await _contactService.GetUserContactsAsync(CurrentUserId);
+            var contacts = await _contactService.GetChatContactAsync(CurrentUserId,chatId);
             return Ok(contacts);
         }
         [HttpDelete("delete/by-chat/{privateChatId}")]

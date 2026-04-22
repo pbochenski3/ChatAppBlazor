@@ -49,7 +49,12 @@ namespace ChatApp.Application.Services.Chats
         }
         public async Task DeleteChatAsync(Guid chatId, Guid userId)
         {
-                await _transactionProvider.ExecuteInTransactionAsync(async () =>
+            var isArchive = await _chatRepo.CheckIfChatIsArchive(chatId,userId);
+            if (isArchive == true)
+            {
+                throw new Exception("Nie można usunąć czatu!");
+            }
+            await _transactionProvider.ExecuteInTransactionAsync(async () =>
                 { 
                 await _userChatRepo.MarkChatAsDeletedAsync(chatId, userId);
                 await _chatRepo.TryDeleteChatIfEmptyAsync(chatId);
@@ -60,10 +65,6 @@ namespace ChatApp.Application.Services.Chats
         public async Task<bool> IsChatExistingAsync(Guid chatId, Guid userId)
         {
             return await _chatRepo.CheckIfGroupExist(chatId, userId);
-        }
-        public async Task<bool> IsChatArchive(Guid chatId)
-        {
-            return await _chatRepo.CheckIfChatIsArchive(chatId);
         }
     }
 }

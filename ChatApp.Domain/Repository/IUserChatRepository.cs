@@ -22,6 +22,7 @@ namespace ChatApp.Domain.Repository
         Task SetChatAccessibilityAsync(Guid chatId, bool active, HashSet<Guid>? userIds = null);
         Task<bool> IsChatArchivedAsync(Guid chatId, Guid userId);
         Task<bool> GetChatStatusById(Guid chatId, Guid userId);
+        Task SetNewChatNameAsync(Guid chatId, Guid userId, string newName);
         #endregion
         #region Queries & Membership
         Task<DateTime?> GetLastMessageDateAsync(Guid userId, Guid chatId);

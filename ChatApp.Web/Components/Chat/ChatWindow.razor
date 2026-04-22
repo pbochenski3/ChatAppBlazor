@@ -11,22 +11,7 @@
     }
 
     <div class="chat-content">
-        <div class="top-bar">
-            <div class="user-profile-top">
-                <div class="avatar-wrapper-top">       
-                    <img src="@_appStateService.CurrentChat.Identity.AvatarUrl" class="user-avatar" alt="Avatar" />
-                    <div class="status-dot online"></div>
-                </div>
-                <div class="user-info-text-top">
-                    <span class="user-name">@_appStateService.CurrentChat.Identity.ChatName</span>
-                </div>
-            </div>
-            @if(_appStateService.CurrentChat.State.IsArchive == false)
-            {
-            <div class="contact-config" @onclick="_chatStateService.ToggleSettings">⚙️</div>
-            }
-        </div>
-
+       <Topbar/>
         <div class="chat-body">
             <div @ref="chatContainer" class="chat-box" id="chat-window">
                 <div class="chat-messages">
@@ -63,7 +48,10 @@
             <ChatInput/>
         </div>
     </div>
-    <ChatSettings/>
+    @if(!_appStateService.CurrentChat.State.IsArchive)
+    {
+    <ChatSettings/>   
+    }
 </div>
 
 @code {
@@ -88,13 +76,9 @@
         _chatActionService.OnStateChanged -= HandleStateChanged;
         _chatSettingsActionService.OnStateChanged -= HandleStateChanged;
     }
-    private void HandleStateChanged()
+    private async void HandleStateChanged()
     {
-        Console.WriteLine("State changed, invoking StateHasChanged...");
-        _ = InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task OnDialogClose(bool result)

@@ -25,7 +25,6 @@ namespace ChatApp.Application.Services.Chats
         private readonly ILogger<GroupChatService> _logger;
         private readonly IChatRepository _chatRepo;
         private readonly IUserChatRepository _userChatRepo;
-        private readonly IChatService _chatService;
         private readonly IUserService _userService;
         private readonly IMessageService _messageService;
         private readonly IUserChatService _userChatService;
@@ -36,7 +35,6 @@ namespace ChatApp.Application.Services.Chats
             ILogger<GroupChatService> logger,
             IChatRepository chatRepo,
             IUserChatRepository userChatRepo,
-            IChatService chatService,
             IUserService userService,
             IMessageService messageService,
             IUserChatService userChatService,
@@ -46,7 +44,6 @@ namespace ChatApp.Application.Services.Chats
             _logger = logger;
             _chatRepo = chatRepo;
             _userChatRepo = userChatRepo;
-            _chatService = chatService;
             _userService = userService;
             _messageService = messageService;
             _userChatService = userChatService;
@@ -114,13 +111,13 @@ namespace ChatApp.Application.Services.Chats
         {
              await _transactionProvider.ExecuteInTransactionAsync(async () =>
             {
-                var canAdd = await _chatService.IsChatArchive(chatId);
-                if(canAdd == false)
+                var IsArchive = await _chatRepo.CheckIfChatIsArchive(chatId,userId);
+                if(IsArchive == true)
                 {
                     throw new Exception("Nie można usunąć czatu!");
                 }
                 MessageDTO systemMessage = new MessageDTO();
-                var isGroupChat = await _chatService.IsChatExistingAsync(chatId, userId);
+                var isGroupChat = await _chatRepo.CheckIfGroupExist(chatId, userId);
                 Guid targetChatId = chatId;
                 var admin = await _userService.GetUserByIdAsync(userId);
                 HashSet<UserDTO> addedUsers = new HashSet<UserDTO>();
@@ -163,7 +160,7 @@ namespace ChatApp.Application.Services.Chats
         {
              await _transactionProvider.ExecuteInTransactionAsync(async () =>
             {
-                var isArchive = await _chatService.IsChatArchive(chatId);
+                var isArchive = await _chatRepo.CheckIfChatIsArchive(chatId,userId);
                 if(isArchive == true)
                 {
                     throw new Exception("Chat który chcesz opuścić nie istnieje!");
@@ -186,7 +183,7 @@ namespace ChatApp.Application.Services.Chats
         }
         public async Task<HashSet<UserDTO>> ProccesGetChatUsersAsync(Guid chatId)
         {
-            var userIds = await _chatService.GetUsersInChatIdAsync(chatId);
+            var userIds = await _userChatRepo.GetUsersInChatIdAsync(chatId);
             return await _userService.GetUsersByIdsAsync(userIds);
         }
     }

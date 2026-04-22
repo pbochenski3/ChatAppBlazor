@@ -4,6 +4,8 @@ using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Interfaces.Service;
 using ChatApp.Application.Notifications.Contact;
+using ChatApp.Application.Services.Chats;
+using ChatApp.Domain.Enums;
 using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
 using MediatR;
@@ -17,27 +19,21 @@ namespace ChatApp.Application.Services
 {
     public class ContactService : IContactService
     {
-        private readonly IMessageRepository _messageRepo;
-        private readonly IUserRepository _userRepo;
         private readonly IContactRepository _contactRepo;
-        private readonly IChatService _chatService;
+        private readonly IChatRepository _chatRepo;
         private readonly IUserChatRepository _userChatRepo;
         private readonly ITransactionProvider _transactionProvider;
         private readonly IMediator _mediator;
 
         public ContactService(
             IContactRepository contactRepo,
-            IMessageRepository messageRepo,
-            IUserRepository userRepo,
-            IChatService chatService,
+            IChatRepository chatRepo,
             IUserChatRepository userChatRepo,
             ITransactionProvider transactionProvider,
             IMediator mediator
             )
         {
-            _messageRepo = messageRepo;
-            _userRepo = userRepo;
-            _chatService = chatService;
+            _chatRepo = chatRepo;
             _contactRepo = contactRepo;
             _transactionProvider = transactionProvider;
             _userChatRepo = userChatRepo;
@@ -59,9 +55,29 @@ namespace ChatApp.Application.Services
                 IsOnline = contact.ContactUser.IsOnline,
             };
         }
-
-        public async Task<List<ContactDTO>> GetUserContactsAsync(Guid userId)
+        public async Task<List<ContactDTO>> GetAllContactAsync(Guid userId)
         {
+            var contacts = await _contactRepo.GetAllContactsAsync(userId);
+            if (contacts == null || !contacts.Any())
+            {
+                return new List<ContactDTO>();
+            }
+
+            return contacts.Select(c => new ContactDTO
+            {
+                ContactUserID = c.ContactUserID,
+                Username = c.ContactUser.Username,
+                AvatarUrl = c.ContactUser.AvatarUrl,
+                IsOnline = c.ContactUser.IsOnline,
+            }).ToList();
+        }
+        public async Task<List<ContactDTO>> GetChatContactAsync(Guid userId,Guid chatId)
+        {
+            var isArchive = await _chatRepo.CheckIfChatIsArchive(chatId,userId);
+            if(isArchive == true)
+            {
+                throw new Exception("Nie można pobrać listy!");
+            }
             var contacts = await _contactRepo.GetAllContactsAsync(userId);
             if (contacts == null || !contacts.Any())
             {
@@ -117,7 +133,7 @@ namespace ChatApp.Application.Services
 
         public async Task RemoveContactAsync(Guid contactUserId, Guid userId, Guid chatId)
         {
-            var isArchive = await _chatService.IsChatArchive(chatId);
+            var isArchive = await _chatRepo.CheckIfChatIsArchive(chatId,userId);
             if(isArchive == true)
             {
                 throw new Exception("Kontakt nie istnieje!");
