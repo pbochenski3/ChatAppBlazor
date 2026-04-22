@@ -1,10 +1,16 @@
 ﻿using ChatApp.Application.DTO;
+using ChatApp.Application.Feature.Chat;
+using ChatApp.Application.Feature.Chat.GetChatMessageHistory;
+using ChatApp.Application.Feature.Chat.MarkAllMessagesAsRead;
+using ChatApp.Application.Feature.Chat.MarkAsRead;
+using ChatApp.Application.Feature.Chat.SendChatMessage;
 using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Service;
 using ChatApp.Application.Services;
 using ChatApp.Application.Services.Chats;
 using ChatApp.Domain.Models;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -17,16 +23,10 @@ namespace ChatApp.Api.Controllers
     [Route("api/[controller]")]
     public class MessageController : AppControllerBase
     {
-        private readonly IHubContext<ChatHub> _hubContext;
-        private readonly IChatService _chatService;
-        private readonly IMessageService _messageService;
-        private readonly IChatReadStatusService _readStatusService;
-        public MessageController(IChatService chatService, IHubContext<ChatHub> hubContext, IMessageService messageService, IChatReadStatusService readStatusService)
+        private readonly IMediator _mediator;
+        public MessageController(IMediator mediator)
         {
-            _hubContext = hubContext;
-            _messageService = messageService;
-            _readStatusService = readStatusService;
-            _chatService = chatService;
+            _mediator = mediator;
         }
         [HttpPost]
         public async Task<IActionResult> SendChatMessageAsync([FromBody] MessageDTO dto)
@@ -36,8 +36,8 @@ namespace ChatApp.Api.Controllers
                 var userId = CurrentUserId;
                 if (dto.ChatID == Guid.Empty) return BadRequest();
 
-                await _messageService.SaveMessageAsync(dto);
-                return Ok();
+                var result = await _mediator.Send(new SendChatMessageCommand(dto));
+                return result ? Ok() : BadRequest();
             }
             catch (Exception ex)
             {
@@ -51,8 +51,7 @@ namespace ChatApp.Api.Controllers
         {
             var userId = CurrentUserId;
             if (chatId == Guid.Empty) return BadRequest();
-            List<MessageDTO> messages = await _messageService.GetChatMessageHistoryAsync(userId, chatId, ct);
-
+            var messages = await _mediator.Send(new GetChatMessageHistoryQuery(userId, chatId));
             return Ok(messages);
         }
         [HttpPatch("chat/{chatId}/read/{messageId}")]
@@ -60,16 +59,16 @@ namespace ChatApp.Api.Controllers
         {
             var userId = CurrentUserId;
             if (chatId == Guid.Empty) return BadRequest();
-            await _readStatusService.MarkMessageAsReadAsync(userId, chatId,messageId);
-            return Ok();
+            var result = await _mediator.Send(new MarkMessageAsReadCommand(userId,chatId,messageId));
+            return result ? Ok() : BadRequest();
         }
         [HttpPatch("chat/{chatId}/read-all")]
         public async Task<IActionResult> MarkAllMessagesAsReadAsync([FromRoute] Guid chatId,CancellationToken ct)
         {
             var userId = CurrentUserId;
             if (chatId == Guid.Empty) return BadRequest();
-            await _readStatusService.MarkAllMessagesAsReadAsync(userId, chatId, ct);
-            return Ok();
+            var result = await _mediator.Send(new MarkAllMessagesAsReadCommand(userId, chatId));
+            return result ? Ok() : BadRequest();
         }
     }
 }

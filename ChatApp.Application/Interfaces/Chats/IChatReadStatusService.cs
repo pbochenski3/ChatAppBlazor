@@ -7,8 +7,7 @@ namespace ChatApp.Application.Interfaces.Chats
 {
     public interface IChatReadStatusService
     {
-        Task MarkMessageAsReadAsync(Guid userId, Guid chatId, Guid messageId);
-        Task MarkAllMessagesAsReadAsync(Guid userId, Guid chatId, CancellationToken token);
+     
         Task<int> GetUnreadMessageCountAsync(Guid userId, Guid chatId);
         Task<List<(Guid ChatId, int Count)>> GetAllUnreadMessageCountsAsync(Guid userId);
         Task<DateTime?> GetLastMessageAtChatAsync(Guid userId, Guid chatId);

@@ -81,7 +81,9 @@ builder.Services.AddMediatR(cfg => {
         typeof(Program).Assembly,                            
         typeof(ChatDeletedNotification).Assembly 
     );
+    cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
 });
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 //Messagesne()
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddInfrastructure(builder.Configuration);
