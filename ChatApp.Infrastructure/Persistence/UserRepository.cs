@@ -63,7 +63,7 @@ namespace ChatApp.Infrastructure.Persistence
             return await context.Users.FirstOrDefaultAsync(u => u.UserID == id);
         }
 
-        public async Task<HashSet<User>> GetUsersByIdsAsync(HashSet<Guid> ids)
+        public async Task<List<User>> GetUsersByIdsAsync(List<Guid> ids)
         {
             using var context = _contextFactory.CreateDbContext();
             var users = await context.Users

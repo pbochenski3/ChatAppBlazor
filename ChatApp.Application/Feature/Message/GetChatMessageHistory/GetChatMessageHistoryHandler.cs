@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChatApp.Application.Feature.Chat.GetChatMessageHistory
+namespace ChatApp.Application.Feature.Message.GetChatMessageHistory
 {
     public class GetChatHistoryHandler : IRequestHandler<GetChatMessageHistoryQuery, List<MessageDTO>>
     {

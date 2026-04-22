@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChatApp.Application.Feature.Chat.GetChatMessageHistory
+namespace ChatApp.Application.Feature.Message.GetChatMessageHistory
 {
     public record GetChatMessageHistoryQuery(Guid UserId, Guid ChatId) : IQuery<List<MessageDTO>>;
 }

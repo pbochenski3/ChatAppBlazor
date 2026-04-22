@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Input;
 
-namespace ChatApp.Application.Feature.Chat.MarkAllMessagesAsRead
+namespace ChatApp.Application.Feature.Message.MarkAllMessagesAsRead
 {
     public record MarkAllMessagesAsReadCommand(Guid UserId, Guid ChatId) : ICommand<bool>;
 }

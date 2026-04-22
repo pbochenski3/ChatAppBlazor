@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChatApp.Application.Feature.Chat.MarkAllMessagesAsRead
+namespace ChatApp.Application.Feature.Message.MarkAllMessagesAsRead
 {
     public class MarkAllMessagesAsReadHandler : IRequestHandler<MarkAllMessagesAsReadCommand, bool>
     {

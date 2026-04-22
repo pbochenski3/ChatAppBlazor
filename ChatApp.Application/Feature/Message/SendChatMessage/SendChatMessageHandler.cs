@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChatApp.Application.Feature.Chat.SendChatMessage
+namespace ChatApp.Application.Feature.Message.SendChatMessage
 {
     public class SendChatMessageHandler : IRequestHandler<SendChatMessageCommand,bool>
     {
