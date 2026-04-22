@@ -34,8 +34,6 @@ namespace ChatApp.Application.Services.Chats
 
         public async Task<Guid> CreatePrivateChatAsync(Guid userId1, Guid userId2)
         {
-            return await _transactionProvider.ExecuteAsync(async () =>
-            {
                 var chat = await _chatRepo.GetChatAsync(userId1, userId2);
 
                 if (chat == null)
@@ -43,47 +41,15 @@ namespace ChatApp.Application.Services.Chats
                     var user1 = await _userRepo.GetByIdAsync(userId1);
                     var user2 = await _userRepo.GetByIdAsync(userId2);
 
-                    chat = new Chat
-                    {
-                        ChatID = Guid.CreateVersion7(),
-                        CreatedAt = DateTime.UtcNow,
-                        IsGroup = false,
-                        UserChats = new List<UserChat>(),
-                    };
-
-                    chat.UserChats.Add(new UserChat
-                    {
-                        UserID = userId1,
-                        ChatID = chat.ChatID,
-                        ChatName = user2.Username,
-                        IsArchive = false,
-                    });
-
-                    chat.UserChats.Add(new UserChat
-                    {
-                        UserID = userId2,
-                        ChatID = chat.ChatID,
-                        ChatName = user1.Username,
-                        IsArchive = false,
-                    });
-
-                    await _chatRepo.AddChatAsync(chat);
-                    var systemMessage = new Message
-                    {
-                        MessageID = Guid.CreateVersion7(),
-                        ChatID = chat.ChatID,
-                        Content = "Ten czat nie ma jeszcze wiadomości! Przywitaj się!",
-                        SentAt = DateTime.UtcNow,
-                        MessageType = MessageType.System
-                    };
-                    await _messageRepo.AddMessageAsync(systemMessage);
+                var result = Chat.CreateNewGroup(user1, new List<User> { user1, user2 });
+                    await _chatRepo.AddChatAsync(result.Chat);
+                    await _messageRepo.AddMessageAsync(result.SystemMessage);
                 }
                 else
                 {
                     await _userChatRepo.SetChatAccessibilityAsync(chat.ChatID, true);
                 }
                 return chat.ChatID;
-            });
 
             }
 

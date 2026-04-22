@@ -39,10 +39,10 @@ namespace ChatApp.Application.Services.Chats
             await _mediator.Publish(new GroupAvatarUpdatedNotification(chatId, avatarUrl));
         }
 
-        public async Task<HashSet<Guid>> GetUsersInChatIdAsync(Guid chatId)
-        {
-            return await _userChatRepo.GetUsersInChatIdAsync(chatId);
-        }
+        //public async Task<HashSet<Guid>> GetUsersInChatIdAsync(Guid chatId)
+        //{
+        //    return await _userChatRepo.GetUsersInChatIdAsync(chatId);
+        //}
         public async Task<string> GetGroupAvatarUrlAsync(Guid chatId)
         {
              return await _chatRepo.GetGroupAvatarUrlAsync(chatId);

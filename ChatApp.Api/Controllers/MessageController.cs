@@ -1,9 +1,9 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.Feature.Chat;
-using ChatApp.Application.Feature.Chat.GetChatMessageHistory;
-using ChatApp.Application.Feature.Chat.MarkAllMessagesAsRead;
-using ChatApp.Application.Feature.Chat.MarkAsRead;
-using ChatApp.Application.Feature.Chat.SendChatMessage;
+using ChatApp.Application.Feature.Message.GetChatMessageHistory;
+using ChatApp.Application.Feature.Message.MarkAllMessagesAsRead;
+using ChatApp.Application.Feature.Message.MarkAsRead;
+using ChatApp.Application.Feature.Message.SendChatMessage;
 using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Service;

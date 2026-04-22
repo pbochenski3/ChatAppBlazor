@@ -6,7 +6,7 @@ using System.Text;
 
 namespace ChatApp.Application.Notifications.GroupChat
 {
-    public record UsersAddedToGroupChatNotification(Guid GroupChatId,MessageDTO SystemMessage, HashSet<Guid> UsersInChat) : INotification;
+    public record UsersAddedToGroupChatNotification(Guid GroupChatId,Domain.Models.Message SystemMessage, HashSet<Guid> UsersInChat) : INotification;
     
     
 }

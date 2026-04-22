@@ -5,5 +5,5 @@ using System.Text;
 
 namespace ChatApp.Application.Feature.Chat.GetChatUsers
 {
-    public record GetChatUsersQuery(Guid ChatId) : IQuery<HashSet<Guid>>;
+    public record GetChatUsersIdsQuery(Guid ChatId) : IQuery<HashSet<Guid>>;
 }
