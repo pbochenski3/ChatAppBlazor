@@ -16,20 +16,7 @@ namespace ChatApp.Application.Services.Chats
             _userChatRepo = userChatRepo;
         }
 
-        public async Task MarkMessageAsReadAsync(Guid userId, Guid chatId, Guid messageId)
-        {
-            await _userChatRepo.UpdateLastReadMessageAsync(userId, chatId, messageId);
-        }
 
-        public async Task MarkAllMessagesAsReadAsync(Guid userId, Guid chatId, CancellationToken token)
-        {
-            var userChat = await _userChatRepo.GetUserChatAsync(chatId, userId, token);
-            var lastMessageId = userChat?.LastMessageID;
-            if (lastMessageId.HasValue)
-            {
-                await _userChatRepo.UpdateLastReadMessageAsync(userId, chatId, lastMessageId.Value);
-            }
-        }
 
         public async Task<int> GetUnreadMessageCountAsync(Guid userId, Guid chatId)
         {
