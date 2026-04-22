@@ -1,6 +1,8 @@
-﻿using ChatApp.Application.Interfaces.Chats;
+﻿using ChatApp.Application.Feature.GroupChat.CreateGroupChat;
+using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Services.Chats;
 using ChatApp.Domain.Models;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
@@ -14,26 +16,21 @@ namespace ChatApp.Api.Controllers
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly IGroupChatService _groupChatService;
         private readonly ILogger<GroupChatController> _logger;
+        private readonly IMediator _mediator;
 
 
-        public GroupChatController(IHubContext<ChatHub> hubContext, IGroupChatService groupChatService, ILogger<GroupChatController> logger)
+        public GroupChatController(IHubContext<ChatHub> hubContext, IGroupChatService groupChatService, ILogger<GroupChatController> logger, IMediator mediator)
         {
             _hubContext = hubContext;
             _groupChatService = groupChatService;
             _logger = logger;
+            _mediator = mediator;
         }
         [HttpPost("from-private-chat/{chatId}")]
         public async Task<IActionResult> CreateGroupChatAsync([FromBody] HashSet<Guid> usersToAdd, [FromRoute] Guid chatId, CancellationToken ct)
         {
-            try
-            {
-                await _groupChatService.CreateGroupChatAsync(chatId, usersToAdd);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+                var response = await _mediator.Send(new CreateGroupChatCommand(chatId, usersToAdd));
+                return response ? Ok() : BadRequest();
         }
         [HttpPost("{chatId}/add-users")]
         public async Task<IActionResult> AddUsersToGroupChatAsync([FromBody] HashSet<Guid> usersToAdd, [FromRoute] Guid chatId, CancellationToken ct)

@@ -195,7 +195,7 @@ namespace ChatApp.Infrastructure.Persistence
                 .Where(uc => uc.UserID == userId)
                 .ToListAsync();
         }
-        public async Task<HashSet<Guid>> GetUsersInChatIdAsync(Guid chatId)
+        public async Task<List<Guid>> GetUsersInChatIdAsync(Guid chatId)
         {
             using var context = _contextFactory.CreateDbContext();
             var userIds = await context.UserChat
@@ -203,7 +203,7 @@ namespace ChatApp.Infrastructure.Persistence
                 .Where(uc => uc.ChatID == chatId && uc.IsArchive == false)
                 .Select(uc => uc.UserID)
                 .ToListAsync();
-            return userIds.ToHashSet();
+            return userIds;
         }
         public async Task<Guid> GetReceiverUserIdAsync(Guid chatId, Guid userId, CancellationToken token)
         {
