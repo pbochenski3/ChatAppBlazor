@@ -54,12 +54,9 @@ namespace ChatApp.Application.Services.Chats
             {
                 throw new Exception("Nie można usunąć czatu!");
             }
-            await _transactionProvider.ExecuteInTransactionAsync(async () =>
-                { 
                 await _userChatRepo.MarkChatAsDeletedAsync(chatId, userId);
                 await _chatRepo.TryDeleteChatIfEmptyAsync(chatId);
                 await _mediator.Publish(new ChatDeletedNotification(chatId, userId));
-                });
         }
 
         public async Task<bool> IsChatExistingAsync(Guid chatId, Guid userId)
