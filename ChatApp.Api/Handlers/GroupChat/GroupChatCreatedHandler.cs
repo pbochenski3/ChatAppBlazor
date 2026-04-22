@@ -9,19 +9,16 @@ namespace ChatApp.Api.Handlers.GroupChat
     public class GroupChatCreatedHandler : INotificationHandler<GroupChatCreatedNotification>
     {
         private readonly IHubContext<ChatHub> _hubContext;
-        private readonly IGroupChatService _groupChatService;
-        public GroupChatCreatedHandler(IHubContext<ChatHub> hubContext,IGroupChatService groupChatService)
+        public GroupChatCreatedHandler(IHubContext<ChatHub> hubContext)
         {
             _hubContext = hubContext;
-            _groupChatService = groupChatService;
 
         }
         public async Task Handle(GroupChatCreatedNotification n, CancellationToken cancellationToken)
         {
-            var usersInNewChat = await _groupChatService.ProccesGetChatUsersAsync(n.chatId);
-            var usersToNotify = usersInNewChat.Select(u => u.UserID.ToString()).ToList();
+            var usersToNotify = n.usersToNofity.Select(u => u.ToString()).ToList();
 
-            if (usersToNotify.Any())
+            if (n.usersToNofity.Any())
             {
                 await _hubContext.Clients.Users(usersToNotify).SendAsync("SidebarChatsReload");
             }
