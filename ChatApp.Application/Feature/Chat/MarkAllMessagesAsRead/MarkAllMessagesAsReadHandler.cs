@@ -9,7 +9,7 @@ namespace ChatApp.Application.Feature.Chat.MarkAllMessagesAsRead
 {
     public class MarkAllMessagesAsReadHandler : IRequestHandler<MarkAllMessagesAsReadCommand, bool>
     {
-        public readonly IUserChatRepository _userChatRepo;
+        private readonly IUserChatRepository _userChatRepo;
         public MarkAllMessagesAsReadHandler(IUserChatRepository userChatRepo)
         {
             _userChatRepo = userChatRepo;

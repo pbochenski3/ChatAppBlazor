@@ -2,6 +2,15 @@
 using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
 using ChatApp.Application.DTO.Requests;
+using ChatApp.Application.Feature.Chat.CheckGroupChatExists;
+using ChatApp.Application.Feature.Chat.DeleteChat;
+using ChatApp.Application.Feature.Chat.GetChatDetails;
+using ChatApp.Application.Feature.Chat.GetChatDetails.GetChatDetailsHandler;
+using ChatApp.Application.Feature.Chat.GetChatUsers;
+using ChatApp.Application.Feature.Chat.UpdateChatName;
+using ChatApp.Application.Feature.File;
+using ChatApp.Application.Feature.File.SaveChatImage;
+using ChatApp.Application.Feature.File.SaveGroupAvatar;
 using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Service;
@@ -24,15 +33,11 @@ namespace ChatApp.Api.Controllers
 
     public class ChatController : AppControllerBase
     {
-        private readonly IChatService _chatService;
-        private readonly IFileService _fileService;
-        private readonly IUserChatService _userChatService;
+        private readonly IMediator _mediator;
 
-        public ChatController(IChatService chatService, IFileService fileService, IUserChatService userChatService)
+        public ChatController(IMediator mediator)
         {
-            _chatService = chatService;
-            _userChatService = userChatService;
-            _fileService = fileService;
+            _mediator = mediator;
         }
         
         [HttpGet("{chatId}/details")]
@@ -40,7 +45,7 @@ namespace ChatApp.Api.Controllers
         {
             var userId = CurrentUserId;
             if (chatId == Guid.Empty) return BadRequest();
-            var chatDetails = await _userChatService.GetUserChatDetailsAsync(chatId, userId, ct);
+            var chatDetails = await _mediator.Send(new GetChatDetailsQuery(chatId,userId));
             if (chatDetails == null) return NotFound();
             return Ok(chatDetails);
         }
@@ -49,33 +54,18 @@ namespace ChatApp.Api.Controllers
         {
             var userId = CurrentUserId;
             if (chatId == Guid.Empty) return BadRequest();
-            try
-            {
-                string imageUrl = await _fileService.SaveImageAsync(file, UploadType.ChatImage, chatId, userId);
-                var response = new FileResponse { Url = imageUrl };
 
+                string imageUrl = await _mediator.Send(new SaveChatImageCommand(file,chatId, userId));
+                var response = new FileResponse { Url = imageUrl };
                 return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
         }
         [HttpPost("groupAvatar")]
-        public async Task<IActionResult> UploadGroupAvatarAsync(IFormFile file, [FromQuery] Guid chatId)
+        public async Task<IActionResult> SaveGroupAvatar(IFormFile file, [FromQuery] Guid chatId)
         {
             var userId = CurrentUserId;
             if (chatId == Guid.Empty) return BadRequest();
-            try
-            {
-                string avatarUrl = await _fileService.SaveImageAsync(file, UploadType.GroupAvatar, chatId);
-                await _chatService.UpdateGroupAvatarUrl(chatId, avatarUrl);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+                 await _mediator.Send(new SaveGroupAvatarCommand(file,chatId, userId));
+                 return Ok();
         }
         [HttpDelete("{chatId}")]
         public async Task<IActionResult> DeleteChatAsync([FromRoute] Guid chatId)
@@ -84,8 +74,8 @@ namespace ChatApp.Api.Controllers
             if (chatId == Guid.Empty) return BadRequest();
             try
             {
-                await _chatService.DeleteChatAsync(chatId, userId);
-                return Ok();
+                bool result = await _mediator.Send(new DeleteChatCommand(chatId, userId));
+                return result ? Ok() : BadRequest();
             }
             catch (Exception ex)
             {
@@ -97,37 +87,23 @@ namespace ChatApp.Api.Controllers
         {
             var userId = CurrentUserId;
             if (chatId == Guid.Empty) return BadRequest();
-            try
-            {
-                await _userChatService.UpdateChatNameAsync(chatId, userId, request);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+
+                bool result = await _mediator.Send(new UpdateChatNameCommand(chatId, userId,request));
+                return result ? Ok() : BadRequest();
         }
         [HttpGet("{chatId}/existing")]
         public async Task<IActionResult> CheckGroupChatExistsAsync([FromRoute] Guid chatId, CancellationToken ct)
         {
             var userId = CurrentUserId;
             if (chatId == Guid.Empty) return BadRequest();
-            var exists = await _chatService.IsChatExistingAsync(chatId, userId);
+            var exists = await _mediator.Send(new CheckGroupChatExistsQuery(chatId, userId));
             return Ok(exists);
         }
         [HttpGet("{chatId}/usersId")]
         public async Task<IActionResult> GetChatUsersAsync([FromRoute] Guid chatId, CancellationToken ct)
         {
-            try
-            {
-                var ids = await _chatService.GetUsersInChatIdAsync(chatId);
-
+            var ids = await _mediator.Send(new GetChatUsersQuery(chatId));
                 return Ok(ids);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
 
         }
     }
