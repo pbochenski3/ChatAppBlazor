@@ -1,4 +1,6 @@
-﻿using ChatApp.Application.Interfaces;
+﻿using ChatApp.Application.Feature.Sidebar.GetSidebarItems;
+using ChatApp.Application.Interfaces;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChatApp.Api.Controllers
@@ -8,11 +10,11 @@ namespace ChatApp.Api.Controllers
     public class SidebarController : AppControllerBase
     {
         private readonly ILogger<SidebarController> _logger;
-        private readonly ISidebarService _sidebarService;
-        public SidebarController(ILogger<SidebarController> logger, ISidebarService sidebarService)
+        private readonly IMediator _mediator;
+        public SidebarController(ILogger<SidebarController> logger,IMediator mediator)
         {
             _logger = logger;
-            _sidebarService = sidebarService;
+            _mediator = mediator;
         }
         [HttpGet]
         public async Task<IActionResult> GetSidebarItemsAsync()
@@ -20,7 +22,7 @@ namespace ChatApp.Api.Controllers
             var userId = CurrentUserId;
             try
             {
-                var items = await _sidebarService.GetSidebarItemsAsync(userId);
+                var items = await _mediator.Send(new GetSidebarItemsQuery(userId));
                 return Ok(items);
             }
             catch (Exception ex)

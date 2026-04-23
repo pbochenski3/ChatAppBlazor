@@ -22,5 +22,6 @@ namespace ChatApp.Domain.Models
         public Guid? LastMessageID { get; private set; }
         public DateTime LastMessageAt { get; set; } 
 
+      
     }
 }
