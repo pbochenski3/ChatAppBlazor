@@ -6,16 +6,32 @@ public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
     where TRequest : ICommand<TResponse>
 {
     private readonly IUnitOfWork _uow;
+    private readonly IMediator _mediator;
 
-    public TransactionBehavior(IUnitOfWork uow) => _uow = uow;
+    public TransactionBehavior(IUnitOfWork uow,IMediator mediator)
+    {
+        _uow = uow;
+    }
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken ct)
     {
-        _uow.Begin(); 
+        await _uow.BeginTransactionAsync(ct);
         try
         {
-            var response = await next(); 
-            await _uow.CommitAsync();    
+            var response = await next();
+
+            await _uow.SaveChangesAsync(ct);
+            await _uow.CommitTransactionAsync(ct);
+
+            if (request is IHasDomainEvents requestWithEvents)
+        {
+                foreach (var domainEvent in requestWithEvents.DomainEvents)
+                {
+                   
+                    await _mediator.Publish(domainEvent, ct);
+                }
+                requestWithEvents.ClearDomainEvents();
+            }
             return response;
         }
         catch
@@ -24,6 +40,7 @@ public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
         }
         finally
         {
+            await _uow.RollbackTransactionAsync(ct);
             _uow.Dispose(); 
         }
     }

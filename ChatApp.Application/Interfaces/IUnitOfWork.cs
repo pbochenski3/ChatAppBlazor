@@ -6,7 +6,9 @@ namespace ChatApp.Application.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {
-        void Begin();
-        Task CommitAsync();
+        Task<int> SaveChangesAsync(CancellationToken ct = default);
+        Task BeginTransactionAsync(CancellationToken ct = default);
+        Task CommitTransactionAsync(CancellationToken ct = default);
+        Task RollbackTransactionAsync(CancellationToken ct = default);
     }
 }

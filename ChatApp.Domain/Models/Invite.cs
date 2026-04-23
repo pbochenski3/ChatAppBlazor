@@ -26,8 +26,8 @@ namespace ChatApp.Domain.Models
             };
             var contact2 = new Contact
             {
-                UserID = userId1,
-                ContactUserID = userId2,
+                UserID = userId2,
+                ContactUserID = userId1,
             };
             var contacts = new Contact[] { contact1, contact2 };
             return contacts;
