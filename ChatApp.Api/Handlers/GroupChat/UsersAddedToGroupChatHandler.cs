@@ -21,8 +21,10 @@ namespace ChatApp.Api.Handlers.GroupChat
                 await _hubContext.Clients.Users(usersToNotify).SendAsync("ChatReload", n.GroupChatId, true);
                 await _hubContext.Clients.Users(usersToNotify).SendAsync("SidebarChatsReload");
             }
-
+            if(string.IsNullOrWhiteSpace(n.SystemMessage.Content))
+            {
             await _hubContext.Clients.Group(n.GroupChatId.ToString()).SendAsync("ReceiveMessage", n.SystemMessage);
+            }
             await _hubContext.Clients.Group(n.GroupChatId.ToString()).SendAsync("UsersInChatReload", n.GroupChatId);
         }
     }
