@@ -1,8 +1,13 @@
 ﻿using ChatApp.Application.DTO.Requests;
+using ChatApp.Application.Feature.Invite.GetUsersInvites;
+using ChatApp.Application.Feature.Invite.HandleInviteAction;
+using ChatApp.Application.Feature.Invite.SendContactInvite;
 using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Service;
+using ChatApp.Application.Notifications.Invite;
 using ChatApp.Domain.Enums;
 using ChatApp.Domain.Models;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
@@ -16,43 +21,34 @@ namespace ChatApp.Api.Controllers
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly IInviteService _inviteService;
         private readonly ILogger<InviteController> _logger;
-        public InviteController(IHubContext<ChatHub> hubContext, IInviteService inviteService, ILogger<InviteController> logger)
+        private readonly IMediator _mediator;
+        public InviteController(IHubContext<ChatHub> hubContext, IInviteService inviteService, ILogger<InviteController> logger,IMediator mediator)
         {
             _hubContext = hubContext;
             _inviteService = inviteService;
+            _mediator = mediator;
             _logger = logger;
         }
         [HttpGet]
         public async Task<IActionResult> GetUserInvitesAsync()
         {
             var userId = CurrentUserId;
-            var invites = await _inviteService.GetUserInvitesAsync(userId);
+            var invites = await _mediator.Send(new GetUserInvitesQuery(userId));
             return Ok(invites);
         }
         [HttpPost]
         public async Task<IActionResult> SendContactInviteAsync([FromBody] Guid receiverId)
         {
             var senderId = CurrentUserId;
-            await _inviteService.SendInviteAsync(senderId, receiverId);
+            await _mediator.Send(new SendContactInviteCommand(senderId, receiverId));
             return Ok();
         }
         [HttpPost("action")]
         public async Task<IActionResult> HandleInviteActionAsync([FromBody] InviteActionRequest request, CancellationToken ct)
         {
-            try
-            {
-                var actionUserId = CurrentUserId;
-                await _inviteService.ProcessInviteActionAsync(request, ct);
-                return Ok();
-            }
-            catch (KeyNotFoundException knf)
-            {
-                return NotFound(knf.Message);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var actionUserId = CurrentUserId;
+            await _mediator.Send(new HandleInviteActionCommand(request));
+            return Ok();
         }
     }
 }

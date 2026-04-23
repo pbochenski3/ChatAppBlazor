@@ -41,6 +41,32 @@ namespace ChatApp.Domain.Models
 
             return Message.CreateSystemMessage(this.ChatID, content);
         }
+        public static Chat CreatePrivateChat(Contact[] contacts)
+        {
+            var chatId = Guid.CreateVersion7();
+            var chatName = $"Chat#{RandomNumberGenerator.GetInt32(0, 100000):D5}";
+            var chat = new Chat
+            {
+                ChatID = chatId,
+                CreatedAt = DateTime.UtcNow,
+                IsGroup = true,
+                ChatName = chatName,
+            };
+            chat.UserChats.Add(new UserChat
+            {
+                UserID = contacts[0].UserID,
+                ChatID = chatId,
+                ChatName = chatName
+            });
+            chat.UserChats.Add(new UserChat
+            {
+                UserID = contacts[1].UserID,
+                ChatID = chatId,
+                ChatName = chatName
+            });
+            return chat;
+
+        }
         public static (Chat Chat, Message SystemMessage) CreateNewGroup(User creator, List<User> membersToAdd)
         {
             var chatId = Guid.CreateVersion7();
