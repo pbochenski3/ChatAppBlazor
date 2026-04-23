@@ -1,4 +1,5 @@
-﻿using ChatApp.Application.Interfaces.Chats;
+﻿using ChatApp.Application.DTO;
+using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Notifications.GroupChat;
 using ChatApp.Application.Services.Chats;
 using MediatR;

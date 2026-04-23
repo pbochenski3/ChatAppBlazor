@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChatApp.Application.Feature.Chat.GetChatDetails.GetChatDetailsHandler
+namespace ChatApp.Application.Feature.Chat.GetChatDetails
 {
     public record GetChatDetailsQuery(Guid ChatId, Guid UserId) : IQuery<UserChatDTO>;
 }

@@ -7,5 +7,5 @@ using System.Windows.Input;
 
 namespace ChatApp.Application.Feature.Message.SendChatMessage
 {
-    public record SendChatMessageCommand(MessageDTO Dto) : ICommand<bool>;
+    public record SendChatMessageCommand(MessageDTO Dto) : BaseCommand<bool>;
 }

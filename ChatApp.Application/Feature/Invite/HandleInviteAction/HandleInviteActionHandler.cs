@@ -14,23 +14,21 @@ namespace ChatApp.Application.Feature.Invite.HandleInviteAction
         private readonly IContactRepository _contactRepo;
         private readonly IChatRepository _chatRepo;
         private readonly IUserChatRepository _userChatRepo;
-        private readonly IMediator _mediator;
-        private readonly IUnitOfWork _uow;
+        private readonly IUserRepository _userRepo;
         public HandleInviteActionHandler(
             IInviteRepository inviteRepo,
             IContactRepository contactRepo,
-            IMediator mediator,
             IChatRepository chatRepo,
             IUserChatRepository userChatRepo,
-            IUnitOfWork uow
+            IUserRepository userRepo
+            
             )
         {
             _inviteRepo = inviteRepo;
             _contactRepo = contactRepo;
-            _mediator = mediator;
             _chatRepo = chatRepo;
             _userChatRepo = userChatRepo;
-            _uow = uow;
+            _userRepo = userRepo;
         }
         public async Task<bool> Handle(HandleInviteActionCommand r, CancellationToken cancellationToken)
         {
@@ -47,7 +45,9 @@ namespace ChatApp.Application.Feature.Invite.HandleInviteAction
                 var chat = await _chatRepo.GetChatAsync(contacts[0].UserID, contacts[1].UserID);
                 if(chat == null)
                 {
-                var createdChat = Domain.Models.Chat.CreatePrivateChat(contacts);
+                    var user1 = await _userRepo.GetByIdAsync(contacts[0].UserID);
+                    var user2 = await _userRepo.GetByIdAsync(contacts[1].UserID);
+                    var createdChat = Domain.Models.Chat.CreatePrivateChat(user1,user2);
                     await _chatRepo.AddChatAsync(createdChat);
                 }
                 else
@@ -55,8 +55,7 @@ namespace ChatApp.Application.Feature.Invite.HandleInviteAction
                     await _userChatRepo.SetChatAccessibilityAsync(chat.ChatID, true);
                 }
             }
-            await _uow.CommitAsync();
-            await _mediator.Publish(new InviteActionNotification(invite.SenderID, invite.ReceiverID, r.Request.chatId, newChatId, r.Request.Response));
+            r.AddEvent(new InviteActionNotification(invite.SenderID, invite.ReceiverID, r.Request.chatId, newChatId, r.Request.Response));
             return true;
 
         }

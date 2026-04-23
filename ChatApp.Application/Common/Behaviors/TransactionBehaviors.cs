@@ -11,6 +11,7 @@ public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
     public TransactionBehavior(IUnitOfWork uow,IMediator mediator)
     {
         _uow = uow;
+        _mediator = mediator;
     }
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken ct)
