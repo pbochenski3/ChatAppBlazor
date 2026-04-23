@@ -17,5 +17,20 @@ namespace ChatApp.Domain.Models
 
         public InviteStatus Status { get; set; } 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public async static Task<Contact[]> CreateContact(Guid userId1,Guid userId2)
+        {
+            var contact1 = new Contact
+            {
+                UserID = userId1,
+                ContactUserID = userId2,
+            };
+            var contact2 = new Contact
+            {
+                UserID = userId1,
+                ContactUserID = userId2,
+            };
+            var contacts = new Contact[] { contact1, contact2 };
+            return contacts;
+        }
     }
 }
