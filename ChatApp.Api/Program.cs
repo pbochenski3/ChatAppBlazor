@@ -103,6 +103,7 @@ builder.Services.AddScoped<IGroupChatService, GroupChatService>();
 builder.Services.AddScoped<IUserChatService, UserChatService>();
 builder.Services.AddScoped<IChatReadStatusService, ChatReadStatusService>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService > ();
 //SignalR - UserIdProvider
 builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 // Connection tracker for debugging SignalR connections

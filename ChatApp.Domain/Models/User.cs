@@ -19,7 +19,5 @@ namespace ChatApp.Domain.Models
         public ICollection<Invite> SentInvites { get; set; } = new HashSet<Invite>();
         public ICollection<Invite> ReceivedInvites { get; set; } = new HashSet<Invite>();
         public ICollection<Message> Messages { get; set; } = new HashSet<Message>();
-
-
     }
 }
