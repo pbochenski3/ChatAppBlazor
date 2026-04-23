@@ -92,7 +92,7 @@ namespace ChatApp.Domain.Models
                 });
             }
 
-            var names = string.Join(", ", membersToAdd.Where(m => m.UserID ==  UserId).Select(u => u.Username));
+            var names = string.Join(", ", membersToAdd.Where(m => m.UserID != UserId).Select(u => u.Username));
             var message = Message.CreateSystemMessage(chatId, $"{admin.Username} stworzył czat z: {names}.");
 
             return (chat, message);

@@ -1,4 +1,6 @@
-﻿namespace ChatApp.Web.Services.Actions.Interfaces
+﻿using ChatApp.Domain.Enums;
+
+namespace ChatApp.Web.Services.Actions.Interfaces
 {
     public interface IChatSettingsActionService
     {
@@ -11,6 +13,6 @@
         Task HandleContactDeleteAsync(Guid chatId);
         Task HandleLoadUsersToAddAsync();
         Task HandleChangeChatNameAsync(string chatName);
-        Task HandleAddUsersToChatAsync(HashSet<Guid> usersToAdd);
+        Task HandleAddUsersToChatAsync(HashSet<Guid> usersToAdd,AddType type);
     }
 }

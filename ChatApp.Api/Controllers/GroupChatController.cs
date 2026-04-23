@@ -1,6 +1,7 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.Feature.Chat.GetChatUsers;
 using ChatApp.Application.Feature.GroupChat.AddUsersToGroupChat;
+using ChatApp.Application.Feature.GroupChat.CreateGroupChat;
 using ChatApp.Application.Feature.GroupChat.GetChatUsers;
 using ChatApp.Application.Feature.GroupChat.LeaveGroupChatAsync;
 using ChatApp.Application.Interfaces.Chats;
@@ -46,6 +47,23 @@ namespace ChatApp.Api.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpPost("from-private-chat/{chatId}")]
+
+        public async Task<IActionResult> CreateGroupChatAsync([FromBody] HashSet<Guid> usersToAdd, [FromRoute] Guid chatId, CancellationToken ct)
+        {
+
+            var userId = CurrentUserId;
+            try
+            {
+                await _mediator.Send(new CreateGroupChatCommand(chatId, usersToAdd, userId));
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpDelete("{chatId}/{username}")]
         public async Task<IActionResult> LeaveGroupChatAsync(Guid chatId, string username)
         {

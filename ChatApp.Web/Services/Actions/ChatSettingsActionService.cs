@@ -6,7 +6,6 @@ using ChatApp.Web.Services.Common;
 using ChatApp.Web.Services.Common.Interfaces;
 using ChatApp.Web.Services.State;
 using MediatR;
-using static ChatApp.Web.Events.ChatEvents;
 
 namespace ChatApp.Web.Services.Actions
 {
@@ -173,13 +172,20 @@ namespace ChatApp.Web.Services.Actions
             }
             OnStateChanged?.Invoke();
         }
-        public async Task HandleAddUsersToChatAsync(HashSet<Guid> usersToAdd)
+        public async Task HandleAddUsersToChatAsync(HashSet<Guid> usersToAdd,AddType type)
         {
             if (_appStateService.CurrentChat != null)
             {
                 try
                 {
-                await _groupChatApi.AddUsersToGroupChatAsync(_appStateService.CurrentChat.Identity.ChatID, usersToAdd);
+                    if(type == AddType.Group)
+                    {
+                        await _groupChatApi.AddUsersToGroupChatAsync(_appStateService.CurrentChat.Identity.ChatID, usersToAdd);
+                    }
+                    else
+                    {
+                        await _groupChatApi.CreateGroupChatAsync(_appStateService.CurrentChat.Identity.ChatID, usersToAdd);
+                    }
                 }
                 catch(Exception ex)
                 {
