@@ -1,18 +1,14 @@
-﻿using ChatApp.Application.Interfaces;
-using ChatApp.Application.Interfaces.Repository;
+﻿using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Notifications.Invite;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatApp.Application.Feature.Invite.SendContactInvite
 {
-    public class SendContactInviteHandler : IRequestHandler<SendContactInviteCommand,bool>
+    public class SendContactInviteHandler : IRequestHandler<SendContactInviteCommand, bool>
     {
         private readonly IInviteRepository _inviteRepo;
         private readonly IMediator _mediator;
-        public SendContactInviteHandler(IInviteRepository inviteRepo,IMediator mediator)
+        public SendContactInviteHandler(IInviteRepository inviteRepo, IMediator mediator)
         {
             _inviteRepo = inviteRepo;
             _mediator = mediator;

@@ -1,21 +1,10 @@
 ﻿using ChatApp.Application.DTO;
-using ChatApp.Application.Feature.Chat;
 using ChatApp.Application.Feature.Message.GetChatMessageHistory;
 using ChatApp.Application.Feature.Message.MarkAllMessagesAsRead;
 using ChatApp.Application.Feature.Message.MarkAsRead;
 using ChatApp.Application.Feature.Message.SendChatMessage;
-using ChatApp.Application.Interfaces;
-using ChatApp.Application.Interfaces.Chats;
-using ChatApp.Application.Interfaces.Service;
-using ChatApp.Application.Services;
-using ChatApp.Application.Services.Chats;
-using ChatApp.Domain.Models;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace ChatApp.Api.Controllers
 {
@@ -31,10 +20,10 @@ namespace ChatApp.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> SendChatMessageAsync([FromBody] MessageDTO dto)
         {
-                var userId = CurrentUserId;
-                if (dto.ChatID == Guid.Empty) return BadRequest();
-                var result = await _mediator.Send(new SendChatMessageCommand(dto));
-                return result ? Ok() : BadRequest();
+            var userId = CurrentUserId;
+            if (dto.ChatID == Guid.Empty) return BadRequest();
+            var result = await _mediator.Send(new SendChatMessageCommand(dto));
+            return result ? Ok() : BadRequest();
         }
         [HttpGet("{chatId}/history")]
         public async Task<ActionResult<List<MessageDTO>>> GetChatMessageHistoryAsync([FromRoute] Guid chatId, CancellationToken ct)
@@ -49,11 +38,11 @@ namespace ChatApp.Api.Controllers
         {
             var userId = CurrentUserId;
             if (chatId == Guid.Empty) return BadRequest();
-            var result = await _mediator.Send(new MarkMessageAsReadCommand(userId,chatId,messageId));
+            var result = await _mediator.Send(new MarkMessageAsReadCommand(userId, chatId, messageId));
             return result ? Ok() : BadRequest();
         }
         [HttpPatch("chat/{chatId}/read-all")]
-        public async Task<IActionResult> MarkAllMessagesAsReadAsync([FromRoute] Guid chatId,CancellationToken ct)
+        public async Task<IActionResult> MarkAllMessagesAsReadAsync([FromRoute] Guid chatId, CancellationToken ct)
         {
             var userId = CurrentUserId;
             if (chatId == Guid.Empty) return BadRequest();

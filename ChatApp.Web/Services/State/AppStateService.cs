@@ -2,7 +2,6 @@
 using ChatApp.Application.DTO.Chats;
 using ChatApp.Application.Interfaces;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using System.Text.Json;
 
@@ -31,10 +30,11 @@ namespace ChatApp.Web.Services.State
             IsInitialized = false;
             var user = await _js.InvokeAsync<string?>("localStorage.getItem", UserKey);
             //var chat = await _js.InvokeAsync<string?>("localStorage.getItem", ChatKey);
-            if(!string.IsNullOrEmpty(user))
-                {
+            if (!string.IsNullOrEmpty(user))
+            {
                 CurrentUser = JsonSerializer.Deserialize<UserDTO>(user);
-                };
+            }
+            ;
             //if (!string.IsNullOrEmpty(chat))
             //{
             //    CurrentChat = JsonSerializer.Deserialize<UserChatDTO>(chat);
@@ -46,7 +46,7 @@ namespace ChatApp.Web.Services.State
         {
             if (CurrentUser != null) return CurrentUser.Token;
             var userJson = await _js.InvokeAsync<string?>("localStorage.getItem", UserKey);
-            if(!string.IsNullOrEmpty(userJson))
+            if (!string.IsNullOrEmpty(userJson))
             {
                 try
                 {

@@ -8,7 +8,7 @@ public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
     private readonly IUnitOfWork _uow;
     private readonly IMediator _mediator;
 
-    public TransactionBehavior(IUnitOfWork uow,IMediator mediator)
+    public TransactionBehavior(IUnitOfWork uow, IMediator mediator)
     {
         _uow = uow;
         _mediator = mediator;
@@ -25,10 +25,10 @@ public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
             await _uow.CommitTransactionAsync(ct);
 
             if (request is IHasDomainEvents requestWithEvents)
-        {
+            {
                 foreach (var domainEvent in requestWithEvents.DomainEvents)
                 {
-                   
+
                     await _mediator.Publish(domainEvent, ct);
                 }
                 requestWithEvents.ClearDomainEvents();
@@ -42,7 +42,7 @@ public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
         }
         finally
         {
-            _uow.Dispose(); 
+            _uow.Dispose();
         }
     }
 }

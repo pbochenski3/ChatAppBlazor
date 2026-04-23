@@ -4,9 +4,6 @@ using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatApp.Application.Feature.Sidebar.GetSidebarItems
 {
@@ -38,7 +35,7 @@ namespace ChatApp.Application.Feature.Sidebar.GetSidebarItems
             return chatEntries
           .Select(uc => MapToUserChatDto(uc, r.UserId, contentDict, counterDict))
           .ToList();
-            }
+        }
 
 
         private UserChatDTO MapToUserChatDto(

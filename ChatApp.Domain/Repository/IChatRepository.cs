@@ -1,8 +1,4 @@
 using ChatApp.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace ChatApp.Application.Interfaces.Repository
 {
@@ -18,7 +14,7 @@ namespace ChatApp.Application.Interfaces.Repository
         Task UpdateChatNameAsync(Guid chatId, string chatName);
         Task UpdateGroupAvatarUrl(Guid chatId, string avatarUrl);
         Task<string> GetGroupAvatarUrlAsync(Guid chatId);
-        Task<bool> CheckIfChatIsArchive(Guid chatId,Guid userId);
+        Task<bool> CheckIfChatIsArchive(Guid chatId, Guid userId);
         Task<bool> IsChatGroupAsync(Guid chatId);
     }
 }

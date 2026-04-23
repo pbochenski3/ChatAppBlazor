@@ -3,8 +3,6 @@ using ChatApp.Application.Interfaces;
 using ChatApp.Domain.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -15,7 +13,7 @@ namespace ChatApp.Infrastructure.Services
     {
         private readonly JwtSettings _jwtSettings;
 
-        public JwtTokenService(IOptions<JwtSettings> jwtSettings) 
+        public JwtTokenService(IOptions<JwtSettings> jwtSettings)
         {
             _jwtSettings = jwtSettings.Value;
         }

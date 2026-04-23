@@ -1,9 +1,5 @@
-﻿using ChatApp.Domain.Models;
-using ChatApp.Domain.Repository;
+﻿using ChatApp.Domain.Repository;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatApp.Application.Feature.Message.MarkAllMessagesAsRead
 {
@@ -21,7 +17,7 @@ namespace ChatApp.Application.Feature.Message.MarkAllMessagesAsRead
             if (lastMessageId.HasValue)
             {
                 await _userChatRepo.UpdateLastReadMessageAsync(r.UserId, r.ChatId, lastMessageId.Value);
-            return true;
+                return true;
             }
             return false;
         }

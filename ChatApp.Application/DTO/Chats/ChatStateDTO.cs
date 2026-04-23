@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ChatApp.Application.DTO.Chats
+﻿namespace ChatApp.Application.DTO.Chats
 {
     public class ChatStateDTO
     {

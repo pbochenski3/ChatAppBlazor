@@ -1,6 +1,5 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Domain.Enums;
-using System.Xml.Linq;
 
 namespace ChatApp.Web.Services.State
 {
@@ -15,7 +14,7 @@ namespace ChatApp.Web.Services.State
         public HashSet<UserDTO> UsersInChat { get; set; } = new HashSet<UserDTO>();
         public List<MessageDTO> ReceivedMessages { get; private set; } = new List<MessageDTO>();
 
-        public bool IsSettingsOpen { get; set;  }
+        public bool IsSettingsOpen { get; set; }
         public bool IsArchive { get; set; } = false;
         public bool IsChatLocked { get; set; } = true;
         public ChatSettingsView SettingsView { get; set; } = ChatSettingsView.Settings;
@@ -34,7 +33,7 @@ namespace ChatApp.Web.Services.State
         }
         public void AddMessage(MessageDTO dto)
         {
-            if(dto != null)
+            if (dto != null)
             {
                 ReceivedMessages.Add(dto);
                 _logger.LogDebug("AddMessage OnStateChanged. InstanceHash={Hash}, MessageId={MessageId}", this.GetHashCode(), dto.MessageID);

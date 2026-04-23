@@ -1,7 +1,3 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace ChatApp.Application.Interfaces.Chats
 {
     public interface IPrivateChatService

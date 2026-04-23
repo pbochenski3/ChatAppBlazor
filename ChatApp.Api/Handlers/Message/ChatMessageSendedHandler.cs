@@ -1,5 +1,4 @@
-﻿using ChatApp.Application.Interfaces.Chats;
-using ChatApp.Application.Notifications.Message;
+﻿using ChatApp.Application.Notifications.Message;
 using ChatApp.Domain.Repository;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;

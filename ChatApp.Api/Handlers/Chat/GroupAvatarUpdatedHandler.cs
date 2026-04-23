@@ -1,12 +1,7 @@
-﻿using ChatApp.Api;
-using ChatApp.Application.Interfaces.Chats;
-using ChatApp.Application.Notifications.Chat;
+﻿using ChatApp.Application.Notifications.Chat;
 using ChatApp.Domain.Repository;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatApp.Api.Handlers.Chat
 {

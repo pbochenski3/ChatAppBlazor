@@ -1,7 +1,6 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.Feature.Auth.LoginUser;
 using ChatApp.Application.Feature.Auth.RegisterUser;
-using ChatApp.Application.Interfaces.Service;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -13,12 +12,10 @@ namespace ChatApp.Api.Controllers
     public class AuthController : Controller
     {
         private readonly IHubContext<ChatHub> _hubContext;
-        private readonly IUserService _userService;
         private readonly IMediator _mediator;
-        public AuthController(IUserService userService, IHubContext<ChatHub> hubContext, IMediator mediator)
+        public AuthController(IHubContext<ChatHub> hubContext, IMediator mediator)
         {
             _hubContext = hubContext;
-            _userService = userService;
             _mediator = mediator;
         }
         [HttpPost("login")]
@@ -41,7 +38,7 @@ namespace ChatApp.Api.Controllers
         {
             try
             {
-                var  result = await _mediator.Send(new RegisterUserCommand(dto));
+                var result = await _mediator.Send(new RegisterUserCommand(dto));
                 return result ? Ok() : BadRequest();
             }
             catch (Exception ex)

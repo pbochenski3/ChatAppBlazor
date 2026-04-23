@@ -1,12 +1,7 @@
-﻿using ChatApp.Application.Interfaces;
-using ChatApp.Application.Interfaces.Repository;
+﻿using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Notifications.Contact;
-using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatApp.Application.Feature.Contact.DeleteContact
 {
@@ -16,7 +11,7 @@ namespace ChatApp.Application.Feature.Contact.DeleteContact
         private readonly IUserChatRepository _userChatRepo;
         private readonly IChatRepository _chatRepo;
         private readonly IMediator _mediator;
-        public DeleteContactHandler(IContactRepository contactRepo,IUserChatRepository userChatRepo, IMediator mediator,IChatRepository chatRepo)
+        public DeleteContactHandler(IContactRepository contactRepo, IUserChatRepository userChatRepo, IMediator mediator, IChatRepository chatRepo)
         {
             _contactRepo = contactRepo;
             _userChatRepo = userChatRepo;
@@ -25,7 +20,7 @@ namespace ChatApp.Application.Feature.Contact.DeleteContact
         }
         public async Task<bool> Handle(DeleteContactCommand r, CancellationToken cancellationToken)
         {
-            var contactId =  await _userChatRepo.GetReceiverUserIdAsync(r.PrivateChatId, r.UserId, cancellationToken);
+            var contactId = await _userChatRepo.GetReceiverUserIdAsync(r.PrivateChatId, r.UserId, cancellationToken);
             if (contactId == Guid.Empty)
             {
                 return false;
@@ -35,10 +30,10 @@ namespace ChatApp.Application.Feature.Contact.DeleteContact
             {
                 return false;
             }
-                await _contactRepo.DeleteContactAsync(contactId, r.UserId);
-                await _userChatRepo.ArchivePrivateChatAsync(r.PrivateChatId, r.UserId, contactId);
-                r.AddEvent(new ContactDeletedNotification(contactId, r.UserId, r.PrivateChatId));
-                return true;
+            await _contactRepo.DeleteContactAsync(contactId, r.UserId);
+            await _userChatRepo.ArchivePrivateChatAsync(r.PrivateChatId, r.UserId, contactId);
+            r.AddEvent(new ContactDeletedNotification(contactId, r.UserId, r.PrivateChatId));
+            return true;
         }
     }
 }

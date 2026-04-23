@@ -1,14 +1,7 @@
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Domain.Models;
-using ChatApp.Infrastructure.Persistence;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace ChatApp.Infrastructure.Persistence
 {
@@ -22,9 +15,9 @@ namespace ChatApp.Infrastructure.Persistence
             _context = context;
             _logger = logger;
         }
-        public async Task<bool> CheckIfChatIsArchive(Guid chatId,Guid userId)
+        public async Task<bool> CheckIfChatIsArchive(Guid chatId, Guid userId)
         {
-            bool? result =  await _context.UserChat
+            bool? result = await _context.UserChat
                 .Where(ch => ch.ChatID == chatId && ch.UserID == userId)
                 .Select(ch => ch.IsArchive)
                 .FirstOrDefaultAsync();
@@ -40,10 +33,10 @@ namespace ChatApp.Infrastructure.Persistence
 
         public async Task UpdateGroupAvatarUrl(Guid chatId, string avatarUrl)
         {
-           await _context.Chats
-                .Where(ch => ch.IsGroup && ch.ChatID == chatId)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(ch => ch.AvatarUrl, avatarUrl));
+            await _context.Chats
+                 .Where(ch => ch.IsGroup && ch.ChatID == chatId)
+                 .ExecuteUpdateAsync(s => s
+                     .SetProperty(ch => ch.AvatarUrl, avatarUrl));
         }
         public async Task AddUserGroupToDb(Guid chatId, HashSet<Guid> userIdsToAdd)
         {

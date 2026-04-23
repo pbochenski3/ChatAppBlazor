@@ -1,6 +1,3 @@
-using ChatApp.Domain.Models;
-using System;
-
 namespace ChatApp.Application.DTO.Chats
 {
     public class UserChatDTO
@@ -8,7 +5,7 @@ namespace ChatApp.Application.DTO.Chats
         public ChatIdentityDTO Identity { get; set; } = new();
         public ChatStateDTO State { get; set; } = new();
         public LastMessageDTO LastMessage { get; set; } = new();
-        
-      
-        }
+
+
+    }
 }

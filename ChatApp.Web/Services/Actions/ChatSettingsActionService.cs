@@ -95,7 +95,7 @@ namespace ChatApp.Web.Services.Actions
                     _notification.Notify("Pomyślnie opuszczono czat!", NotificationType.Info);
                     OnStateChanged?.Invoke();
                 }
-                    
+
             }
             catch (Exception ex)
             {
@@ -141,7 +141,7 @@ namespace ChatApp.Web.Services.Actions
                 _chatStateService.ReceivedContacts = await _contactApi.GetContactListAsync(chatId);
                 _chatStateService.SettingsView = ChatSettingsView.AddUsers;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _notification.Notify("Nie udało się załadować kontaktów!", NotificationType.Warning);
 
@@ -158,7 +158,7 @@ namespace ChatApp.Web.Services.Actions
             {
                 try
                 {
-                await _chatApi.ChangeChatNameAsync(chatId.Value, chatName, adminName);
+                    await _chatApi.ChangeChatNameAsync(chatId.Value, chatName, adminName);
                     _notification.Notify("Nazwa czatu zmieniona pomyślnie!", NotificationType.Info);
 
 
@@ -172,13 +172,13 @@ namespace ChatApp.Web.Services.Actions
             }
             OnStateChanged?.Invoke();
         }
-        public async Task HandleAddUsersToChatAsync(HashSet<Guid> usersToAdd,AddType type)
+        public async Task HandleAddUsersToChatAsync(HashSet<Guid> usersToAdd, AddType type)
         {
             if (_appStateService.CurrentChat != null)
             {
                 try
                 {
-                    if(type == AddType.Group)
+                    if (type == AddType.Group)
                     {
                         await _groupChatApi.AddUsersToGroupChatAsync(_appStateService.CurrentChat.Identity.ChatID, usersToAdd);
                     }
@@ -187,7 +187,7 @@ namespace ChatApp.Web.Services.Actions
                         await _groupChatApi.CreateGroupChatAsync(_appStateService.CurrentChat.Identity.ChatID, usersToAdd);
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _notification.Notify("Nie udało się dodać użytkownika do czatu!", NotificationType.Warning);
 
@@ -197,6 +197,6 @@ namespace ChatApp.Web.Services.Actions
             }
         }
 
-  
+
     }
 }

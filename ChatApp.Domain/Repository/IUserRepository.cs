@@ -1,7 +1,4 @@
 using ChatApp.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace ChatApp.Application.Interfaces.Repository
 {

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ChatApp.Application.DTO.Requests
+﻿namespace ChatApp.Application.DTO.Requests
 {
     public record ChangeChatNameRequest(
         string NewName,

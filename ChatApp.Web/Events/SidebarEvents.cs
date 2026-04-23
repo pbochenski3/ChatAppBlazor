@@ -8,6 +8,6 @@ namespace ChatApp.Web.Events
         public record ChatListChanged() : INotification;
         public record InvitesListChanged() : INotification;
         public record SidebarLastMessageChanged(Guid ChatId, string LastSender, string LastMessage) : INotification;
-        public record SidebarCounterUpdated(Guid ChatId,bool Status) : INotification;
+        public record SidebarCounterUpdated(Guid ChatId, bool Status) : INotification;
     }
 }

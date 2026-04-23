@@ -14,7 +14,7 @@ namespace ChatApp.Web.Handlers
         private readonly ISidebarActionService _sidebarActionService;
         public SidebarEventsHandler(ISidebarActionService sidebarActionService)
         {
-         _sidebarActionService = sidebarActionService;
+            _sidebarActionService = sidebarActionService;
         }
         public async Task Handle(SidebarEvents.ChatNameChanged notification, CancellationToken cancellationToken)
         {
@@ -41,6 +41,6 @@ namespace ChatApp.Web.Handlers
             await _sidebarActionService.HandleCounterUpdateAsync(notification.ChatId, notification.Status);
         }
 
-        }
+    }
 
 }

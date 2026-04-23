@@ -12,7 +12,7 @@
 
         public event Action? OnStateChanged;
 
-        public void ShowConfirm(string title, string message,string yesButton, string noButton, Func<Task> onConfirm)
+        public void ShowConfirm(string title, string message, string yesButton, string noButton, Func<Task> onConfirm)
         {
             Title = title;
             Message = message;

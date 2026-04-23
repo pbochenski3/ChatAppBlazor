@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ChatApp.Domain.Models
+﻿namespace ChatApp.Domain.Models
 {
     public class User
     {

@@ -1,13 +1,6 @@
-﻿using Azure.Core;
-using ChatApp.Application.DTO;
-using ChatApp.Application.Interfaces.Chats;
-using ChatApp.Application.Interfaces.Repository;
-using ChatApp.Application.Interfaces.Service;
+﻿using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Notifications.Chat;
-using ChatApp.Application.Services;
-using ChatApp.Application.Services.Chats;
 using ChatApp.Domain.Enums;
-using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;
@@ -19,7 +12,7 @@ namespace ChatApp.Api.Handlers.Chat
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly IUserChatRepository _userChatRepo;
         private readonly IMessageRepository _messageRepo;
-        public ChatNameUpdatedHandler(IMessageRepository messageRepo, IUserChatRepository userChatRepo,IHubContext<ChatHub> hubContext)
+        public ChatNameUpdatedHandler(IMessageRepository messageRepo, IUserChatRepository userChatRepo, IHubContext<ChatHub> hubContext)
         {
             _messageRepo = messageRepo;
             _userChatRepo = userChatRepo;

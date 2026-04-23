@@ -1,40 +1,17 @@
-using ChatApp.Application.DTO;
-using ChatApp.Application.DTO.Chats;
-using ChatApp.Application.Interfaces;
-using ChatApp.Application.Interfaces.Chats;
-using ChatApp.Application.Interfaces.Service;
-using ChatApp.Domain.Enums;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Xml;
 
 namespace ChatApp.Api
 {
     public class ChatHub : Hub
     {
-        private readonly IUserService _userService;
-        private readonly ISidebarService _sidebarService;
         private readonly ILogger<ChatHub> _logger;
-    
+
 
         protected Guid UserId => Guid.TryParse(Context.UserIdentifier, out var parseId) ? parseId : Guid.Empty;
 
-        public ChatHub(
-            ILogger<ChatHub> logger,
-            IUserService userService,
-            ISidebarService sidebarService
-
-            )
+        public ChatHub(ILogger<ChatHub> logger)
         {
             _logger = logger;
-            _userService = userService;
-            _sidebarService = sidebarService;
         }
 
         public override Task OnConnectedAsync()
@@ -85,14 +62,14 @@ namespace ChatApp.Api
             }
         }
 
-        public async Task<string> GetUserAvatarUrlAsync()
-        {
-            return await _userService.GetAvatarUrlAsync(UserId);
-        }
+        //public async Task<string> GetUserAvatarUrlAsync()
+        //{
+        //    return await _userService.GetAvatarUrlAsync(UserId);
+        //}
 
         //public async Task<List<UserChatDTO>> GetUserChatListAsync()
         //{
         //    return await _userChatService.GetUserChatListAsync(UserId);
         //}
-    } 
+    }
 }

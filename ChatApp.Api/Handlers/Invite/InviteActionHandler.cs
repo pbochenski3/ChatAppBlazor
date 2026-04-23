@@ -1,7 +1,5 @@
-﻿using Azure.Core;
-using ChatApp.Application.Notifications.Invite;
+﻿using ChatApp.Application.Notifications.Invite;
 using ChatApp.Domain.Enums;
-using ChatApp.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;
 

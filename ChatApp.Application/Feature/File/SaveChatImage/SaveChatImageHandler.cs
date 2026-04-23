@@ -1,10 +1,6 @@
 ﻿using ChatApp.Application.Interfaces;
 using ChatApp.Domain.Enums;
-using ChatApp.Domain.Models;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatApp.Application.Feature.File.SaveChatImage
 {
@@ -13,7 +9,7 @@ namespace ChatApp.Application.Feature.File.SaveChatImage
         private readonly IFileService _fileService;
         public SaveChatImageHandler(IFileService fileService)
         {
-         _fileService = fileService;   
+            _fileService = fileService;
         }
         public async Task<string> Handle(SaveChatImageCommand r, CancellationToken cancellationToken)
         {

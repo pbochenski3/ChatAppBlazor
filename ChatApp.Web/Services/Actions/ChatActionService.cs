@@ -1,8 +1,6 @@
 ﻿using ChatApp.Application.DTO;
-using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Domain.Enums;
 using ChatApp.Web.Services.Actions.Interfaces;
-using ChatApp.Web.Services.Api;
 using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.Common.Interfaces;
 using ChatApp.Web.Services.State;
@@ -30,7 +28,7 @@ namespace ChatApp.Web.Services.Actions
             ILogger<ChatActionService> logger,
             IMediator mediator,
             INotificationService notification
-            
+
             )
         {
             _appStateService = appStateService;
@@ -118,17 +116,17 @@ namespace ChatApp.Web.Services.Actions
                 _chatStateService.SetMessageList(await _chatApi.GetChatMessageHistoryAsync(_appStateService.CurrentChat.Identity.ChatID, token));
                 token.ThrowIfCancellationRequested();
 
-               // await _appStateService.SetChatAsync(_appStateService.CurrentChat);
+                // await _appStateService.SetChatAsync(_appStateService.CurrentChat);
                 if (!_appStateService.CurrentChat.State.IsArchive)
                 {
-                try
-                {
-                    _chatStateService.UsersInChat = await _groupChatApi.GetChatUsersAsync(_appStateService.CurrentChat.Identity.ChatID);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", args.ChatId);
-                }
+                    try
+                    {
+                        _chatStateService.UsersInChat = await _groupChatApi.GetChatUsersAsync(_appStateService.CurrentChat.Identity.ChatID);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", args.ChatId);
+                    }
                     await _mediator.Publish(new RequestToJoinSignalR(args.ChatId));
                     await _chatApi.MarkAllMessagesAsReadAsync(_appStateService.CurrentChat.Identity.ChatID, token);
                     await _mediator.Publish(new SidebarCounterUpdated(args.ChatId, true));
@@ -142,7 +140,7 @@ namespace ChatApp.Web.Services.Actions
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Critical error loading chat {Id}", args.ChatId);
-               // _ = ShowNotificationAsync("Błąd podczas ładowania czatu.");
+                // _ = ShowNotificationAsync("Błąd podczas ładowania czatu.");
             }
             finally
             {
@@ -181,6 +179,6 @@ namespace ChatApp.Web.Services.Actions
             await _appStateService.SetChatAsync(null);
         }
 
-     
+
     }
 }

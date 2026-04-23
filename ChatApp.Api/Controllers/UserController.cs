@@ -1,17 +1,6 @@
-using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces;
-using ChatApp.Application.Interfaces.Chats;
-using ChatApp.Application.Interfaces.Service;
-using ChatApp.Application.Services;
-using ChatApp.Domain.Enums;
-using ChatApp.Domain.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace ChatApp.Api.Controllers
 {
@@ -21,36 +10,32 @@ namespace ChatApp.Api.Controllers
     {
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly IFileService _fileService;
-        private readonly IContactService _contactService;
-        private readonly IUserService _userService;
 
-        public UserController(IFileService fileService, IHubContext<ChatHub> hubContext, IContactService contactService, IUserService userService)
+        public UserController(IFileService fileService, IHubContext<ChatHub> hubContext)
         {
             _hubContext = hubContext;
             _fileService = fileService;
-            _contactService = contactService;
-            _userService = userService;
         }
-        [HttpGet("to-invite")]
-        public async Task<IActionResult> GetUsersToInviteAsync([FromQuery] string query)
-        {
-            var userId = CurrentUserId;
-            var usersToInvite = await _userService.GetUsersToInviteAsync(userId, query);
-            return Ok(usersToInvite);
-        }
-        [HttpPost("avatar")]
-        public async Task<IActionResult> UploadAvatarAsync(IFormFile file)
-        {
-            var userId = CurrentUserId;
-            try
-            {
-                await _userService.UpdateUserAvatarAsync(userId, file);
-                return Ok();
-                    }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        //[HttpGet("to-invite")]
+        //public async Task<IActionResult> GetUsersToInviteAsync([FromQuery] string query)
+        //{
+        //    var userId = CurrentUserId;
+        //    var usersToInvite = await _userService.GetUsersToInviteAsync(userId, query);
+        //    return Ok(usersToInvite);
+        //}
+        //[HttpPost("avatar")]
+        //public async Task<IActionResult> UploadAvatarAsync(IFormFile file)
+        //{
+        //    var userId = CurrentUserId;
+        //    try
+        //    {
+        //        await _userService.UpdateUserAvatarAsync(userId, file);
+        //        return Ok();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
     }
 }

@@ -1,7 +1,4 @@
 ﻿using ChatApp.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatApp.Domain.Models
 {
@@ -15,9 +12,9 @@ namespace ChatApp.Domain.Models
         public Guid ReceiverID { get; set; }
         public User Receiver { get; set; } = null!;
 
-        public InviteStatus Status { get; set; } 
+        public InviteStatus Status { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public async static Task<Contact[]> CreateContact(Guid userId1,Guid userId2)
+        public async static Task<Contact[]> CreateContact(Guid userId1, Guid userId2)
         {
             var contact1 = new Contact
             {

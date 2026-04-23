@@ -1,12 +1,8 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Domain.Enums;
-using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatApp.Application.Feature.Message.GetChatMessageHistory
 {
@@ -14,7 +10,7 @@ namespace ChatApp.Application.Feature.Message.GetChatMessageHistory
     {
         private readonly IMessageRepository _messageRepo;
         private readonly IUserChatRepository _userChatRepo;
-        public GetChatHistoryHandler(IMessageRepository messageRepo,IUserChatRepository userChatRepo)
+        public GetChatHistoryHandler(IMessageRepository messageRepo, IUserChatRepository userChatRepo)
         {
             _messageRepo = messageRepo;
             _userChatRepo = userChatRepo;

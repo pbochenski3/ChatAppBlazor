@@ -1,10 +1,6 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
-using ChatApp.Application.Interfaces.Chats;
-using ChatApp.Application.Services.Chats;
-using ChatApp.Domain.Models;
 using ChatApp.Web.Services.Api.Interfaces;
-using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.Http.Json;
 
 namespace ChatApp.Web.Services.Api
@@ -39,9 +35,9 @@ namespace ChatApp.Web.Services.Api
         }
         public async Task RemoveContactAsync(Guid chatId)
         {
-    
+
             var response = await _httpClient.DeleteAsync($"api/contact/delete/by-chat/{chatId}");
-            if(!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
                 throw new Exception();
             }

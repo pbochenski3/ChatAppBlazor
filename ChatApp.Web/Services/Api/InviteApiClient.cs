@@ -1,8 +1,6 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Requests;
-using ChatApp.Domain.Enums;
 using ChatApp.Web.Services.Api.Interfaces;
-using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.Http.Json;
 
 namespace ChatApp.Web.Services.Api
@@ -18,11 +16,11 @@ namespace ChatApp.Web.Services.Api
         }
         public async Task<List<InviteDTO>> GetUserInvitesAsync()
         {
-           List<InviteDTO> invites;
+            List<InviteDTO> invites;
             try
             {
-                 invites = await _httpClient.GetFromJsonAsync<List<InviteDTO>>("api/invite")
-                            ?? new List<InviteDTO>();
+                invites = await _httpClient.GetFromJsonAsync<List<InviteDTO>>("api/invite")
+                           ?? new List<InviteDTO>();
             }
             catch (Exception ex)
             {
@@ -33,11 +31,11 @@ namespace ChatApp.Web.Services.Api
         }
         public async Task SendContactInviteAsync(Guid receiverId)
         {
-           await _httpClient.PostAsJsonAsync($"api/invite", receiverId);
+            await _httpClient.PostAsJsonAsync($"api/invite", receiverId);
         }
         public async Task HandleInviteActionAsync(InviteActionRequest inviteRequest)
         {
-          await _httpClient.PostAsJsonAsync("api/invite/action", inviteRequest);
+            await _httpClient.PostAsJsonAsync("api/invite/action", inviteRequest);
         }
 
     }
