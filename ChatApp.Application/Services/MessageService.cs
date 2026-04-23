@@ -21,21 +21,18 @@ namespace ChatApp.Application.Services
         private readonly IUserChatService _userChatService;
         private readonly IChatReadStatusService _readStatusService;
         private readonly IMediator _mediator;
-        private readonly ITransactionProvider _transactionProvider;
 
         public MessageService(
             IMessageRepository messageRepo,
             IUserChatService userChatService,
             IChatReadStatusService readStatusService,
-            IMediator mediator,
-            ITransactionProvider transactionProvider
+            IMediator mediator
             )
         {
             _messageRepo = messageRepo;
             _userChatService = userChatService;
             _readStatusService = readStatusService;
             _mediator = mediator;
-            _transactionProvider = transactionProvider;
         }
 
         public async Task SaveMessageAsync(MessageDTO messageDto)
@@ -56,12 +53,9 @@ namespace ChatApp.Application.Services
                 MessageType = messageDto.MessageType,
 
             };
-            await _transactionProvider.ExecuteInTransactionAsync(async () =>
-            {
                 await _messageRepo.AddMessageAsync(message);
                 await _readStatusService.SaveLastSentMessageIdAsync(messageDto.ChatID, messageDto.MessageID);
                 await _mediator.Publish(new ChatMessageSendedNotification(messageDto));
-            });
         }
 
         public async Task<List<MessageDTO>> GetChatMessageHistoryAsync(Guid userId, Guid chatId, CancellationToken token)

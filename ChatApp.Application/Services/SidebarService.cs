@@ -23,13 +23,10 @@ namespace ChatApp.Application.Services
         {
             try
             {
-                var chatsTask = _userChatService.GetUserChatListAsync(userId);
-                var counterTask = _readStatusService.GetAllUnreadMessageCountsAsync(userId);
+                var chats = await _userChatService.GetUserChatListAsync(userId);
+                var counters = await _readStatusService.GetAllUnreadMessageCountsAsync(userId);
 
-                await Task.WhenAll(chatsTask, counterTask);
 
-                var chats = await chatsTask ?? new List<UserChatDTO>();
-                var counters = await counterTask ?? new List<(Guid ChatId, int Count)>();
 
                 var counterDict = counters.ToDictionary(t => t.ChatId, t => t.Count);
 

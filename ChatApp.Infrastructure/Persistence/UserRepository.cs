@@ -12,25 +12,22 @@ namespace ChatApp.Infrastructure.Persistence
 {
     public class UserRepository : IUserRepository
     {
-        private readonly IDbContextFactory<ChatDbContext> _contextFactory;
+        private readonly ChatDbContext _context;
         private readonly ILogger<UserRepository> _logger;
 
-        public UserRepository(IDbContextFactory<ChatDbContext> contextFactory, ILogger<UserRepository> logger)
+        public UserRepository(ChatDbContext context, ILogger<UserRepository> logger)
         {
-            _contextFactory = contextFactory;
+            _context = context;
             _logger = logger;
         }
 
         public async Task RegisterAsync(User user)
         {
-            using var context = _contextFactory.CreateDbContext();
-            await context.Users.AddAsync(user);
-            await context.SaveChangesAsync();
+            await _context.Users.AddAsync(user);
         }
         public async Task<string> GetAvatarUrlAsync(Guid userId)
         {
-            using var context = _contextFactory.CreateDbContext();
-            var avatarUrl = await context.Users
+            var avatarUrl = await _context.Users
                 .Where(u => u.UserID == userId)
                 .Select(u => u.AvatarUrl)
                 .FirstOrDefaultAsync();
@@ -44,29 +41,25 @@ namespace ChatApp.Infrastructure.Persistence
 
         public async Task<User?> GetByUsernameAsync(string username)
         {
-            using var context = _contextFactory.CreateDbContext();
             _logger.LogInformation("Retrieving user by username: {Username}", username);
-            return await context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
         }
 
         public async Task SetUserStatusAsync(Guid id, bool status)
         {
-            using var context = _contextFactory.CreateDbContext();
-            await context.Users
+            await _context.Users
                 .Where(u => u.UserID == id)
                 .ExecuteUpdateAsync(u => u.SetProperty(p => p.IsOnline, status));
         }
 
         public async Task<User?> GetByIdAsync(Guid id)
         {
-            using var context = _contextFactory.CreateDbContext();
-            return await context.Users.FirstOrDefaultAsync(u => u.UserID == id);
+            return await _context.Users.FirstOrDefaultAsync(u => u.UserID == id);
         }
 
         public async Task<List<User>> GetUsersByIdsAsync(HashSet<Guid> ids)
         {
-            using var context = _contextFactory.CreateDbContext();
-            var users = await context.Users
+            var users = await _context.Users
                 .Where(u => ids.Contains(u.UserID))
                 .ToListAsync();
             return users.ToList();
@@ -74,13 +67,12 @@ namespace ChatApp.Infrastructure.Persistence
 
         public async Task<List<User>> GetAllUsersToInviteAsync(Guid currentUserId, string query)
         {
-            using var context = _contextFactory.CreateDbContext();
             _logger.LogInformation("Retrieving all users who can be invited with query: {Query}", query);
 
-            var mutualContactIds = await context.Contacts
+            var mutualContactIds = await _context.Contacts
                 .IgnoreQueryFilters()
                 .Where(c => c.UserID == currentUserId && !c.IsDeleted)
-                .Where(c => context.Contacts
+                .Where(c => _context.Contacts
                     .IgnoreQueryFilters()
                     .Any(rc => rc.UserID == c.ContactUserID &&
                                rc.ContactUserID == currentUserId &&
@@ -88,14 +80,14 @@ namespace ChatApp.Infrastructure.Persistence
                 .Select(c => c.ContactUserID)
                 .ToListAsync();
 
-            var pendingInviteIds = await context.Invites
+            var pendingInviteIds = await _context.Invites
                 .IgnoreQueryFilters()
                 .Where(i => i.Status == InviteStatus.Pending &&
                            (i.SenderID == currentUserId || i.ReceiverID == currentUserId))
                 .Select(i => i.SenderID == currentUserId ? i.ReceiverID : i.SenderID)
                 .ToListAsync();
 
-            return await context.Users
+            return await _context.Users
                 .IgnoreQueryFilters()
                 .Where(u => u.UserID != currentUserId)
                 .Where(u => u.Username.Contains(query))
@@ -104,16 +96,9 @@ namespace ChatApp.Infrastructure.Persistence
                 .ToListAsync();
         }
 
-        public async Task SaveChangesToDbAsync()
-        {
-            using var context = _contextFactory.CreateDbContext();
-            _logger.LogInformation("Saving changes to the database.");
-            await context.SaveChangesAsync();
-        }
         public async Task UpdateAvatarAsync(Guid userId, string avatarUrl)
         {
-            using var context = _contextFactory.CreateDbContext();
-            await context.Users
+            await _context.Users
                 .Where(u => u.UserID == userId)
                 .ExecuteUpdateAsync(u => u.SetProperty(p => p.AvatarUrl, avatarUrl));
         }

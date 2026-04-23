@@ -13,27 +13,24 @@ namespace ChatApp.Infrastructure.Persistence
 {
     public class MessageRepository : IMessageRepository
     {
-        private readonly IDbContextFactory<ChatDbContext> _contextFactory;
+        private readonly ChatDbContext _context;
         private readonly ILogger<MessageRepository> _logger;
 
-        public MessageRepository(IDbContextFactory<ChatDbContext> contextFactory, ILogger<MessageRepository> logger)
+        public MessageRepository(ChatDbContext context, ILogger<MessageRepository> logger)
         {
-            _contextFactory = contextFactory;
+            _context = context;
             _logger = logger;
         }
 
         public async Task AddMessageAsync(Message message)
         {
-            using var context = _contextFactory.CreateDbContext();
             _logger.LogInformation("Adding a new message to the database: {MessageID}", message.MessageID);
-            await context.Messages.AddAsync(message);
-            await context.SaveChangesAsync();
+            await _context.Messages.AddAsync(message);
         }
 
         public async Task<Dictionary<Guid, MessagePreview>> GetMessagePreviewsAsync(List<Guid> ids)
         {
-            using var context = _contextFactory.CreateDbContext();
-            return await context.Messages
+            return await _context.Messages
                 .AsNoTracking()
                 .Include(m => m.Sender)
                 .Where(m => ids.Contains(m.MessageID))
@@ -48,8 +45,7 @@ namespace ChatApp.Infrastructure.Persistence
         }
         public async Task<List<Message>> GetMessageHistoryAsync(Guid userId, Guid chatId, DateTime? cutoffDate, CancellationToken token)
         {
-            using var context = _contextFactory.CreateDbContext();
-            var query = context.Messages
+            var query = _context.Messages
                 .AsNoTracking()
                 .Include(m => m.Sender)
                 .Where(m => m.ChatID == chatId);
@@ -65,8 +61,7 @@ namespace ChatApp.Infrastructure.Persistence
         }
         public async Task UpdateImageUrlAsync(Guid messageId, string url)
         {
-            using var context = _contextFactory.CreateDbContext();
-            await context.Messages
+            await _context.Messages
                 .Where(m => m.MessageID == messageId)
                 .ExecuteUpdateAsync(s => s
                 .SetProperty(m => m.imageUrl, url));

@@ -24,15 +24,13 @@ namespace ChatApp.Application.Services
         private readonly JwtSettings _jwtSettings;
         private readonly IUserRepository _userRepo;
         private readonly IFileService _fileService;
-        private readonly ITransactionProvider _transactionProvider;
         private readonly IMediator _mediator;
 
-        public UserService(IUserRepository userRepo, IOptions<JwtSettings> jwtSettings,IFileService fileService,ITransactionProvider transactionProvider,IMediator mediator)
+        public UserService(IUserRepository userRepo, IOptions<JwtSettings> jwtSettings,IFileService fileService,IMediator mediator)
         {
             _userRepo = userRepo;
             _jwtSettings = jwtSettings.Value;
             _fileService = fileService;
-            _transactionProvider = transactionProvider;
             _mediator = mediator;
         }
 
@@ -129,8 +127,6 @@ namespace ChatApp.Application.Services
         //}
         public async Task UpdateUserAvatarAsync(Guid userId,IFormFile avatarFile)
         {
-            await _transactionProvider.ExecuteInTransactionAsync(async () =>
-            {
                 var avatarUrl = await _fileService.SaveImageAsync(avatarFile, UploadType.UserAvatar);
                 if (string.IsNullOrWhiteSpace(avatarUrl) || !Uri.IsWellFormedUriString(avatarUrl, UriKind.RelativeOrAbsolute))
                 {
@@ -139,7 +135,6 @@ namespace ChatApp.Application.Services
                 await _userRepo.UpdateAvatarAsync(userId, avatarUrl);
                 await _mediator.Publish(new UserAvatarUploadedNotification(userId,avatarUrl));
 
-            });
         }
         public async Task<string> GetAvatarUrlAsync(Guid userId)
         {
