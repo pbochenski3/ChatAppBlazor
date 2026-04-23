@@ -40,19 +40,21 @@ namespace ChatApp.Application.Feature.Invite.HandleInviteAction
             if (invite.Status == InviteStatus.Accepted)
             {
                 var contacts = await Domain.Models.Invite.CreateContact(invite.SenderID, invite.ReceiverID);
-                await _contactRepo.AddContactAsync(contacts[0]);
-                await _contactRepo.AddContactAsync(contacts[1]);
                 var chat = await _chatRepo.GetChatAsync(contacts[0].UserID, contacts[1].UserID);
                 if(chat == null)
                 {
+                    await _contactRepo.AddContactAsync(contacts[0]);
+                    await _contactRepo.AddContactAsync(contacts[1]);
                     var user1 = await _userRepo.GetByIdAsync(contacts[0].UserID);
                     var user2 = await _userRepo.GetByIdAsync(contacts[1].UserID);
                     var createdChat = Domain.Models.Chat.CreatePrivateChat(user1,user2);
+                    newChatId = createdChat.ChatID;
                     await _chatRepo.AddChatAsync(createdChat);
                 }
                 else
                 {
                     await _userChatRepo.SetChatAccessibilityAsync(chat.ChatID, true);
+                    newChatId = chat.ChatID;
                 }
             }
             r.AddEvent(new InviteActionNotification(invite.SenderID, invite.ReceiverID, r.Request.chatId, newChatId, r.Request.Response));

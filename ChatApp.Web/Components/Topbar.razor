@@ -18,10 +18,10 @@
 
 
 @code {
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         _chatSettingsActionService.OnStateChanged += HandleStateChanged;
-
+        _chatActionService.OnStateChanged += HandleStateChanged;
     }
     private async void HandleStateChanged()
     {
@@ -30,6 +30,9 @@
     public void Dispose()
     {
         _chatSettingsActionService.OnStateChanged += HandleStateChanged;
+        _chatActionService.OnStateChanged += HandleStateChanged;
+
 
     }
+
 }
