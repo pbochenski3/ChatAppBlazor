@@ -1,7 +1,5 @@
 ﻿using ChatApp.Domain.Repository.Decorators;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -17,7 +15,7 @@ namespace ChatApp.Infrastructure.Services
         }
         public string Decrypt(string cipherText)
         {
-            if(string.IsNullOrEmpty(cipherText)) return cipherText;
+            if (string.IsNullOrEmpty(cipherText)) return cipherText;
 
             try
             {

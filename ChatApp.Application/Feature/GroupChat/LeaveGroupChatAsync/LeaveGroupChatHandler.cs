@@ -2,12 +2,8 @@
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Notifications.GroupChat;
 using ChatApp.Domain.Enums;
-using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatApp.Application.Feature.GroupChat.LeaveGroupChatAsync
 {

@@ -1,11 +1,9 @@
-﻿using ChatApp.Application.DTO;
-using ChatApp.Web.Services.Api;
+﻿using ChatApp.Application.DTO.Requests;
 using ChatApp.Domain.Enums;
-using ChatApp.Web.Services.Api.Interfaces;
-using ChatApp.Web.Services.State;
-using ChatApp.Application.DTO.Requests;
 using ChatApp.Web.Services.Actions.Interfaces;
+using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.Common.Interfaces;
+using ChatApp.Web.Services.State;
 
 namespace ChatApp.Web.Services.Actions
 {
@@ -40,10 +38,10 @@ namespace ChatApp.Web.Services.Actions
         public async Task HandleChatsLoadAsync()
         {
             try
-            {        
+            {
                 _sidebarStateService.SidebarItems = await _contactApiClient.GetSidebarItemsAsync();
                 _logger.LogInformation("Sidebar reloaded. Items count: {Count}", _sidebarStateService.SidebarItems.Count);
-   
+
             }
             catch (Exception ex)
             {
@@ -80,11 +78,11 @@ namespace ChatApp.Web.Services.Actions
             }
             else if (!clean)
             {
-               // await HandleSidebarLoadAsync(true);
+                // await HandleSidebarLoadAsync(true);
             }
         }
         public async Task HandleInviteResponseAsync(InviteActionRequest request)
-        { 
+        {
             await _inviteApiClient.HandleInviteActionAsync(request);
 
         }

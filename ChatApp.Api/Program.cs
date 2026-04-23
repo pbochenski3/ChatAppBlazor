@@ -1,10 +1,10 @@
+using ChatApp.Api;
+using ChatApp.Api.Components;
+using ChatApp.Api.Services;
 using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces;
-using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Application.Interfaces.Repository;
-using ChatApp.Application.Interfaces.Service;
-using ChatApp.Application.Services;
-using ChatApp.Application.Services.Chats;
+using ChatApp.Application.Notifications.Chat;
 using ChatApp.Domain.Repository;
 using ChatApp.Infrastructure.Persistence;
 using ChatApp.Infrastructure.Providers;
@@ -13,16 +13,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Cryptography;
-using ChatApp.Web.Components;
 using System.Text;
-using ChatApp.Api.Components;
-using ChatApp.Api.Services;
-using ChatApp.Api;
-using ChatApp.Api.Controllers;
-using ChatApp.Application.Notifications.Chat;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,7 +30,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorAppPolicy", policy =>
     {
-        policy.WithOrigins("https://localhost:7181") 
+        policy.WithOrigins("https://localhost:7181")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
@@ -77,33 +69,25 @@ builder.Services.AddAuthentication(options =>
         };
     });
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddMediatR(cfg => {
+builder.Services.AddMediatR(cfg =>
+{
     cfg.RegisterServicesFromAssemblies(
-        typeof(Program).Assembly,                            
-        typeof(ChatDeletedNotification).Assembly 
+        typeof(Program).Assembly,
+        typeof(ChatDeletedNotification).Assembly
     );
     cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
 });
 //Messagesne()
-builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddInfrastructure(builder.Configuration);
 //Users
-builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 //Contacts
-builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.AddScoped<IContactRepository, ContactRepository>();
 //Invites
-builder.Services.AddScoped<IInviteService, InviteService>();
 builder.Services.AddScoped<IInviteRepository, InviteRepository>();
 //Chat
-builder.Services.AddScoped<IChatService, ChatService>();
-builder.Services.AddScoped<IPrivateChatService, PrivateChatService>();
-builder.Services.AddScoped<IGroupChatService, GroupChatService>();
-builder.Services.AddScoped<IUserChatService, UserChatService>();
-builder.Services.AddScoped<IChatReadStatusService, ChatReadStatusService>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
-builder.Services.AddScoped<IJwtTokenService, JwtTokenService > ();
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 //SignalR - UserIdProvider
 builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 // Connection tracker for debugging SignalR connections
@@ -113,7 +97,6 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSet
 //UserChat
 builder.Services.AddScoped<IUserChatRepository, UserChatRepository>();
 //Sidebar
-builder.Services.AddScoped<ISidebarService, SidebarService>();
 builder.Services.AddSignalR(options =>
 {
     options.EnableDetailedErrors = true;

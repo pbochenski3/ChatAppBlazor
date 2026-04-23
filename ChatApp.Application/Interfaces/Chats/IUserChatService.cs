@@ -1,9 +1,5 @@
 using ChatApp.Application.DTO.Chats;
 using ChatApp.Application.DTO.Requests;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace ChatApp.Application.Interfaces.Chats
 {

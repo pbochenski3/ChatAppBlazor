@@ -1,21 +1,17 @@
 ﻿using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Notifications.Chat;
-using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatApp.Application.Feature.Chat.UpdateChatName
 {
-    public class UpdateChatNameHandler : IRequestHandler<UpdateChatNameCommand,bool>
+    public class UpdateChatNameHandler : IRequestHandler<UpdateChatNameCommand, bool>
     {
         private readonly IChatRepository _chatRepo;
         private readonly IUserChatRepository _userChatRepo;
         private readonly IMediator _mediator;
-        public UpdateChatNameHandler(IChatRepository chatRepo,IUserChatRepository userChatRepo,IMediator mediator)
-        { 
+        public UpdateChatNameHandler(IChatRepository chatRepo, IUserChatRepository userChatRepo, IMediator mediator)
+        {
             _chatRepo = chatRepo;
             _userChatRepo = userChatRepo;
             _mediator = mediator;

@@ -1,11 +1,8 @@
 ﻿using ChatApp.Domain.Enums;
-using ChatApp.Domain.Models;
 using ChatApp.Domain.Shared;
 using ChatApp.Web.Services.Api.Interfaces;
 using Microsoft.AspNetCore.Components.Forms;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Net.NetworkInformation;
 
 
 namespace ChatApp.Web.Services.Api

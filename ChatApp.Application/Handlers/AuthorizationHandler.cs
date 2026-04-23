@@ -1,9 +1,6 @@
 ﻿
 using ChatApp.Application.Interfaces;
-using System;
-using System.Collections.Generic;
 using System.Net.Http.Headers;
-using System.Text;
 
 namespace ChatApp.Application.Handlers
 {
@@ -24,7 +21,7 @@ namespace ChatApp.Application.Handlers
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 }
             }
-                return await base.SendAsync(request, cancellationToken);
+            return await base.SendAsync(request, cancellationToken);
         }
     }
 }

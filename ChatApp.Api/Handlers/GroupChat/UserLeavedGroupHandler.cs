@@ -1,5 +1,4 @@
 ﻿using ChatApp.Application.Notifications.GroupChat;
-using ChatApp.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;
 

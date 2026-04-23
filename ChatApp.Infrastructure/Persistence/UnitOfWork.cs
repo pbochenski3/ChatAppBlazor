@@ -1,10 +1,6 @@
 ﻿using ChatApp.Application.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatApp.Infrastructure.Persistence
 {
@@ -14,7 +10,7 @@ namespace ChatApp.Infrastructure.Persistence
         private readonly ILogger<UnitOfWork> _logger;
         private IDbContextTransaction? _currentTransaction;
 
-        public UnitOfWork(ChatDbContext context,ILogger<UnitOfWork> logger)
+        public UnitOfWork(ChatDbContext context, ILogger<UnitOfWork> logger)
         {
             _context = context;
             _logger = logger;

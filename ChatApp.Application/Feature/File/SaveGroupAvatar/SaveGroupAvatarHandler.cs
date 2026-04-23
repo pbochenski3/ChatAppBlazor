@@ -1,13 +1,8 @@
-﻿using ChatApp.Application.Feature.File.SaveChatImage;
-using ChatApp.Application.Interfaces;
+﻿using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Notifications.Chat;
 using ChatApp.Domain.Enums;
-using ChatApp.Domain.Models;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatApp.Application.Feature.File.SaveGroupAvatar
 {
@@ -16,7 +11,7 @@ namespace ChatApp.Application.Feature.File.SaveGroupAvatar
         private readonly IFileService _fileService;
         private readonly IChatRepository _chatRepo;
         private readonly IMediator _mediator;
-        public SaveGroupAvatarHandler(IFileService fileService,IChatRepository chatRepo,IMediator mediator)
+        public SaveGroupAvatarHandler(IFileService fileService, IChatRepository chatRepo, IMediator mediator)
         {
             _fileService = fileService;
             _chatRepo = chatRepo;

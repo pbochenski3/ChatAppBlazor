@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace ChatApp.Domain.Models
 {
@@ -30,7 +27,7 @@ namespace ChatApp.Domain.Models
                 var existingRelation = UserChats.FirstOrDefault(uc => uc.UserID == user.UserID);
                 if (existingRelation != null)
                 {
-                   
+
                     existingRelation.IsArchive = false;
                 }
                 else
@@ -81,7 +78,7 @@ namespace ChatApp.Domain.Models
                 AvatarUrl = "https://localhost:7255/cdn/GroupAvatars/default-group-avatar.png"
             };
 
-          
+
             foreach (var user in membersToAdd)
             {
                 chat.UserChats.Add(new UserChat

@@ -1,8 +1,6 @@
-﻿using ChatApp.Application.Interfaces;
-using ChatApp.Application.Interfaces.Repository;
+﻿using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Notifications.Invite;
 using ChatApp.Domain.Enums;
-using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
 using MediatR;
 
@@ -21,7 +19,7 @@ namespace ChatApp.Application.Feature.Invite.HandleInviteAction
             IChatRepository chatRepo,
             IUserChatRepository userChatRepo,
             IUserRepository userRepo
-            
+
             )
         {
             _inviteRepo = inviteRepo;
@@ -41,13 +39,13 @@ namespace ChatApp.Application.Feature.Invite.HandleInviteAction
             {
                 var contacts = await Domain.Models.Invite.CreateContact(invite.SenderID, invite.ReceiverID);
                 var chat = await _chatRepo.GetChatAsync(contacts[0].UserID, contacts[1].UserID);
-                if(chat == null)
+                if (chat == null)
                 {
                     await _contactRepo.AddContactAsync(contacts[0]);
                     await _contactRepo.AddContactAsync(contacts[1]);
                     var user1 = await _userRepo.GetByIdAsync(contacts[0].UserID);
                     var user2 = await _userRepo.GetByIdAsync(contacts[1].UserID);
-                    var createdChat = Domain.Models.Chat.CreatePrivateChat(user1,user2);
+                    var createdChat = Domain.Models.Chat.CreatePrivateChat(user1, user2);
                     newChatId = createdChat.ChatID;
                     await _chatRepo.AddChatAsync(createdChat);
                 }

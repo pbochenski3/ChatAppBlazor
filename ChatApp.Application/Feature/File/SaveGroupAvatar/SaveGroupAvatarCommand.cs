@@ -1,8 +1,4 @@
-﻿using ChatApp.Application.Common.Messaging;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Microsoft.AspNetCore.Http;
 
 namespace ChatApp.Application.Feature.File.SaveGroupAvatar
 {

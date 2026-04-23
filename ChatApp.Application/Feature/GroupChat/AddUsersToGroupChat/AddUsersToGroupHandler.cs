@@ -1,15 +1,7 @@
-﻿using ChatApp.Application.DTO;
-using ChatApp.Application.Interfaces;
-using ChatApp.Application.Interfaces.Repository;
+﻿using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Notifications.GroupChat;
-using ChatApp.Domain.Enums;
-using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace ChatApp.Application.Feature.GroupChat.AddUsersToGroupChat
 {
@@ -30,14 +22,14 @@ namespace ChatApp.Application.Feature.GroupChat.AddUsersToGroupChat
         }
         public async Task<bool> Handle(AddUsersToGroupChatCommand r, CancellationToken cancellationToken)
         {
-                Domain.Models.Message systemMessage;
-                var existingChat = await _chatRepo.FetchChatById(r.ChatId);
-                var isArchive = existingChat.UserChats.Where(u => u.UserID == r.UserId).Any();
-                var admin = await _userRepo.GetByIdAsync(r.UserId);
-                var usersToAdd = await _userRepo.GetUsersByIdsAsync(r.UsersToAdd);
+            Domain.Models.Message systemMessage;
+            var existingChat = await _chatRepo.FetchChatById(r.ChatId);
+            var isArchive = existingChat.UserChats.Where(u => u.UserID == r.UserId).Any();
+            var admin = await _userRepo.GetByIdAsync(r.UserId);
+            var usersToAdd = await _userRepo.GetUsersByIdsAsync(r.UsersToAdd);
             if (isArchive)
             {
-                systemMessage = existingChat.AddMembers(admin,usersToAdd);
+                systemMessage = existingChat.AddMembers(admin, usersToAdd);
                 await _messageRepo.AddMessageAsync(systemMessage);
             }
             else
@@ -46,8 +38,8 @@ namespace ChatApp.Application.Feature.GroupChat.AddUsersToGroupChat
                 await _userChatRepo.SetChatAccessibilityAsync(r.ChatId, true, ids);
                 systemMessage = new Domain.Models.Message();
             }
-                r.AddEvent(new UsersAddedToGroupChatNotification(existingChat.ChatID, systemMessage, r.UsersToAdd));
-                return true;
+            r.AddEvent(new UsersAddedToGroupChatNotification(existingChat.ChatID, systemMessage, r.UsersToAdd));
+            return true;
         }
     }
 }

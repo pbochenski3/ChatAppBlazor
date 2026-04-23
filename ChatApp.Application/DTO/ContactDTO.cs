@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ChatApp.Application.DTO
+﻿namespace ChatApp.Application.DTO
 {
-    public class ContactDTO 
+    public class ContactDTO
     {
         public Guid ContactUserID { get; set; }
         public string Username { get; set; } = string.Empty;

@@ -13,6 +13,6 @@ namespace ChatApp.Web.Services.Actions.Interfaces
         Task HandleContactDeleteAsync(Guid chatId);
         Task HandleLoadUsersToAddAsync();
         Task HandleChangeChatNameAsync(string chatName);
-        Task HandleAddUsersToChatAsync(HashSet<Guid> usersToAdd,AddType type);
+        Task HandleAddUsersToChatAsync(HashSet<Guid> usersToAdd, AddType type);
     }
 }

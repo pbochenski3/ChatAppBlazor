@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace ChatApp.Application.Interfaces.Chats
 {
     public interface IChatReadStatusService
     {
-     
+
         Task<int> GetUnreadMessageCountAsync(Guid userId, Guid chatId);
         Task<List<(Guid ChatId, int Count)>> GetAllUnreadMessageCountsAsync(Guid userId);
         Task<DateTime?> GetLastMessageAtChatAsync(Guid userId, Guid chatId);

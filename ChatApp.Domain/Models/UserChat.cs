@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ChatApp.Domain.Models
+﻿namespace ChatApp.Domain.Models
 {
     public class UserChat
     {
@@ -18,10 +14,10 @@ namespace ChatApp.Domain.Models
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
         public Guid? LastReadMessageID { get; set; }
-        public DateTime LastReadAt { get; set; } 
+        public DateTime LastReadAt { get; set; }
         public Guid? LastMessageID { get; private set; }
-        public DateTime LastMessageAt { get; set; } 
+        public DateTime LastMessageAt { get; set; }
 
-      
+
     }
 }

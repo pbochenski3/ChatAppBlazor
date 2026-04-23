@@ -1,12 +1,7 @@
 ﻿using ChatApp.Application.DTO;
-using ChatApp.Application.DTO.Chats;
 using ChatApp.Application.Interfaces.Repository;
-using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatApp.Application.Feature.GroupChat.GetChatUsers
 {

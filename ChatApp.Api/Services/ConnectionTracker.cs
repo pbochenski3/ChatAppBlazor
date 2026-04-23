@@ -1,6 +1,4 @@
 using System.Collections.Concurrent;
-using System;
-using System.Linq;
 
 namespace ChatApp.Api.Services
 {

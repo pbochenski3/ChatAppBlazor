@@ -2,11 +2,6 @@ using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace ChatApp.Infrastructure.Persistence
 {
@@ -15,7 +10,7 @@ namespace ChatApp.Infrastructure.Persistence
         private readonly ChatDbContext _context;
         private readonly ILogger<UserChatRepository> _logger;
 
-        public UserChatRepository(ChatDbContext context , ILogger<UserChatRepository> logger)
+        public UserChatRepository(ChatDbContext context, ILogger<UserChatRepository> logger)
         {
             _context = context;
             _logger = logger;
@@ -108,7 +103,7 @@ namespace ChatApp.Infrastructure.Persistence
                 .IgnoreQueryFilters()
                 .Where(uc => uc.ChatID == chatId);
 
-            if (userIds != null && userIds.Count > 0) 
+            if (userIds != null && userIds.Count > 0)
             {
                 query = query.Where(uc => userIds.Contains(uc.UserID));
             }
@@ -135,7 +130,7 @@ namespace ChatApp.Infrastructure.Persistence
                                c.UserID == userId &&
                                c.IsArchive == true);
         }
-        public async Task SetNewChatNameAsync(Guid chatId,Guid userId, string newName)
+        public async Task SetNewChatNameAsync(Guid chatId, Guid userId, string newName)
         {
             await _context.UserChat
                 .Where(uc => uc.ChatID == chatId && uc.UserID != userId)

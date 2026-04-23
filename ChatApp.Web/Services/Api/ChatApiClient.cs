@@ -1,9 +1,7 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
 using ChatApp.Application.DTO.Requests;
-using ChatApp.Application.Interfaces.Chats;
 using ChatApp.Web.Services.Api.Interfaces;
-using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.Http.Json;
 
 namespace ChatApp.Web.Services.Api
@@ -12,7 +10,7 @@ namespace ChatApp.Web.Services.Api
     {
         private readonly ILogger<ChatApiClient> _logger;
         private readonly HttpClient _httpClient;
-        public ChatApiClient(ILogger<ChatApiClient> logger,HttpClient httpClient)
+        public ChatApiClient(ILogger<ChatApiClient> logger, HttpClient httpClient)
         {
             _logger = logger;
             _httpClient = httpClient;
@@ -31,7 +29,7 @@ namespace ChatApp.Web.Services.Api
         }
         public async Task MarkAllMessagesAsReadAsync(Guid chatId, CancellationToken token = default)
         {
-           
+
             try
             {
                 await _httpClient.PatchAsync($"api/message/chat/{chatId}/read-all", null);
@@ -45,9 +43,10 @@ namespace ChatApp.Web.Services.Api
         {
             try
             {
-            var list = await _httpClient.GetFromJsonAsync<UserChatDTO>($"/api/chat/{chatId}/details", token);
-            return list ?? null;
-            } catch (OperationCanceledException)
+                var list = await _httpClient.GetFromJsonAsync<UserChatDTO>($"/api/chat/{chatId}/details", token);
+                return list ?? null;
+            }
+            catch (OperationCanceledException)
             {
                 _logger.LogWarning("Chat details retrieval for ChatId: {ChatId} was canceled.", chatId);
                 return null;
@@ -83,18 +82,18 @@ namespace ChatApp.Web.Services.Api
         }
         public async Task DeleteChatAsync(Guid chatId)
         {
-                var response = await _httpClient.DeleteAsync($"/api/chat/{chatId}");
-                response.EnsureSuccessStatusCode();
+            var response = await _httpClient.DeleteAsync($"/api/chat/{chatId}");
+            response.EnsureSuccessStatusCode();
         }
         public async Task<HashSet<Guid>> GetChatUsersIdsAsync(Guid chatId)
         {
             return await _httpClient.GetFromJsonAsync<HashSet<Guid>>($"api/chat/{chatId}/usersId");
         }
-        public async Task ChangeChatNameAsync(Guid chatId, string chatName,string adminName)
+        public async Task ChangeChatNameAsync(Guid chatId, string chatName, string adminName)
         {
-            var request = new ChangeChatNameRequest(chatName,adminName);
+            var request = new ChangeChatNameRequest(chatName, adminName);
             var response = await _httpClient.PatchAsJsonAsync($"/api/chat/{chatId}/name", request);
-            if(response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
             {
                 _logger.LogInformation("Chat name changed successfully for ChatId: {ChatId}", chatId);
             }

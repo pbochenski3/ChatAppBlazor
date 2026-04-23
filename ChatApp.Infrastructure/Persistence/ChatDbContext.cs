@@ -1,9 +1,6 @@
 ﻿
+using ChatApp.Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using ChatApp.Domain.Models;  
 
 namespace ChatApp.Infrastructure.Persistence
 {
@@ -29,10 +26,10 @@ namespace ChatApp.Infrastructure.Persistence
                 entity.HasOne(c => c.User)
                     .WithMany(u => u.Contacts)
                     .HasForeignKey(c => c.UserID)
-                    .OnDelete(DeleteBehavior.Restrict); 
+                    .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(c => c.ContactUser)
-                    .WithMany() 
+                    .WithMany()
                     .HasForeignKey(c => c.ContactUserID)
                     .OnDelete(DeleteBehavior.Restrict);
 
@@ -47,7 +44,7 @@ namespace ChatApp.Infrastructure.Persistence
                 entity.HasKey(i => i.InviteID);
 
                 entity.Property(i => i.Status)
-                    .HasConversion<string>() 
+                    .HasConversion<string>()
                     .HasMaxLength(20);
 
                 entity.Property(i => i.CreatedAt)
@@ -58,31 +55,31 @@ namespace ChatApp.Infrastructure.Persistence
                     .HasForeignKey(i => i.SenderID)
                     .OnDelete(DeleteBehavior.Restrict);
 
-   
+
                 entity.HasOne(i => i.Receiver)
                     .WithMany(u => u.ReceivedInvites)
                     .HasForeignKey(i => i.ReceiverID)
                     .OnDelete(DeleteBehavior.Restrict);
             });
-        mb.Entity<User>(entity =>
-            {
-                entity.HasKey(u => u.UserID);
+            mb.Entity<User>(entity =>
+                {
+                    entity.HasKey(u => u.UserID);
 
-                entity.Property(u => u.CreatedAt)
-                .HasPrecision(0);
+                    entity.Property(u => u.CreatedAt)
+                    .HasPrecision(0);
 
-                entity.HasMany(u => u.Messages)
-                .WithOne(m => m.Sender)
-                .HasForeignKey(m => m.SenderID)
-                .OnDelete(DeleteBehavior.Restrict);
+                    entity.HasMany(u => u.Messages)
+                    .WithOne(m => m.Sender)
+                    .HasForeignKey(m => m.SenderID)
+                    .OnDelete(DeleteBehavior.Restrict);
 
-            });
+                });
 
             mb.Entity<Message>(entity =>
             {
                 entity.HasQueryFilter(m => !m.IsDeleted);
                 entity.HasIndex(m => new { m.ChatID, m.SentAt });
-                entity.HasIndex(m => new{ m.ChatID, m.MessageID, m.SenderID})
+                entity.HasIndex(m => new { m.ChatID, m.MessageID, m.SenderID })
                 .HasDatabaseName("Messages_UnreadCounter");
 
                 entity.HasKey(m => m.MessageID);
@@ -125,7 +122,7 @@ namespace ChatApp.Infrastructure.Persistence
                 entity.HasOne(uc => uc.User)
                 .WithMany(u => u.UserChats)
                 .HasForeignKey(uc => uc.UserID);
-                
+
                 entity.HasOne(uc => uc.Chat)
                 .WithMany(c => c.UserChats)
                 .HasForeignKey(uc => uc.ChatID);

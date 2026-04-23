@@ -1,9 +1,6 @@
 ﻿using ChatApp.Application.Interfaces;
 using ChatApp.Domain.Enums;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatApp.Infrastructure.Services
 {
@@ -11,7 +8,7 @@ namespace ChatApp.Infrastructure.Services
     {
         private readonly string _baseUrl = "https://localhost:7255";
         private readonly string _storagePath;
-        public LocalFileService(string storagePath )
+        public LocalFileService(string storagePath)
         {
             _storagePath = storagePath;
             if (!Directory.Exists(_storagePath))
@@ -19,7 +16,7 @@ namespace ChatApp.Infrastructure.Services
                 Directory.CreateDirectory(_storagePath);
             }
         }
-        public async Task<string> SaveAvatar(Stream fileStream, string extension,UploadType type)
+        public async Task<string> SaveAvatar(Stream fileStream, string extension, UploadType type)
         {
             string folderName = type == UploadType.UserAvatar ? "Avatars" : "GroupAvatars";
             string fileName = $"{Guid.NewGuid()}{extension}";
@@ -27,14 +24,14 @@ namespace ChatApp.Infrastructure.Services
             string fullPath = Path.Combine(directoryPath, fileName);
             Directory.CreateDirectory(directoryPath);
 
-          
+
             using (var destinationStream = new FileStream(fullPath, FileMode.Create, FileAccess.Write))
             {
                 await fileStream.CopyToAsync(destinationStream);
             }
             return $"{_baseUrl}/cdn/{folderName}/{fileName}";
         }
-        public async Task<string> SaveChatImage(Stream fileStream, string extension,Guid? chatId,Guid? userId)
+        public async Task<string> SaveChatImage(Stream fileStream, string extension, Guid? chatId, Guid? userId)
         {
             if (chatId == null || userId == null)
                 throw new Exception("chatId or userId missing");
@@ -42,7 +39,7 @@ namespace ChatApp.Infrastructure.Services
             string directoryPath = Path.Combine(_storagePath, subPath);
             string fileName = $"{Guid.NewGuid()}{extension}";
             string fullPath = Path.Combine(directoryPath, fileName);
-            
+
             Directory.CreateDirectory(directoryPath);
             using (var destinationStream = new FileStream(fullPath, FileMode.Create))
             {

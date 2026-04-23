@@ -1,5 +1,4 @@
 ﻿using ChatApp.Application.Feature.Sidebar.GetSidebarItems;
-using ChatApp.Application.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +10,7 @@ namespace ChatApp.Api.Controllers
     {
         private readonly ILogger<SidebarController> _logger;
         private readonly IMediator _mediator;
-        public SidebarController(ILogger<SidebarController> logger,IMediator mediator)
+        public SidebarController(ILogger<SidebarController> logger, IMediator mediator)
         {
             _logger = logger;
             _mediator = mediator;

@@ -1,11 +1,6 @@
-﻿using ChatApp.Application.Common.Messaging;
-using ChatApp.Application.DTO;
-using ChatApp.Application.Interfaces.Repository;
+﻿using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Domain.Models;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatApp.Application.Feature.Auth.RegisterUser
 {

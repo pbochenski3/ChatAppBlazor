@@ -2,9 +2,6 @@
 using ChatApp.Application.Interfaces;
 using ChatApp.Application.Interfaces.Repository;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatApp.Application.Feature.Auth.LoginUser
 {
@@ -12,7 +9,7 @@ namespace ChatApp.Application.Feature.Auth.LoginUser
     {
         private readonly IUserRepository _userRepo;
         private readonly IJwtTokenService _jwt;
-        public LoginUserHandler(IUserRepository userRepo,IJwtTokenService jwt)
+        public LoginUserHandler(IUserRepository userRepo, IJwtTokenService jwt)
         {
             _userRepo = userRepo;
             _jwt = jwt;

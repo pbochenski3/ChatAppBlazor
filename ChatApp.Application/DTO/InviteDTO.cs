@@ -1,8 +1,4 @@
 ﻿using ChatApp.Domain.Enums;
-using ChatApp.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatApp.Application.DTO
 {
@@ -14,6 +10,6 @@ namespace ChatApp.Application.DTO
         public string SenderUsername { get; set; } = string.Empty;
         public string ReceiverUsername { get; set; } = string.Empty;
         public string SenderAvatarUrl { get; set; } = string.Empty;
-        public InviteStatus Status { get; set; } 
+        public InviteStatus Status { get; set; }
     }
 }
