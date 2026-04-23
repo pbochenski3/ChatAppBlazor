@@ -100,9 +100,20 @@ namespace ChatApp.Infrastructure.Persistence
 
         public async Task AddChatAsync(Chat chat)
         {
-            await _context.Chats.AddAsync(chat);
-            _logger.LogInformation("Adding a new chat to the database: {ChatId}", chat.ChatID);
+            _logger.LogInformation("Próba dodania czatu: {ChatName}", chat.ChatName);
 
+            foreach (var userChat in chat.UserChats.ToList())
+            {
+                var isTracked = _context.ChangeTracker.Entries<UserChat>()
+                    .Any(e => e.Entity.UserID == userChat.UserID && e.Entity.ChatID == userChat.ChatID);
+
+                if (isTracked)
+                {
+                    chat.UserChats.Remove(userChat);
+                }
+            }
+
+            await _context.Chats.AddAsync(chat);
         }
 
         public async Task<string> GetGroupAvatarUrlAsync(Guid chatId)

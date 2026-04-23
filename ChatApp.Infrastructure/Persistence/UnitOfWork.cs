@@ -1,5 +1,6 @@
 ﻿using ChatApp.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,35 +9,30 @@ namespace ChatApp.Infrastructure.Persistence
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly IDbContextFactory<ChatDbContext> _contextFactory;
-        private ChatDbContext? _context;
+        private readonly ChatDbContext _context;
+        private IDbContextTransaction? _currentTransaction;
 
-        public UnitOfWork(IDbContextFactory<ChatDbContext> contextFactory)
+        public UnitOfWork(ChatDbContext context) => _context = context;
+
+        public async Task<int> SaveChangesAsync(CancellationToken ct)
+            => await _context.SaveChangesAsync(ct);
+
+        public async Task BeginTransactionAsync(CancellationToken ct)
+            => _currentTransaction = await _context.Database.BeginTransactionAsync(ct);
+
+        public async Task CommitTransactionAsync(CancellationToken ct)
         {
-            _contextFactory = contextFactory;
+            await _currentTransaction?.CommitAsync(ct)!;
         }
 
-        public ChatDbContext Context => _context
-            ?? throw new InvalidOperationException("UnitOfWork not started. Call Begin() first.");
-
-        public void Begin()
+        public async Task RollbackTransactionAsync(CancellationToken ct)
         {
-            if (_context != null) return; 
-            _context = _contextFactory.CreateDbContext();
-        }
-
-        public async Task CommitAsync()
-        {
-            if (_context != null)
-            {
-                await _context.SaveChangesAsync();
-            }
+            if (_currentTransaction != null) await _currentTransaction.RollbackAsync(ct);
         }
 
         public void Dispose()
         {
-            _context?.Dispose();
-            _context = null;
+            _currentTransaction?.Dispose();
         }
     }
 }
