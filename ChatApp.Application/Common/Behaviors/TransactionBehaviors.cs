@@ -37,11 +37,11 @@ public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
         }
         catch
         {
+            await _uow.RollbackTransactionAsync(ct);
             throw;
         }
         finally
         {
-            await _uow.RollbackTransactionAsync(ct);
             _uow.Dispose(); 
         }
     }

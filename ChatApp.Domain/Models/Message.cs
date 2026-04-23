@@ -19,7 +19,7 @@ namespace ChatApp.Domain.Models
         public DateTime? DeletedAt { get; set; }
         public MessageType MessageType { get; set; }
    
-        public static Message CreateSystemMessage(Guid chatId, string content)
+        public static Message CreateSystemMessage(Guid chatId,string content)
         {
             return new Message
             {
