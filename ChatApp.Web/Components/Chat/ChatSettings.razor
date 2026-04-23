@@ -8,16 +8,17 @@
                 {
                     <button class="btn-secondary" @onclick="() => _chatStateService.SettingsView = ChatSettingsView.ChangeName">Zmień nazwe czatu</button>
                     <button class="btn-secondary" @onclick="() => _chatStateService.SettingsView = ChatSettingsView.Users">Uczestnicy</button>
-                    <button class="btn-secondary" @onclick="_chatSettingsActionService.HandleLoadUsersToAddAsync">Dodaj osoby</button>
+
 
 
                     @if (!_appStateService.CurrentChat.Identity.IsGroup)
                     {
-
+                        <button class="btn-secondary" @onclick="@(async () => { _type = AddType.Private; await _chatSettingsActionService.HandleLoadUsersToAddAsync(); })">Dodaj osoby</button>
                         <button class="btn-secondary btn-delete" @onclick=' () => _chatSettingsActionService.RequestContactDelete(_appStateService.CurrentChat.Identity.ChatID)'>Usuń kontakt</button>
                     }
                     else
                     {
+                        <button class="btn-secondary" @onclick="@(async () => { _type = AddType.Group; await _chatSettingsActionService.HandleLoadUsersToAddAsync(); })">Dodaj osoby</button>
                         <button class="btn-secondary" @onclick="() => _chatStateService.SettingsView = ChatSettingsView.ChangePhoto">Zmień zdjecie grupy</button>
                         <button class="btn-secondary btn-delete" @onclick="_chatSettingsActionService.RequestLeaveChat">Opuść czat</button>
                     }
@@ -94,12 +95,12 @@
 </div>
 
 @code {
-        public List<ContactDTO> UserContacts => _chatStateService.ReceivedContacts;
+    public List<ContactDTO> UserContacts => _chatStateService.ReceivedContacts;
     public HashSet<UserDTO> ExistingUsers => _chatStateService.UsersInChat;
     public HashSet<Guid> ContactsToAdd { get; set; } = new();
-
     private string _contactSearchTerm = string.Empty;
     private string _newChatName = string.Empty;
+    private AddType _type;
     private IEnumerable<ContactDTO> FilteredContacts =>
        UserContacts?.Where(c =>
            (string.IsNullOrWhiteSpace(_contactSearchTerm) ||
@@ -122,7 +123,7 @@
     private async Task AddUserToGroupAsync(HashSet<Guid> usersToAdd)
     {
         _chatStateService.SettingsView = ChatSettingsView.Settings;
-        await _chatSettingsActionService.HandleAddUsersToChatAsync(usersToAdd);
+        await _chatSettingsActionService.HandleAddUsersToChatAsync(usersToAdd,_type);
         ContactsToAdd.Clear();
     }
     private async Task HandleChatNameChangeAsync(string name)
