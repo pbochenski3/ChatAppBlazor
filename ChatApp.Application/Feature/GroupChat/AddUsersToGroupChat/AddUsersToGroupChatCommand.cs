@@ -6,5 +6,5 @@ using System.Windows.Input;
 
 namespace ChatApp.Application.Feature.GroupChat.AddUsersToGroupChat
 {
-    public record AddUsersToGroupChatCommand(Guid ChatId, HashSet<Guid> UsersToAdd,Guid UserId) : ICommand<bool>;
+    public record AddUsersToGroupChatCommand(Guid ChatId, HashSet<Guid> UsersToAdd, Guid UserId) : BaseCommand<bool>;
 }

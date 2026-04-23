@@ -29,7 +29,7 @@ namespace ChatApp.Application.Feature.Chat.DeleteChat
             }
             await _userChatRepo.MarkChatAsDeletedAsync(r.ChatId, r.UserId);
             await _chatRepo.TryDeleteChatIfEmptyAsync(r.ChatId);
-            await _mediator.Publish(new ChatDeletedNotification(r.ChatId, r.UserId));
+            r.AddEvent(new ChatDeletedNotification(r.ChatId, r.UserId));
             return true;
         }
     }

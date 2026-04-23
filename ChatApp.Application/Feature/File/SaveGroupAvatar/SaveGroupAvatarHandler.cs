@@ -26,7 +26,7 @@ namespace ChatApp.Application.Feature.File.SaveGroupAvatar
         {
             string avatarUrl = await _fileService.SaveImageAsync(r.File, UploadType.ChatImage, r.ChatId, r.UserId);
             await _chatRepo.UpdateGroupAvatarUrl(r.ChatId, avatarUrl);
-            await _mediator.Publish(new GroupAvatarUpdatedNotification(r.ChatId, avatarUrl));
+            r.AddEvent(new GroupAvatarUpdatedNotification(r.ChatId, avatarUrl));
             return true;
 
         }

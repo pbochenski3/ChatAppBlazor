@@ -39,9 +39,8 @@ namespace ChatApp.Application.Services.Chats
                     var user1 = await _userRepo.GetByIdAsync(userId1);
                     var user2 = await _userRepo.GetByIdAsync(userId2);
 
-                var result = Chat.CreateNewGroup(user1, new List<User> { user1, user2 });
-                    await _chatRepo.AddChatAsync(result.Chat);
-                    await _messageRepo.AddMessageAsync(result.SystemMessage);
+                    var result = Chat.CreatePrivateChat(user1,user2);
+                    await _chatRepo.AddChatAsync(result);
                 }
                 else
                 {

@@ -104,8 +104,11 @@ namespace ChatApp.Infrastructure.Persistence
         }
         public async Task SetChatAccessibilityAsync(Guid chatId, bool active, HashSet<Guid>? userIds = null)
         {
-            var query = _context.UserChat.IgnoreQueryFilters().Where(uc => uc.ChatID == chatId);
-            if (userIds != null && userIds.Any())
+            var query = _context.UserChat
+                .IgnoreQueryFilters()
+                .Where(uc => uc.ChatID == chatId);
+
+            if (userIds != null && userIds.Count > 0) 
             {
                 query = query.Where(uc => userIds.Contains(uc.UserID));
             }

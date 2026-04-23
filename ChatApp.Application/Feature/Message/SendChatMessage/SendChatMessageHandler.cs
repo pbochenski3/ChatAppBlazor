@@ -25,10 +25,6 @@ namespace ChatApp.Application.Feature.Message.SendChatMessage
         public async Task<bool> Handle(SendChatMessageCommand r, CancellationToken cancellationToken)
         {
             var messageDto = r.Dto;
-            if (string.IsNullOrWhiteSpace(messageDto.Content) && string.IsNullOrWhiteSpace(messageDto.imageUrl))
-            {
-                throw new Exception("Message content cannot be empty");
-            }
 
             var message = new Domain.Models.Message
             {
@@ -43,7 +39,7 @@ namespace ChatApp.Application.Feature.Message.SendChatMessage
             };
                 await _messageRepo.AddMessageAsync(message);
                 await _userChatRepo.UpdateLastSentMessageAsync(messageDto.ChatID, messageDto.MessageID);
-                await _mediator.Publish(new ChatMessageSendedNotification(messageDto));
+                r.AddEvent(new ChatMessageSendedNotification(messageDto));
             return true;
         }
 

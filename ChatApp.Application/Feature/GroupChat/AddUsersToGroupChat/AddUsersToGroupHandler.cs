@@ -20,41 +20,44 @@ namespace ChatApp.Application.Feature.GroupChat.AddUsersToGroupChat
         private readonly IUserChatRepository _userChatRepo;
         private readonly IMessageRepository _messageRepo;
         private readonly IMediator _mediator;
-        private readonly IUnitOfWork _uow;
-        public AddUsersToGroupHandler(IChatRepository chatRepo, IUserRepository userRepo, IMessageRepository messageRepo, IMediator mediator, IUserChatRepository userChatRepo,IUnitOfWork uow)
+        public AddUsersToGroupHandler(IChatRepository chatRepo, IUserRepository userRepo, IMessageRepository messageRepo, IMediator mediator, IUserChatRepository userChatRepo)
         {
             _chatRepo = chatRepo;
             _userRepo = userRepo;
             _messageRepo = messageRepo;
             _mediator = mediator;
             _userChatRepo = userChatRepo;
-            _uow = uow;
         }
         public async Task<bool> Handle(AddUsersToGroupChatCommand r, CancellationToken cancellationToken)
         {
             var existingChat = await _chatRepo.FetchChatById(r.ChatId);
-            var admin = await _userRepo.GetByIdAsync(r.UserId);
-            var usersToAdd = await _userRepo.GetUsersByIdsAsync(r.UsersToAdd);
             Domain.Models.Chat targetChat;
             Domain.Models.Message systemMessage;
             if (!existingChat.IsGroup)
             {
-                var result = Domain.Models.Chat.CreateNewGroup(admin, usersToAdd);
+                var existingsUsersIds = await _userChatRepo.GetUsersInChatIdAsync(r.ChatId);
+                existingsUsersIds.UnionWith(r.UsersToAdd);
+                var existingUsers = await _userRepo.GetUsersByIdsAsync(existingsUsersIds);
+                var usersToAddList = r.UsersToAdd.ToList();
+                var result = Domain.Models.Chat.CreateNewGroup(r.UserId, existingUsers);
                 targetChat = result.Chat;
                 systemMessage = result.SystemMessage;
-
+                await _messageRepo.AddMessageAsync(systemMessage);
                 await _chatRepo.AddChatAsync(targetChat);
+                r.AddEvent(new GroupChatCreatedNotification(targetChat.ChatID, r.UsersToAdd));
+
             }
             else
             {
+                var admin = await _userRepo.GetByIdAsync(r.UserId);
+                var usersToAdd = await _userRepo.GetUsersByIdsAsync(r.UsersToAdd);
                 targetChat = existingChat;
                 systemMessage = targetChat.AddMembers(admin, usersToAdd);
+                await _messageRepo.AddMessageAsync(systemMessage);
+                r.AddEvent(new UsersAddedToGroupChatNotification(targetChat.ChatID, systemMessage, r.UsersToAdd));
 
             }
 
-            await _messageRepo.AddMessageAsync(systemMessage);
-            await _uow.CommitAsync();
-            await _mediator.Publish(new UsersAddedToGroupChatNotification(targetChat.ChatID, systemMessage, r.UsersToAdd));
 
             return true;
         }

@@ -6,5 +6,5 @@ using System.Text;
 
 namespace ChatApp.Application.Feature.Chat.UpdateChatName
 {
-    public record UpdateChatNameCommand(Guid ChatId,Guid UserId, ChangeChatNameRequest Request) : ICommand<bool>;
+    public record UpdateChatNameCommand(Guid ChatId, Guid UserId, ChangeChatNameRequest Request) : BaseCommand<bool>;
 }

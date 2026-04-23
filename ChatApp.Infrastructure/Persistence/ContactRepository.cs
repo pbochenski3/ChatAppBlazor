@@ -65,14 +65,6 @@ namespace ChatApp.Infrastructure.Persistence
 
         public async Task AddContactAsync(Contact contact)
         {
-            var trackedEntity = _context.Contacts.Local
-        .FirstOrDefault(c => c.UserID == contact.UserID && c.ContactUserID == contact.ContactUserID);
-            if (trackedEntity != null)
-            {
-                _logger.LogInformation("Contact is already being tracked. Skipping AddAsync.");
-                return;
-            }
-
             _logger.LogInformation("Adding a new contact to the database.");
             await _context.Contacts.AddAsync(contact);
         }

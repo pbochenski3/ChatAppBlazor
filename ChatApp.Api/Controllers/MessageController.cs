@@ -31,20 +31,10 @@ namespace ChatApp.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> SendChatMessageAsync([FromBody] MessageDTO dto)
         {
-            try
-            {
                 var userId = CurrentUserId;
                 if (dto.ChatID == Guid.Empty) return BadRequest();
-
                 var result = await _mediator.Send(new SendChatMessageCommand(dto));
                 return result ? Ok() : BadRequest();
-            }
-            catch (Exception ex)
-            {
-                {
-                    return BadRequest(ex.Message);
-                }
-            }
         }
         [HttpGet("{chatId}/history")]
         public async Task<ActionResult<List<MessageDTO>>> GetChatMessageHistoryAsync([FromRoute] Guid chatId, CancellationToken ct)

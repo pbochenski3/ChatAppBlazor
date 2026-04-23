@@ -85,7 +85,6 @@ namespace ChatApp.Infrastructure.Persistence
         public async Task<Chat?> FetchChatById(Guid chatId)
         {
             return await _context.Chats
-                .Include(uc => uc.UserChats)
                 .FirstOrDefaultAsync(c => c.ChatID == chatId);
         }
 
@@ -101,18 +100,6 @@ namespace ChatApp.Infrastructure.Persistence
         public async Task AddChatAsync(Chat chat)
         {
             _logger.LogInformation("Próba dodania czatu: {ChatName}", chat.ChatName);
-
-            foreach (var userChat in chat.UserChats.ToList())
-            {
-                var isTracked = _context.ChangeTracker.Entries<UserChat>()
-                    .Any(e => e.Entity.UserID == userChat.UserID && e.Entity.ChatID == userChat.ChatID);
-
-                if (isTracked)
-                {
-                    chat.UserChats.Remove(userChat);
-                }
-            }
-
             await _context.Chats.AddAsync(chat);
         }
 

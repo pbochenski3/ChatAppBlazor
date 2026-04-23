@@ -6,5 +6,5 @@ using System.Text;
 
 namespace ChatApp.Application.Feature.Invite.HandleInviteAction
 {
-    public record HandleInviteActionCommand(InviteActionRequest Request) : ICommand<bool>;
+    public record HandleInviteActionCommand(InviteActionRequest Request) : BaseCommand<bool>;
 }

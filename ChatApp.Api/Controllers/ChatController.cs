@@ -5,7 +5,6 @@ using ChatApp.Application.DTO.Requests;
 using ChatApp.Application.Feature.Chat.CheckGroupChatExists;
 using ChatApp.Application.Feature.Chat.DeleteChat;
 using ChatApp.Application.Feature.Chat.GetChatDetails;
-using ChatApp.Application.Feature.Chat.GetChatDetails.GetChatDetailsHandler;
 using ChatApp.Application.Feature.Chat.GetChatUsers;
 using ChatApp.Application.Feature.Chat.UpdateChatName;
 using ChatApp.Application.Feature.File;

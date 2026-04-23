@@ -41,7 +41,7 @@ namespace ChatApp.Domain.Models
 
             return Message.CreateSystemMessage(this.ChatID, content);
         }
-        public static Chat CreatePrivateChat(Contact[] contacts)
+        public static Chat CreatePrivateChat(User user1, User user2)
         {
             var chatId = Guid.CreateVersion7();
             var chatName = $"Chat#{RandomNumberGenerator.GetInt32(0, 100000):D5}";
@@ -49,29 +49,29 @@ namespace ChatApp.Domain.Models
             {
                 ChatID = chatId,
                 CreatedAt = DateTime.UtcNow,
-                IsGroup = true,
-                ChatName = chatName,
+                IsGroup = false,
+                ChatName = chatName
             };
             chat.UserChats.Add(new UserChat
             {
-                UserID = contacts[0].UserID,
+                UserID = user1.UserID,
                 ChatID = chatId,
-                ChatName = chatName
+                ChatName = user2.Username
             });
             chat.UserChats.Add(new UserChat
             {
-                UserID = contacts[1].UserID,
+                UserID = user2.UserID,
                 ChatID = chatId,
-                ChatName = chatName
+                ChatName = user1.Username
             });
             return chat;
 
         }
-        public static (Chat Chat, Message SystemMessage) CreateNewGroup(User creator, List<User> membersToAdd)
+        public static (Chat Chat, Message SystemMessage) CreateNewGroup(Guid UserId, List<User> membersToAdd)
         {
             var chatId = Guid.CreateVersion7();
             var chatName = $"Chat#{RandomNumberGenerator.GetInt32(0, 100000):D5}";
-
+            var admin = membersToAdd.FirstOrDefault(u => u.UserID == UserId);
             var chat = new Chat
             {
                 ChatID = chatId,
@@ -82,8 +82,7 @@ namespace ChatApp.Domain.Models
             };
 
           
-            var allMembers = membersToAdd.Append(creator).DistinctBy(u => u.UserID).ToList();
-            foreach (var user in allMembers)
+            foreach (var user in membersToAdd)
             {
                 chat.UserChats.Add(new UserChat
                 {
@@ -93,8 +92,8 @@ namespace ChatApp.Domain.Models
                 });
             }
 
-            var names = string.Join(", ", membersToAdd.Select(u => u.Username));
-            var message = Message.CreateSystemMessage(chatId, $"{creator.Username} stworzył czat z: {names}.");
+            var names = string.Join(", ", membersToAdd.Where(m => m.UserID ==  UserId).Select(u => u.Username));
+            var message = Message.CreateSystemMessage(chatId, $"{admin.Username} stworzył czat z: {names}.");
 
             return (chat, message);
         }

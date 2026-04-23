@@ -37,7 +37,7 @@ namespace ChatApp.Application.Feature.Chat.UpdateChatName
                 await _userChatRepo.SetNewChatNameAsync(r.ChatId, r.UserId, r.Request.NewName);
             }
 
-            await _mediator.Publish(new ChatNameUpdatedNotification(r.ChatId, r.Request));
+            r.AddEvent(new ChatNameUpdatedNotification(r.ChatId, r.Request));
             return true;
         }
     }

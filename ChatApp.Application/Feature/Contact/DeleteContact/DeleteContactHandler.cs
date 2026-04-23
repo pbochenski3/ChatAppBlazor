@@ -37,7 +37,7 @@ namespace ChatApp.Application.Feature.Contact.DeleteContact
             }
                 await _contactRepo.DeleteContactAsync(contactId, r.UserId);
                 await _userChatRepo.ArchivePrivateChatAsync(r.PrivateChatId, r.UserId, contactId);
-                await _mediator.Publish(new ContactDeletedNotification(contactId, r.UserId, r.PrivateChatId));
+                r.AddEvent(new ContactDeletedNotification(contactId, r.UserId, r.PrivateChatId));
                 return true;
         }
     }

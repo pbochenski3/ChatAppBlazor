@@ -54,7 +54,7 @@ namespace ChatApp.Application.Feature.GroupChat.LeaveGroupChatAsync
             };
 
             await _messageRepo.AddMessageAsync(message);
-            await _mediator.Publish(new UserLeavedGroupNotification(r.ChatId, systemMessage, r.UserId));
+            r.AddEvent(new UserLeavedGroupNotification(r.ChatId, systemMessage, r.UserId));
             return true;
         }
     }

@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChatApp.Application.Feature.Chat.GetChatDetails.GetChatDetailsHandler
+namespace ChatApp.Application.Feature.Chat.GetChatDetails
 {
     public class GetChatDetailsHandler : IRequestHandler<GetChatDetailsQuery, UserChatDTO>
     {
@@ -30,7 +30,7 @@ namespace ChatApp.Application.Feature.Chat.GetChatDetails.GetChatDetailsHandler
                     IsGroup = chat.Chat.IsGroup,
                     AvatarUrl = chat.Chat.IsGroup
                         ? chat.Chat.AvatarUrl
-                        : chat.Chat.UserChats.FirstOrDefault(p => p.UserID != r.UserId)?.User?.AvatarUrl ?? "https://localhost:7255/cdn/avatars/default-avatar.png",
+                        : chat.Chat.UserChats.FirstOrDefault(p => p.UserID != r.UserId)?.User?.AvatarUrl ?? "https://localhost:7255/cdn/Avatars/default-avatar.png",
                     UserID = chat.UserID,
                     OtherUserId = chat.Chat.IsGroup ? null : chat.Chat.UserChats.FirstOrDefault(p => p.UserID != r.UserId)?.UserID
                 },
