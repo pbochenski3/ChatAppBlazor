@@ -20,16 +20,14 @@ namespace ChatApp.Application.Services.Chats
         private readonly IUserRepository _userRepo;
         private readonly IUserChatRepository _userChatRepo;
         private readonly IMessageRepository _messageRepo;
-        private readonly ITransactionProvider _transactionProvider;
 
-        public PrivateChatService(ILogger<PrivateChatService> logger, IChatRepository chatRepo, IUserRepository userRepo, IUserChatRepository userChatRepo,IMessageRepository messageRepo, ITransactionProvider transactionProvider)
+        public PrivateChatService(ILogger<PrivateChatService> logger, IChatRepository chatRepo, IUserRepository userRepo, IUserChatRepository userChatRepo,IMessageRepository messageRepo)
         {
             _logger = logger;
             _chatRepo = chatRepo;
             _userRepo = userRepo;
             _userChatRepo = userChatRepo;
             _messageRepo = messageRepo;
-            _transactionProvider = transactionProvider;
         }
 
         public async Task<Guid> CreatePrivateChatAsync(Guid userId1, Guid userId2)

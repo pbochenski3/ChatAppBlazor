@@ -21,7 +21,6 @@ namespace ChatApp.Application.Services.Chats
 {
     public class GroupChatService : IGroupChatService
     {
-        private readonly ITransactionProvider _transactionProvider;
         private readonly ILogger<GroupChatService> _logger;
         private readonly IChatRepository _chatRepo;
         private readonly IUserChatRepository _userChatRepo;
@@ -31,7 +30,6 @@ namespace ChatApp.Application.Services.Chats
         private readonly IMediator _mediator;
 
         public GroupChatService(
-            ITransactionProvider transactionProvider,
             ILogger<GroupChatService> logger,
             IChatRepository chatRepo,
             IUserChatRepository userChatRepo,
@@ -47,7 +45,6 @@ namespace ChatApp.Application.Services.Chats
             _userService = userService;
             _messageService = messageService;
             _userChatService = userChatService;
-            _transactionProvider = transactionProvider;
             _mediator = mediator;
 
         }
@@ -158,8 +155,6 @@ namespace ChatApp.Application.Services.Chats
         //}
         public async Task ProcessLeaveGroupChatAsync(Guid chatId, Guid userId, string username)
         {
-             await _transactionProvider.ExecuteInTransactionAsync(async () =>
-            {
                 var isArchive = await _chatRepo.CheckIfChatIsArchive(chatId,userId);
                 if(isArchive == true)
                 {
@@ -179,7 +174,6 @@ namespace ChatApp.Application.Services.Chats
 
                 await _messageService.SaveMessageAsync(systemMessage);
                 await _mediator.Publish(new UserLeavedGroupNotification(chatId, systemMessage, userId));
-            });
         }
         //public async Task<HashSet<UserDTO>> ProccesGetChatUsersAsync(Guid chatId)
         //{

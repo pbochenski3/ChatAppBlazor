@@ -22,20 +22,17 @@ namespace ChatApp.Application.Services
         private readonly IContactRepository _contactRepo;
         private readonly IChatRepository _chatRepo;
         private readonly IUserChatRepository _userChatRepo;
-        private readonly ITransactionProvider _transactionProvider;
         private readonly IMediator _mediator;
 
         public ContactService(
             IContactRepository contactRepo,
             IChatRepository chatRepo,
             IUserChatRepository userChatRepo,
-            ITransactionProvider transactionProvider,
             IMediator mediator
             )
         {
             _chatRepo = chatRepo;
             _contactRepo = contactRepo;
-            _transactionProvider = transactionProvider;
             _userChatRepo = userChatRepo;
             _mediator = mediator;
         }
@@ -95,22 +92,19 @@ namespace ChatApp.Application.Services
 
         public async Task CreateContactAsync(Guid userId1, Guid userId2)
         {
-             await _transactionProvider.ExecuteInTransactionAsync(async () =>
+            var contact1 = new Contact
             {
-                var contact1 = new Contact
-                {
-                    UserID = userId1,
-                    ContactUserID = userId2,
-                };
-                await _contactRepo.AddContactAsync(contact1);
+                UserID = userId1,
+                ContactUserID = userId2,
+            };
+            await _contactRepo.AddContactAsync(contact1);
 
-                var contact2 = new Contact
-                {
-                    UserID = userId2,
-                    ContactUserID = userId1
-                };
-                await _contactRepo.AddContactAsync(contact2);
-            });
+            var contact2 = new Contact
+            {
+                UserID = userId2,
+                ContactUserID = userId1
+            };
+            await _contactRepo.AddContactAsync(contact2);
         }
 
         public async Task AddContactAsync(Guid userId, Guid contactUserId)
@@ -138,12 +132,9 @@ namespace ChatApp.Application.Services
             {
                 throw new Exception("Kontakt nie istnieje!");
             }
-            await _transactionProvider.ExecuteInTransactionAsync(async () =>
-            {
             await _contactRepo.DeleteContactAsync(contactUserId, userId);
             await _userChatRepo.ArchivePrivateChatAsync(chatId, userId, contactUserId);
             await _mediator.Publish(new ContactDeletedNotification(contactUserId,userId,chatId));
-            });
         }
     }
 }

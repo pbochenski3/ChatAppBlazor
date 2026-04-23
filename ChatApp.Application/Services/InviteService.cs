@@ -17,18 +17,16 @@ namespace ChatApp.Application.Services
 {
     public class InviteService : IInviteService
     {
-        private readonly ITransactionProvider _transactionProvider;
         private readonly IContactService _contactService;
         private readonly IInviteRepository _inviteRepo;
         private readonly IPrivateChatService _privateChatService;
         private readonly IMediator _mediator;
 
-        public InviteService(IInviteRepository inviteRepo, IContactService contactService, IPrivateChatService privateChatService, ITransactionProvider transactionProvider,IMediator mediator)
+        public InviteService(IInviteRepository inviteRepo, IContactService contactService, IPrivateChatService privateChatService,IMediator mediator)
         {
             _inviteRepo = inviteRepo;
             _contactService = contactService;
             _privateChatService = privateChatService;
-            _transactionProvider = transactionProvider;
             _mediator = mediator;
         }
 
@@ -73,7 +71,6 @@ namespace ChatApp.Application.Services
                 throw new KeyNotFoundException("Invite not found");
             }
 
-            await _transactionProvider.ExecuteInTransactionAsync(async () =>
             {
                 Guid newChatId = Guid.Empty;
 
@@ -82,9 +79,8 @@ namespace ChatApp.Application.Services
                     await _contactService.AddContactAsync(invite.SenderID, invite.ReceiverID);
                     newChatId = await _privateChatService.CreatePrivateChatAsync(invite.SenderID, invite.ReceiverID);
                 }
-                await _mediator.Publish(new InviteActionNotification(invite.SenderID,invite.ReceiverID,request.chatId,newChatId,request.Response));
-
-            });
+                await _mediator.Publish(new InviteActionNotification(invite.SenderID, invite.ReceiverID, request.chatId, newChatId, request.Response));
+            }
         }
     }
 }

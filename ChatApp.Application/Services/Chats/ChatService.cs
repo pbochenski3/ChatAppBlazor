@@ -18,18 +18,16 @@ namespace ChatApp.Application.Services.Chats
 {
     public class ChatService : IChatService
     {
-        private readonly ITransactionProvider _transactionProvider;
         private readonly ILogger<ChatService> _logger;
         private readonly IChatRepository _chatRepo;
         private readonly IUserChatRepository _userChatRepo;
         private readonly IMediator _mediator;
 
-        public ChatService(ILogger<ChatService> logger, IChatRepository chatRepo, IUserChatRepository userChatRepo, ITransactionProvider transactionProvider,IMediator mediator)
+        public ChatService(ILogger<ChatService> logger, IChatRepository chatRepo, IUserChatRepository userChatRepo,IMediator mediator)
         {
             _logger = logger;
             _chatRepo = chatRepo;
             _userChatRepo = userChatRepo;
-            _transactionProvider = transactionProvider;
             _mediator = mediator;
         }
         public async Task UpdateGroupAvatarUrl(Guid chatId,string avatarUrl)

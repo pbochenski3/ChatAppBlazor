@@ -3,7 +3,7 @@ using ChatApp.Application.Interfaces;
 using MediatR;
 
 public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : ICommand<TResponse> // Interesują nas tylko komendy
+    where TRequest : ICommand<TResponse>
 {
     private readonly IUnitOfWork _uow;
 
@@ -11,21 +11,20 @@ public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken ct)
     {
-        _uow.Begin(); // Start "koszyka"
+        _uow.Begin(); 
         try
         {
-            var response = await next(); // Wykonanie Handlera
-            await _uow.CommitAsync();    // Zapis do bazy
+            var response = await next(); 
+            await _uow.CommitAsync();    
             return response;
         }
         catch
         {
-            // Błąd? Nic nie zapisujemy, Dispose wszystko wyczyści
             throw;
         }
         finally
         {
-            _uow.Dispose(); // Zwrot połączenia do puli
+            _uow.Dispose(); 
         }
     }
 }

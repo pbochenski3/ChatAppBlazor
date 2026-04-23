@@ -72,12 +72,5 @@ namespace ChatApp.Domain.Models
 
             return (chat, message);
         }
-        public bool IsArchivedFor(Guid userId)
-        {
-            var userChat = UserChats.FirstOrDefault(uc => uc.UserID == userId);
-            if (userChat == null) return true;
-
-            return userChat.IsArchive;
-        }
     }
 }

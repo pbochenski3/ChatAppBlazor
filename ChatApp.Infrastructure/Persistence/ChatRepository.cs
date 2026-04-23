@@ -14,18 +14,17 @@ namespace ChatApp.Infrastructure.Persistence
 {
     public class ChatRepository : IChatRepository
     {
-        private readonly IDbContextFactory<ChatDbContext> _contextFactory;
+        private readonly ChatDbContext _context;
         private readonly ILogger<ChatRepository> _logger;
 
-        public ChatRepository(IDbContextFactory<ChatDbContext> contextFactory, ILogger<ChatRepository> logger)
+        public ChatRepository(ChatDbContext context, ILogger<ChatRepository> logger)
         {
-            _contextFactory = contextFactory;
+            _context = context;
             _logger = logger;
         }
         public async Task<bool> CheckIfChatIsArchive(Guid chatId,Guid userId)
         {
-            using var context = _contextFactory.CreateDbContext();
-            bool? result =  await context.UserChat
+            bool? result =  await _context.UserChat
                 .Where(ch => ch.ChatID == chatId && ch.UserID == userId)
                 .Select(ch => ch.IsArchive)
                 .FirstOrDefaultAsync();
@@ -33,8 +32,7 @@ namespace ChatApp.Infrastructure.Persistence
         }
         public async Task<bool> CheckIfGroupExist(Guid chatId, Guid userId)
         {
-            using var context = _contextFactory.CreateDbContext();
-            return await context.Chats
+            return await _context.Chats
                 .AnyAsync(ch => ch.ChatID == chatId
                              && ch.UserChats.Any(uc => uc.UserID == userId)
                              && ch.IsGroup == true);
@@ -42,17 +40,15 @@ namespace ChatApp.Infrastructure.Persistence
 
         public async Task UpdateGroupAvatarUrl(Guid chatId, string avatarUrl)
         {
-            using var context = _contextFactory.CreateDbContext();
-           await context.Chats
+           await _context.Chats
                 .Where(ch => ch.IsGroup && ch.ChatID == chatId)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(ch => ch.AvatarUrl, avatarUrl));
         }
         public async Task AddUserGroupToDb(Guid chatId, HashSet<Guid> userIdsToAdd)
         {
-            using var context = _contextFactory.CreateDbContext();
 
-            var chat = await context.Chats
+            var chat = await _context.Chats
                 .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(c => c.ChatID == chatId);
 
@@ -62,10 +58,9 @@ namespace ChatApp.Infrastructure.Persistence
             {
                 chat.IsDeleted = false;
                 chat.DeletedAt = null;
-                await context.SaveChangesAsync();
             }
 
-            var existingUserIds = await context.UserChat
+            var existingUserIds = await _context.UserChat
                 .IgnoreQueryFilters()
                 .Where(uc => uc.ChatID == chatId)
                 .Select(uc => uc.UserID)
@@ -83,23 +78,20 @@ namespace ChatApp.Infrastructure.Persistence
 
             if (filteredUsers.Any())
             {
-                await context.UserChat.AddRangeAsync(filteredUsers);
-                await context.SaveChangesAsync();
+                await _context.UserChat.AddRangeAsync(filteredUsers);
             }
         }
 
         public async Task<Chat?> FetchChatById(Guid chatId)
         {
-            using var context = _contextFactory.CreateDbContext();
-            return await context.Chats
+            return await _context.Chats
                 .Include(uc => uc.UserChats)
                 .FirstOrDefaultAsync(c => c.ChatID == chatId);
         }
 
         public async Task<Chat?> GetChatAsync(Guid userId1, Guid userId2, CancellationToken token = default)
         {
-            using var context = _contextFactory.CreateDbContext();
-            return await context.Chats
+            return await _context.Chats
                 .Where(c => !c.IsGroup &&
                             c.UserChats.Any(uc => uc.UserID == userId1) &&
                             c.UserChats.Any(uc => uc.UserID == userId2))
@@ -108,25 +100,14 @@ namespace ChatApp.Infrastructure.Persistence
 
         public async Task AddChatAsync(Chat chat)
         {
-            using var context = _contextFactory.CreateDbContext();
-            await context.Chats.AddAsync(chat);
+            await _context.Chats.AddAsync(chat);
             _logger.LogInformation("Adding a new chat to the database: {ChatId}", chat.ChatID);
-            try
-            {
-                await context.SaveChangesAsync();
-            }
-            catch (DbUpdateException ex)
-            {
-                var message = ex.InnerException?.Message ?? ex.Message;
-                _logger.LogError("Błąd zapisu czatu: {Message}", message);
-                throw new HubException("Nie udało się zapisać czatu.");
-            }
+
         }
 
         public async Task<string> GetGroupAvatarUrlAsync(Guid chatId)
         {
-            using var context = _contextFactory.CreateDbContext();
-            return await context.Chats
+            return await _context.Chats
                 .AsNoTracking()
                 .Where(c => c.ChatID == chatId && c.IsGroup)
                 .Select(c => c.AvatarUrl)
@@ -134,8 +115,7 @@ namespace ChatApp.Infrastructure.Persistence
         }
         public async Task<HashSet<Guid>> GetExistingUsersInChat(Guid chatId, HashSet<Guid> userIdsToCheck)
         {
-            using var context = _contextFactory.CreateDbContext();
-            var existingIds = await context.UserChat
+            var existingIds = await _context.UserChat
                 .IgnoreQueryFilters()
                 .Where(uc => uc.ChatID == chatId && userIdsToCheck.Contains(uc.UserID))
                 .Select(uc => uc.UserID)
@@ -146,12 +126,11 @@ namespace ChatApp.Infrastructure.Persistence
 
         public async Task TryDeleteChatIfEmptyAsync(Guid chatId)
         {
-            using var context = _contextFactory.CreateDbContext();
 
-            var hasMembers = await context.UserChat.AnyAsync(uc => uc.ChatID == chatId && !uc.IsDeleted);
+            var hasMembers = await _context.UserChat.AnyAsync(uc => uc.ChatID == chatId && !uc.IsDeleted);
             if (!hasMembers)
             {
-                await context.Chats
+                await _context.Chats
                     .Where(ch => ch.ChatID == chatId)
                     .ExecuteUpdateAsync(s => s
                         .SetProperty(ch => ch.IsDeleted, true)
@@ -161,16 +140,14 @@ namespace ChatApp.Infrastructure.Persistence
 
         public async Task UpdateChatNameAsync(Guid chatId, string chatName)
         {
-            using var context = _contextFactory.CreateDbContext();
-            await context.Chats
+            await _context.Chats
                 .Where(c => c.ChatID == chatId)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(c => c.ChatName, chatName));
         }
         public async Task<bool> IsChatGroupAsync(Guid chatId)
         {
-            using var context = _contextFactory.CreateDbContext();
-            return await context.Chats
+            return await _context.Chats
                 .AnyAsync(c => c.ChatID == chatId &&
                                c.IsGroup == true);
         }

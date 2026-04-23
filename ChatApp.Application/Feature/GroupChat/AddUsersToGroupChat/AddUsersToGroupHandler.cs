@@ -20,13 +20,15 @@ namespace ChatApp.Application.Feature.GroupChat.AddUsersToGroupChat
         private readonly IUserChatRepository _userChatRepo;
         private readonly IMessageRepository _messageRepo;
         private readonly IMediator _mediator;
-        public AddUsersToGroupHandler(IChatRepository chatRepo, IUserRepository userRepo, IMessageRepository messageRepo, IMediator mediator, IUserChatRepository userChatRepo)
+        private readonly IUnitOfWork _uow;
+        public AddUsersToGroupHandler(IChatRepository chatRepo, IUserRepository userRepo, IMessageRepository messageRepo, IMediator mediator, IUserChatRepository userChatRepo,IUnitOfWork uow)
         {
             _chatRepo = chatRepo;
             _userRepo = userRepo;
             _messageRepo = messageRepo;
             _mediator = mediator;
             _userChatRepo = userChatRepo;
+            _uow = uow;
         }
         public async Task<bool> Handle(AddUsersToGroupChatCommand r, CancellationToken cancellationToken)
         {
@@ -35,10 +37,6 @@ namespace ChatApp.Application.Feature.GroupChat.AddUsersToGroupChat
             var usersToAdd = await _userRepo.GetUsersByIdsAsync(r.UsersToAdd);
             Domain.Models.Chat targetChat;
             Domain.Models.Message systemMessage;
-            if (existingChat.IsArchivedFor(r.UserId))
-            {
-                return false;
-            }
             if (!existingChat.IsGroup)
             {
                 var result = Domain.Models.Chat.CreateNewGroup(admin, usersToAdd);
@@ -55,7 +53,7 @@ namespace ChatApp.Application.Feature.GroupChat.AddUsersToGroupChat
             }
 
             await _messageRepo.AddMessageAsync(systemMessage);
-
+            await _uow.CommitAsync();
             await _mediator.Publish(new UsersAddedToGroupChatNotification(targetChat.ChatID, systemMessage, r.UsersToAdd));
 
             return true;
