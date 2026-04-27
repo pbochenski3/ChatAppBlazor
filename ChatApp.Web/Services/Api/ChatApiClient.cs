@@ -10,10 +10,10 @@ namespace ChatApp.Web.Services.Api
     {
         private readonly ILogger<ChatApiClient> _logger;
         private readonly HttpClient _httpClient;
-        public ChatApiClient(ILogger<ChatApiClient> logger, HttpClient httpClient)
+        public ChatApiClient(ILogger<ChatApiClient> logger, IHttpClientFactory factory)
         {
             _logger = logger;
-            _httpClient = httpClient;
+            _httpClient = factory.CreateClient("MessengerAPI");
         }
         public async Task MarkMessageAsReadAsync(Guid chatId, Guid messageId)
         {
@@ -99,8 +99,8 @@ namespace ChatApp.Web.Services.Api
             }
             else
             {
-                throw new Exception();
                 _logger.LogError("Failed to change chat name for ChatId: {ChatId}. Status Code: {StatusCode}", chatId, response.StatusCode);
+                throw new Exception();
             }
         }
     }

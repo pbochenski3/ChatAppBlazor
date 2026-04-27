@@ -3,5 +3,5 @@ using ChatApp.Application.DTO;
 
 namespace ChatApp.Application.Feature.Auth.LoginUser
 {
-    public record LoginUserCommand(UserDTO LoginData) : ICommand<AuthResponse>;
+    public record LoginUserCommand(UserDTO LoginData,string IpAdress) : ICommand<AuthResponse>;
 }

@@ -6,5 +6,6 @@ namespace ChatApp.Web.Services.Api.Interfaces
     {
         Task LoginUserAsync(UserDTO dto);
         Task RegisterUserAsync(UserDTO dto);
+        Task<string?> RefreshTokenAsync();
     }
 }

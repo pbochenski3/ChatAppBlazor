@@ -70,7 +70,7 @@ public class ChatHubService : IAsyncDisposable
                 {
                     options.AccessTokenProvider = () =>
                     {
-                        var token = _appStateService.CurrentUser?.Token;
+                        var token = _appStateService.Token;
                         return Task.FromResult(token);
                     };
                 })

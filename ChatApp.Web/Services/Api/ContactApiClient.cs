@@ -10,9 +10,9 @@ namespace ChatApp.Web.Services.Api
         private readonly HttpClient _httpClient;
         private readonly ILogger<ContactApiClient> _logger;
 
-        public ContactApiClient(HttpClient httpClient, ILogger<ContactApiClient> logger)
+        public ContactApiClient(IHttpClientFactory factory, ILogger<ContactApiClient> logger)
         {
-            _httpClient = httpClient;
+            _httpClient = factory.CreateClient("MessengerAPI");
             _logger = logger;
         }
         public async Task<List<ContactDTO>> GetContactListAsync(Guid chatId)

@@ -9,6 +9,5 @@ namespace ChatApp.Application.DTO
         public string Password { get; set; } = string.Empty;
         public bool IsOnline { get; set; }
         public string? AvatarUrl { get; set; }
-        }
     }
 }

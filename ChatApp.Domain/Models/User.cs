@@ -15,5 +15,6 @@
         public ICollection<Invite> SentInvites { get; set; } = new HashSet<Invite>();
         public ICollection<Invite> ReceivedInvites { get; set; } = new HashSet<Invite>();
         public ICollection<Message> Messages { get; set; } = new HashSet<Message>();
+        public virtual ICollection<UserRefreshToken> RefreshTokens { get; set; } = new List<UserRefreshToken>();
     }
 }

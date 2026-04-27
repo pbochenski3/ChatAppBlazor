@@ -1,5 +1,5 @@
-using ChatApp.Application.Handlers;
 using ChatApp.Application.Interfaces;
+using ChatApp.Web.Handlers;
 using ChatApp.Web.Services.Actions;
 using ChatApp.Web.Services.Actions.Interfaces;
 using ChatApp.Web.Services.Api;
@@ -26,8 +26,19 @@ builder.Services.AddScoped<IInviteApiClient, InviteApiClient>();
 builder.Services.AddScoped<IGroupChatApiClient, GroupChatApiClient>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ChatHubService>();
-builder.Services.AddScoped<ITokenProvider>(sp => sp.GetRequiredService<AppStateService>());
 builder.Services.AddTransient<AuthorizationHandler>();
+builder.Services.AddHttpClient("AuthClient", client =>
+{
+    client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
+})
+.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    UseCookies = true
+});
+builder.Services.AddHttpClient("MessengerAPI", client =>
+    client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
+    .AddHttpMessageHandler<AuthorizationHandler>();
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("MessengerAPI"));
 builder.Services.AddHttpClient("ChatAPI", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7255");

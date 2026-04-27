@@ -34,6 +34,12 @@ namespace ChatApp.Infrastructure.Persistence
             }
             return avatarUrl;
         }
+        public async Task<UserRefreshToken?> GetRefreshTokenWithUserAsync(string token)
+        {
+            return await _context.UserRefreshToken
+                .Include(t => t.User) 
+                .SingleOrDefaultAsync(t => t.Token == token);
+        }
 
         public async Task<User?> GetByUsernameAsync(string username)
         {
@@ -90,6 +96,10 @@ namespace ChatApp.Infrastructure.Persistence
             await _context.Users
                 .Where(u => u.UserID == userId)
                 .ExecuteUpdateAsync(u => u.SetProperty(p => p.AvatarUrl, avatarUrl));
+        }
+        public async Task AddRefreshTokenAsync(UserRefreshToken token)
+        {
+            await _context.UserRefreshToken.AddAsync(token);
         }
     }
 }

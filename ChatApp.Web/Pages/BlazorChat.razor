@@ -37,12 +37,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (_appStateService.CurrentUser == null)
-        {
-            _navManager.NavigateTo("/");
-            return;
-        }
-        await _chatHubService.StartAsync();
+
+        // if (_appStateService.CurrentUser == null)
+        // {
+        //     _navManager.NavigateTo("/");
+        //     return;
+        // }
 
         _currentUser = _appStateService.CurrentUser;
         _notification = _appStateService.Message;
@@ -62,7 +62,7 @@
             _logger.LogError(ex, "Error during initialization");
             _ = ShowNotificationAsync($"{ex.Message}");
             _appStateService.CurrentUser = null;
-            _navManager.NavigateTo("/");
+            // _navManager.NavigateTo("/");
             return;
         }
     }

@@ -2,6 +2,7 @@
 using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.State;
 using System.Net.Http.Json;
+using static System.Net.WebRequestMethods;
 
 namespace ChatApp.Web.Services.Api
 {
@@ -13,25 +14,40 @@ namespace ChatApp.Web.Services.Api
 
 
 
-        public AuthApiClient(AppStateService appStateService, HttpClient httpClient, ILogger<AuthApiClient> logger)
+        public AuthApiClient(AppStateService appStateService, IHttpClientFactory factory, ILogger<AuthApiClient> logger)
         {
             _appStateService = appStateService;
-            _httpClient = httpClient;
+            _httpClient = factory.CreateClient("MessengerAPI");
             _logger = logger;
 
+        }
+        public async Task<string?> RefreshTokenAsync()
+        {
+            var result = await _httpClient.PostAsync("api/auth/refresh", null);
+
+            if (result.IsSuccessStatusCode)
+            {
+                var authData = await result.Content.ReadFromJsonAsync<AuthResponse>();
+                if (authData != null)
+                {
+                    await _appStateService.SetUserSessionAsync(authData.User, authData.AccessToken);
+                    return authData.AccessToken;
+                }
+            }
+
+            await _appStateService.Logout();
+            return null;
         }
         public async Task LoginUserAsync(UserDTO dto)
         {
             var response = await _httpClient.PostAsJsonAsync("api/auth/login", dto);
             if (response.IsSuccessStatusCode)
             {
-                var loggedInUser = await response.Content.ReadFromJsonAsync<UserDTO>();
-
-                if (loggedInUser != null)
+                var authResult = await response.Content.ReadFromJsonAsync<AuthResponse>();
+                if (authResult != null)
                 {
-                    _appStateService.CurrentUser = loggedInUser;
-                    await _appStateService.SetUserAsync(loggedInUser);
-                    _appStateService.Message = "Logged in successfully!";
+                    var token = authResult.AccessToken;
+                    await _appStateService.SetUserSessionAsync(authResult.User, authResult.AccessToken);
                 }
                 else
                 {

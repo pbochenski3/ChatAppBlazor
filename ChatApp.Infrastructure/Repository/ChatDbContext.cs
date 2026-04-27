@@ -142,6 +142,10 @@ namespace ChatApp.Infrastructure.Persistence
             });
             mb.Entity<UserRefreshToken>(entity =>
                 {
+                    entity.HasOne(rt => rt.User)             
+                    .WithMany(u => u.RefreshTokens)      
+             .HasForeignKey(rt => rt.UserId)     
+        .OnDelete(DeleteBehavior.Cascade); 
                     entity.HasKey(x => x.Id);
 
                     entity.Property(x => x.Token)

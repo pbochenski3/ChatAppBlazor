@@ -1,7 +1,10 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.Feature.Auth.LoginUser;
+using ChatApp.Application.Feature.Auth.RefreshToken;
 using ChatApp.Application.Feature.Auth.RegisterUser;
+using ChatApp.Domain.Models;
 using MediatR;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
@@ -23,9 +26,15 @@ namespace ChatApp.Api.Controllers
         {
             try
             {
-                var user = await _mediator.Send(new LoginUserCommand(loginDto));
-                if (user == null) return Unauthorized("Błędny login lub hasło");
-                return Ok(user);
+                string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                var response = await _mediator.Send(new LoginUserCommand(loginDto, ipAddress));
+                if (response == null) return Unauthorized("Błędny login lub hasło");
+                SetRefreshTokenCookie(response.RefreshToken);
+                return Ok(new
+                {
+                    token = response.AccessToken,
+                    user = response.User
+                });
             }
             catch (Exception ex)
             {
@@ -45,6 +54,34 @@ namespace ChatApp.Api.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
+        [HttpPost("refresh")]
+        public async Task<IActionResult> RefreshToken()
+        {
+            var refreshToken = Request.Cookies["refreshToken"];
+            if (string.IsNullOrEmpty(refreshToken)) return Unauthorized();
+            string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var result = await _mediator.Send(new RefreshTokenCommand(refreshToken, ipAddress));
+            if (result == null)
+                return Unauthorized("Sesja wygasła lub token jest nieprawidłowy");
+
+            SetRefreshTokenCookie(result.RefreshToken);
+            return Ok(new
+            {
+                token = result.AccessToken,
+                user = result.User
+            });
+        }
+        private void SetRefreshTokenCookie(string refreshToken)
+        {
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(7)
+            };
+            Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
         }
     }
 }

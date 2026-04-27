@@ -11,9 +11,10 @@ namespace ChatApp.Web.Services.Api
     {
         private readonly HttpClient _httpClient;
         private const string UploadFieldName = "file";
-        public ImageApiClient(HttpClient httpClient)
+        public ImageApiClient(IHttpClientFactory factory)
         {
-            _httpClient = httpClient;
+            _httpClient = factory.CreateClient("MessengerAPI");
+
         }
         public async Task<IBrowserFile?> GetBrowserFileAsync(InputFileChangeEventArgs e)
         {

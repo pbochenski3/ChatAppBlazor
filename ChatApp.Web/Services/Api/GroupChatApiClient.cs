@@ -8,10 +8,11 @@ namespace ChatApp.Web.Services.Api
     {
         private readonly ILogger<ChatApiClient> _logger;
         private readonly HttpClient _httpClient;
-        public GroupChatApiClient(ILogger<ChatApiClient> logger, HttpClient httpClient)
+        public GroupChatApiClient(ILogger<ChatApiClient> logger, IHttpClientFactory factory)
         {
             _logger = logger;
-            _httpClient = httpClient;
+            _httpClient = factory.CreateClient("MessengerAPI");
+
         }
         public async Task CreateGroupChatAsync(Guid chatId, HashSet<Guid> userIdsToAdd)
         {

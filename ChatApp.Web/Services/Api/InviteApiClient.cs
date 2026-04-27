@@ -9,9 +9,9 @@ namespace ChatApp.Web.Services.Api
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<InviteApiClient> _logger;
-        public InviteApiClient(HttpClient httpClient, ILogger<InviteApiClient> logger)
+        public InviteApiClient(IHttpClientFactory factory, ILogger<InviteApiClient> logger)
         {
-            _httpClient = httpClient;
+            _httpClient = factory.CreateClient("MessengerAPI");
             _logger = logger;
         }
         public async Task<List<InviteDTO>> GetUserInvitesAsync()

@@ -12,5 +12,7 @@ namespace ChatApp.Domain.Interfaces.Repository
         Task UpdateAvatarAsync(Guid userId, string avatarUrl);
         Task<List<User>> GetUsersByIdsAsync(HashSet<Guid> ids);
         Task<string> GetAvatarUrlAsync(Guid userId);
+        Task AddRefreshTokenAsync(UserRefreshToken token);
+        Task<UserRefreshToken?> GetRefreshTokenWithUserAsync(string token);
     }
 }

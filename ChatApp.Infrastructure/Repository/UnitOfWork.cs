@@ -1,4 +1,6 @@
 ﻿using ChatApp.Application.Interfaces;
+using ChatApp.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 
@@ -53,6 +55,7 @@ namespace ChatApp.Infrastructure.Persistence
                 _currentTransaction = null;
             }
         }
+  
 
         public void Dispose()
         {
