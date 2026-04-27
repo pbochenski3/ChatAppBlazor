@@ -3,9 +3,8 @@ using ChatApp.Api.Components;
 using ChatApp.Api.Services;
 using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces;
-using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Notifications.Chat;
-using ChatApp.Domain.Repository;
+using ChatApp.Domain.Interfaces.Repository;
 using ChatApp.Infrastructure.Persistence;
 using ChatApp.Infrastructure.Providers;
 using ChatApp.Infrastructure.Services;
@@ -30,7 +29,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorAppPolicy", policy =>
     {
-        policy.WithOrigins("https://localhost:7181")
+        policy.WithOrigins("https://localhost:7255")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
@@ -125,6 +124,7 @@ app.UseStaticFiles();
 app.MapStaticAssets();
 
 app.UseCors("BlazorAppPolicy");
+app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();

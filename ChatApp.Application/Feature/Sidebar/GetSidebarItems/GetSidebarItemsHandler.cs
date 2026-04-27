@@ -1,8 +1,7 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
-using ChatApp.Application.Interfaces.Repository;
+using ChatApp.Domain.Interfaces.Repository;
 using ChatApp.Domain.Models;
-using ChatApp.Domain.Repository;
 using MediatR;
 
 namespace ChatApp.Application.Feature.Sidebar.GetSidebarItems

@@ -15,20 +15,18 @@ public class ChatHubService : IAsyncDisposable
 
     private readonly AppStateService _appStateService;
     private readonly string _baseHubUrl;
-    private readonly HttpClient _httpClient;
     private readonly ILogger<ChatHubService> _logger;
     private readonly IMediator _mediator;
 
-    public ChatHubService(IConfiguration configuration,
+    public ChatHubService(
+        IConfiguration configuration,
         AppStateService appStateService,
-        HttpClient httpClient,
         ILogger<ChatHubService> logger,
         IMediator mediator
         )
     {
         _appStateService = appStateService;
         _baseHubUrl = configuration["SignalR:HubUrl"] ?? throw new ArgumentNullException("SignalR:HubUrl");
-        _httpClient = httpClient;
         _logger = logger;
         _mediator = mediator;
     }

@@ -4,7 +4,6 @@ using ChatApp.Application.Feature.Invite.HandleInviteAction;
 using ChatApp.Application.Feature.Invite.SendContactInvite;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 
 namespace ChatApp.Api.Controllers
 {

@@ -61,15 +61,5 @@ namespace ChatApp.Api
                 _logger.LogDebug(ex, "Failed to add user to group");
             }
         }
-
-        //public async Task<string> GetUserAvatarUrlAsync()
-        //{
-        //    return await _userService.GetAvatarUrlAsync(UserId);
-        //}
-
-        //public async Task<List<UserChatDTO>> GetUserChatListAsync()
-        //{
-        //    return await _userChatService.GetUserChatListAsync(UserId);
-        //}
     }
 }

@@ -1,5 +1,5 @@
 ﻿using ChatApp.Application.DTO;
-using ChatApp.Application.Interfaces.Repository;
+using ChatApp.Domain.Interfaces.Repository;
 using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository.Decorators;
 

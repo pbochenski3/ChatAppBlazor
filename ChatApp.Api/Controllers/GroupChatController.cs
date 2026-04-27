@@ -3,10 +3,8 @@ using ChatApp.Application.Feature.GroupChat.AddUsersToGroupChat;
 using ChatApp.Application.Feature.GroupChat.CreateGroupChat;
 using ChatApp.Application.Feature.GroupChat.GetChatUsers;
 using ChatApp.Application.Feature.GroupChat.LeaveGroupChatAsync;
-using ChatApp.Application.Interfaces.Chats;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 
 namespace ChatApp.Api.Controllers
 {

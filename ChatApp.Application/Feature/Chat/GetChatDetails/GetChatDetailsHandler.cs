@@ -1,5 +1,5 @@
 ﻿using ChatApp.Application.DTO.Chats;
-using ChatApp.Domain.Repository;
+using ChatApp.Domain.Interfaces.Repository;
 using MediatR;
 
 namespace ChatApp.Application.Feature.Chat.GetChatDetails

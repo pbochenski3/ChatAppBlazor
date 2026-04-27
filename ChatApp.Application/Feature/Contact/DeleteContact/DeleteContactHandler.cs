@@ -1,6 +1,5 @@
-﻿using ChatApp.Application.Interfaces.Repository;
-using ChatApp.Application.Notifications.Contact;
-using ChatApp.Domain.Repository;
+﻿using ChatApp.Application.Notifications.Contact;
+using ChatApp.Domain.Interfaces.Repository;
 using MediatR;
 
 namespace ChatApp.Application.Feature.Contact.DeleteContact

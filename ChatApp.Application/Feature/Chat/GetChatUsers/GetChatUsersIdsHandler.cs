@@ -1,4 +1,4 @@
-﻿using ChatApp.Domain.Repository;
+﻿using ChatApp.Domain.Interfaces.Repository;
 using MediatR;
 
 namespace ChatApp.Application.Feature.Chat.GetChatUsers

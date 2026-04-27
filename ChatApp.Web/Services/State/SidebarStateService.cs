@@ -15,7 +15,7 @@ namespace ChatApp.Web.Services.State
         public bool IsSearchingGlobal { get; set; } = false;
         public List<UserChatDTO> SidebarItems { get; set; } = new List<UserChatDTO>();
         public List<InviteDTO> ReceivedInvites { get; set; } = new List<InviteDTO>();
-        public List<UserDTO> FoundUsers { get; set; } = new List<UserDTO>();
+        public List<UserSearchResultDTO> FoundUsers { get; set; } = new List<UserSearchResultDTO>();
         public SidebarView SidebarView { get; set; } = SidebarView.Contacts;
         public Guid SelectedContactId;
 

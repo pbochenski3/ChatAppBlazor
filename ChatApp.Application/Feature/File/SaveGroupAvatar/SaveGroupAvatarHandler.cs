@@ -1,7 +1,7 @@
 ﻿using ChatApp.Application.Interfaces;
-using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Application.Notifications.Chat;
 using ChatApp.Domain.Enums;
+using ChatApp.Domain.Interfaces.Repository;
 using MediatR;
 
 namespace ChatApp.Application.Feature.File.SaveGroupAvatar

@@ -1,5 +1,5 @@
 ﻿using ChatApp.Application.DTO;
-using ChatApp.Application.Interfaces.Repository;
+using ChatApp.Domain.Interfaces.Repository;
 using MediatR;
 
 namespace ChatApp.Application.Feature.Invite.GetUsersInvites

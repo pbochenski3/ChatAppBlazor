@@ -1,6 +1,5 @@
-﻿using ChatApp.Application.Interfaces.Repository;
-using ChatApp.Application.Notifications.Chat;
-using ChatApp.Domain.Repository;
+﻿using ChatApp.Application.Notifications.Chat;
+using ChatApp.Domain.Interfaces.Repository;
 using MediatR;
 
 namespace ChatApp.Application.Feature.Chat.UpdateChatName

@@ -1,4 +1,4 @@
-﻿using ChatApp.Application.Interfaces.Repository;
+﻿using ChatApp.Domain.Interfaces.Repository;
 using ChatApp.Domain.Repository.Decorators;
 using ChatApp.Infrastructure.Persistence;
 using ChatApp.Infrastructure.Persistence.Decorators;

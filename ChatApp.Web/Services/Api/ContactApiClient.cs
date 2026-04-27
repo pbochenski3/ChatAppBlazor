@@ -27,10 +27,10 @@ namespace ChatApp.Web.Services.Api
                 ?? new List<UserChatDTO>();
             return sidebarItems;
         }
-        public async Task<List<UserDTO>> GetSearchedUsersList(string query)
+        public async Task<List<UserSearchResultDTO>> GetSearchedUsersList(string query)
         {
-            var foundUsers = await _httpClient.GetFromJsonAsync<List<UserDTO>>($"api/user/to-invite?query={query}")
-                ?? new List<UserDTO>();
+            var foundUsers = await _httpClient.GetFromJsonAsync<List<UserSearchResultDTO>>($"api/user/to-invite?query={query}")
+                ?? new List<UserSearchResultDTO>();
             return foundUsers;
         }
         public async Task RemoveContactAsync(Guid chatId)

@@ -1,5 +1,5 @@
-﻿using ChatApp.Application.Interfaces.Repository;
-using ChatApp.Application.Notifications.Invite;
+﻿using ChatApp.Application.Notifications.Invite;
+using ChatApp.Domain.Interfaces.Repository;
 using MediatR;
 
 namespace ChatApp.Application.Feature.Invite.SendContactInvite

@@ -1,6 +1,6 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.Interfaces;
-using ChatApp.Application.Interfaces.Repository;
+using ChatApp.Domain.Interfaces.Repository;
 using MediatR;
 
 namespace ChatApp.Application.Feature.Auth.LoginUser

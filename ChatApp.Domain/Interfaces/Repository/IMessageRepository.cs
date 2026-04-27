@@ -1,7 +1,7 @@
 using ChatApp.Application.DTO;
 using ChatApp.Domain.Models;
 
-namespace ChatApp.Application.Interfaces.Repository
+namespace ChatApp.Domain.Interfaces.Repository
 {
     public interface IMessageRepository
     {

@@ -1,5 +1,5 @@
-using ChatApp.Application.Interfaces.Repository;
 using ChatApp.Domain.Enums;
+using ChatApp.Domain.Interfaces.Repository;
 using ChatApp.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -63,35 +63,28 @@ namespace ChatApp.Infrastructure.Persistence
 
         public async Task<List<User>> GetAllUsersToInviteAsync(Guid currentUserId, string query)
         {
-            _logger.LogInformation("Retrieving all users who can be invited with query: {Query}", query);
+            _logger.LogInformation("Searching users to invite for: {CurrentUserId}, Query: {Query}", currentUserId, query);
 
-            var mutualContactIds = await _context.Contacts
+            var usersQuery = _context.Users
                 .IgnoreQueryFilters()
-                .Where(c => c.UserID == currentUserId && !c.IsDeleted)
-                .Where(c => _context.Contacts
-                    .IgnoreQueryFilters()
-                    .Any(rc => rc.UserID == c.ContactUserID &&
-                               rc.ContactUserID == currentUserId &&
-                               !rc.IsDeleted))
-                .Select(c => c.ContactUserID)
-                .ToListAsync();
+                .Where(u => u.UserID != currentUserId && u.Username.Contains(query));
 
-            var pendingInviteIds = await _context.Invites
-                .IgnoreQueryFilters()
-                .Where(i => i.Status == InviteStatus.Pending &&
-                           (i.SenderID == currentUserId || i.ReceiverID == currentUserId))
-                .Select(i => i.SenderID == currentUserId ? i.ReceiverID : i.SenderID)
-                .ToListAsync();
+            usersQuery = usersQuery.Where(u => !_context.Contacts
+                .Any(c => c.UserID == currentUserId &&
+                          c.ContactUserID == u.UserID &&
+                          !c.IsDeleted &&
+                          _context.Contacts.Any(rc => rc.UserID == u.UserID &&
+                                                      rc.ContactUserID == currentUserId &&
+                                                      !rc.IsDeleted)));
 
-            return await _context.Users
-                .IgnoreQueryFilters()
-                .Where(u => u.UserID != currentUserId)
-                .Where(u => u.Username.Contains(query))
-                .Where(u => !mutualContactIds.Contains(u.UserID))
-                .Where(u => !pendingInviteIds.Contains(u.UserID))
-                .ToListAsync();
+            usersQuery = usersQuery.Where(u => !_context.Invites
+                .Any(i => i.Status == InviteStatus.Pending &&
+                          (i.SenderID == u.UserID || i.ReceiverID == u.UserID) &&
+                          (i.SenderID == currentUserId || i.ReceiverID == currentUserId)));
+
+            return await usersQuery
+            .ToListAsync();
         }
-
         public async Task UpdateAvatarAsync(Guid userId, string avatarUrl)
         {
             await _context.Users
