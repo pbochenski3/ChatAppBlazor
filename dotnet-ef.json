@@ -1,0 +1,4 @@
+{
+  "project": "ChatApp.Infrastructure/ChatApp.Infrastructure.csproj",
+  "startup-project": "ChatApp.Api/ChatApp.Api.csproj"
+}

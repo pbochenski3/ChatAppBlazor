@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -25,6 +26,25 @@ namespace ChatApp.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Chats", x => x.ChatID);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserRefreshToken",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: false),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedByIp = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: false),
+                    Revoked = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RevokedByIp = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: false),
+                    ReplacedByToken = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserRefreshToken", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -103,12 +123,13 @@ namespace ChatApp.Infrastructure.Migrations
                 {
                     MessageID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    imageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SentAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false),
                     ChatID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SenderID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
-                    IsSystemMessage = table.Column<bool>(type: "bit", nullable: false)
+                    MessageType = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -206,6 +227,17 @@ namespace ChatApp.Infrastructure.Migrations
                 name: "IX_UserChat_UserID_LastMessageAt",
                 table: "UserChat",
                 columns: new[] { "UserID", "LastMessageAt" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserRefreshToken_Token",
+                table: "UserRefreshToken",
+                column: "Token",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserRefreshToken_UserId",
+                table: "UserRefreshToken",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -222,6 +254,9 @@ namespace ChatApp.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserChat");
+
+            migrationBuilder.DropTable(
+                name: "UserRefreshToken");
 
             migrationBuilder.DropTable(
                 name: "Chats");

@@ -23,8 +23,11 @@ var issuer = JwtSetting["Issuer"];
 var audience = JwtSetting["Audience"];
 builder.Services.AddAntiforgery();
 builder.Services.AddSignalR();
-builder.Services.AddDbContextFactory<ChatDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ChatDatabase")));
+builder.Services.AddDbContext<ChatDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("ChatDatabase"),
+        x => x.MigrationsAssembly("ChatApp.Infrastructure") 
+    ));
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorAppPolicy", policy =>

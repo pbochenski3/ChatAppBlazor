@@ -15,6 +15,7 @@ namespace ChatApp.Infrastructure.Persistence
         public DbSet<UserChat> UserChat { get; set; }
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<Invite> Invites { get; set; }
+        public DbSet<UserRefreshToken> UserRefreshToken { get; set; }
         protected override void OnModelCreating(ModelBuilder mb)
         {
             mb.Entity<Contact>(entity =>
@@ -138,9 +139,35 @@ namespace ChatApp.Infrastructure.Persistence
                 .HasPrecision(0);
                 entity.Property(uc => uc.LastReadAt)
                 .HasPrecision(0);
-
-
             });
+            mb.Entity<UserRefreshToken>(entity =>
+                {
+                    entity.HasKey(x => x.Id);
+
+                    entity.Property(x => x.Token)
+                        .IsRequired()
+                        .HasMaxLength(512); 
+
+                    entity.Property(x => x.UserId)
+                        .IsRequired();
+
+                    entity.Property(x => x.ExpiryDate)
+                        .IsRequired();
+
+                    entity.Property(x => x.CreatedByIp)
+                        .HasMaxLength(45);
+
+                    entity.Property(x => x.RevokedByIp)
+                        .HasMaxLength(45);
+
+                    entity.Property(x => x.ReplacedByToken)
+                        .HasMaxLength(512);
+
+                    entity.HasIndex(x => x.Token)
+                        .IsUnique();
+
+                    entity.HasIndex(x => x.UserId);
+                });
         }
     }
 }
