@@ -5,7 +5,7 @@ using MediatR;
 
 namespace ChatApp.Application.Feature.Auth.LoginUser
 {
-    public class LoginUserHandler : IRequestHandler<LoginUserCommand, UserDTO>
+    public class LoginUserHandler : IRequestHandler<LoginUserCommand, AuthResponse>
     {
         private readonly IUserRepository _userRepo;
         private readonly IJwtTokenService _jwt;
@@ -14,20 +14,20 @@ namespace ChatApp.Application.Feature.Auth.LoginUser
             _userRepo = userRepo;
             _jwt = jwt;
         }
-        public async Task<UserDTO> Handle(LoginUserCommand r, CancellationToken cancellationToken)
+        public async Task<AuthResponse> Handle(LoginUserCommand r, CancellationToken cancellationToken)
         {
 
             if (string.IsNullOrWhiteSpace(r.LoginData.Username) || string.IsNullOrWhiteSpace(r.LoginData.Password))
             {
                 throw new Exception("Username or password cannot be empty.");
             }
-
+            var refreshToken = string.Empty;
             var user = await _userRepo.GetByUsernameAsync(r.LoginData.Username);
             if (user != null && BCrypt.Net.BCrypt.Verify(r.LoginData.Password, user.Password))
             {
                 await _userRepo.SetUserStatusAsync(user.UserID, true);
                 var token = _jwt.GenerateAccessToken(user);
-                return UserDTO.CreateUserDto(user, token);
+                return AuthResponse.CreateResponse(user, token, refreshToken);
             }
             throw new Exception("Błędny login lub hasło");
         }
