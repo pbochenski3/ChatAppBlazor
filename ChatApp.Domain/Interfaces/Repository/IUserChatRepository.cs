@@ -6,6 +6,7 @@ namespace ChatApp.Domain.Interfaces.Repository
     {
         #region Read & Sync Status
         Task UpdateLastReadMessageAsync(Guid userId, Guid chatId, Guid messageId);
+        Task UpdateAliasOnChat(Guid userId, Guid chatId, string newAlias);
         Task UpdateLastSentMessageAsync(Guid chatId, Guid messageId);
         Task<List<(Guid ChatId, int Count)>> CountAllUnreadMessageCountsAsync(Guid userId);
         Task<int> CountUnreadMessagesAsync(Guid userId, Guid chatId);
@@ -18,7 +19,6 @@ namespace ChatApp.Domain.Interfaces.Repository
         Task SetChatAccessibilityAsync(Guid chatId, bool active, HashSet<Guid>? userIds = null);
         Task<bool> IsChatArchivedAsync(Guid chatId, Guid userId);
         Task<bool> GetChatStatusById(Guid chatId, Guid userId);
-        Task SetNewChatNameAsync(Guid chatId, Guid userId, string newName);
         #endregion
         #region Queries & Membership
         Task<DateTime?> GetLastMessageDateAsync(Guid userId, Guid chatId);
@@ -27,6 +27,8 @@ namespace ChatApp.Domain.Interfaces.Repository
         Task<List<UserChat>?> GetAllUserChatsAsync(Guid userId);
         Task<UserChat?> GetUserChatAsync(Guid chatId, Guid userId, CancellationToken token);
         Task<Guid> GetReceiverUserIdAsync(Guid chatId, Guid userId, CancellationToken token);
+        Task<string> GetPrivateUserAliasAsync(Guid chatId, Guid userId);
+        Task<Dictionary<Guid, string>> GetPrivateUsersAliasesAsync(Guid chatId, List<Guid> userIds);
         #endregion
     }
 }

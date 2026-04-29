@@ -8,12 +8,10 @@ namespace ChatApp.Application.Feature.Chat.UpdateChatName
     {
         private readonly IChatRepository _chatRepo;
         private readonly IUserChatRepository _userChatRepo;
-        private readonly IMediator _mediator;
-        public UpdateChatNameHandler(IChatRepository chatRepo, IUserChatRepository userChatRepo, IMediator mediator)
+        public UpdateChatNameHandler(IChatRepository chatRepo, IUserChatRepository userChatRepo)
         {
             _chatRepo = chatRepo;
             _userChatRepo = userChatRepo;
-            _mediator = mediator;
         }
         public async Task<bool> Handle(UpdateChatNameCommand r, CancellationToken cancellationToken)
         {
@@ -23,16 +21,10 @@ namespace ChatApp.Application.Feature.Chat.UpdateChatName
                 return false;
             }
             var isGroup = await _chatRepo.IsChatGroupAsync(r.ChatId);
-            if (isGroup == true)
-            {
                 await _chatRepo.UpdateChatNameAsync(r.ChatId, r.Request.NewName);
-            }
-            else
-            {
-                await _userChatRepo.SetNewChatNameAsync(r.ChatId, r.UserId, r.Request.NewName);
-            }
+      
+                r.AddEvent(new ChatNameUpdatedNotification(r.ChatId, r.Request));
 
-            r.AddEvent(new ChatNameUpdatedNotification(r.ChatId, r.Request));
             return true;
         }
     }

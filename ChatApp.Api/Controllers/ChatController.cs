@@ -5,6 +5,7 @@ using ChatApp.Application.Feature.Chat.DeleteChat;
 using ChatApp.Application.Feature.Chat.GetChatDetails;
 using ChatApp.Application.Feature.Chat.GetChatUsers;
 using ChatApp.Application.Feature.Chat.UpdateChatName;
+using ChatApp.Application.Feature.Chat.UpdateUserAlias;
 using ChatApp.Application.Feature.File.SaveChatImage;
 using ChatApp.Application.Feature.File.SaveGroupAvatar;
 using ChatApp.Domain.Shared;
@@ -70,10 +71,10 @@ namespace ChatApp.Api.Controllers
         [HttpPatch("{chatId}/name")]
         public async Task<IActionResult> UpdateChatNameAsync([FromRoute] Guid chatId, [FromBody] ChangeChatNameRequest request)
         {
+            bool result = false;
             var userId = CurrentUserId;
             if (chatId == Guid.Empty) return BadRequest();
-
-            bool result = await _mediator.Send(new UpdateChatNameCommand(chatId, userId, request));
+            result = await _mediator.Send(new UpdateChatNameCommand(chatId, userId, request));
             return result ? Ok() : BadRequest();
         }
         [HttpGet("{chatId}/existing")]
@@ -91,5 +92,16 @@ namespace ChatApp.Api.Controllers
             return Ok(ids);
 
         }
+        [HttpPatch("{chatId}/alias")]
+        public async Task<IActionResult> UpdateUserAliasOnChatAsync([FromRoute] Guid chatId, [FromBody] ChangeAliasRequest request)
+        {
+            var userId = CurrentUserId;
+            if (chatId == Guid.Empty) return BadRequest();
+            var result = await _mediator.Send(new UpdateUserAliasCommand(chatId, request));
+
+
+            return result ? Ok() : BadRequest();
+        }
+
     }
 }

@@ -2,7 +2,8 @@
 {
     public record ChangeChatNameRequest(
         string NewName,
-        string AdminName
+        string AdminName,
+        bool IsGroup
         );
 
 }

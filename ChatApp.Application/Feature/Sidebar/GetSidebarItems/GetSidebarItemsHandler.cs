@@ -22,6 +22,15 @@ namespace ChatApp.Application.Feature.Sidebar.GetSidebarItems
             var chatEntries = await _userChatRepo.GetAllUserChatsAsync(r.UserId);
             if (chatEntries == null || !chatEntries.Any())
                 return new List<UserChatDTO>();
+            var privateChatIds = chatEntries
+                .Where(uc => !uc.Chat.IsGroup)
+                .Select(uc => uc.ChatID)
+                .ToList();
+
+            var privateAliases = await _userChatRepo.GetPrivateUsersAliasesAsync(r.UserId, privateChatIds);
+   
+
+
             var counters = await _userChatRepo.CountAllUnreadMessageCountsAsync(r.UserId);
             var counterDict = counters.ToDictionary(t => t.ChatId, t => t.Count);
             var messageIds = chatEntries
@@ -31,34 +40,41 @@ namespace ChatApp.Application.Feature.Sidebar.GetSidebarItems
               .ToList();
 
             var contentDict = await _messageRepo.GetMessagePreviewsAsync(messageIds);
+            
             return chatEntries
-          .Select(uc => MapToUserChatDto(uc, r.UserId, contentDict, counterDict))
-          .ToList();
+         .Select(uc => MapToUserChatDto(uc, privateAliases, r.UserId, contentDict, counterDict))
+         .ToList();
         }
 
 
         private UserChatDTO MapToUserChatDto(
          UserChat uc,
+         Dictionary<Guid,string> privateAliases,
          Guid currentUserId,
          Dictionary<Guid, MessagePreview> contentDict,
          Dictionary<Guid, int> unreadCounters)
         {
+            var isGroup = uc.Chat.IsGroup;
+            string displayName = isGroup
+                ? uc.Chat.ChatName
+                : (privateAliases.TryGetValue(uc.ChatID, out var alias) && !string.IsNullOrWhiteSpace(alias)
+                    ? alias
+                    : uc.Chat.ChatName);
             var otherUser = !uc.Chat.IsGroup
                 ? uc.Chat.UserChats.FirstOrDefault(p => p.UserID != currentUserId)?.User
                 : null;
-            var otherUserChat = otherUser?.UserChats
-            .FirstOrDefault(x => x.ChatID == uc.ChatID);
+
+
 
             return new UserChatDTO
             {
                 Identity = new ChatIdentityDTO
                 {
                     ChatID = uc.ChatID,
-                    ChatName = uc.Chat.IsGroup
-                        ? (string.IsNullOrWhiteSpace(uc.ChatName) ? uc.Chat.ChatName : uc.ChatName)
-                        : $"{otherUserChat?.ChatName}".Trim(),
-                    IsGroup = uc.Chat.IsGroup,
-                    AvatarUrl = uc.Chat.IsGroup
+                    ChatName = displayName,
+                    Alias = uc.Alias,
+                    IsGroup = isGroup,
+                    AvatarUrl = isGroup
                         ? (uc.Chat.AvatarUrl ?? "https://localhost:7255/cdn/avatars/default-group.png")
                         : (otherUser?.AvatarUrl ?? "https://localhost:7255/cdn/avatars/default-avatar.png"),
                     OtherUserId = otherUser?.UserID,

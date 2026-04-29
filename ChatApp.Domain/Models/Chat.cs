@@ -32,7 +32,7 @@ namespace ChatApp.Domain.Models
                 }
                 else
                 {
-                    UserChats.Add(new UserChat { UserID = user.UserID, ChatID = this.ChatID, ChatName = this.ChatName });
+                    UserChats.Add(new UserChat { UserID = user.UserID, ChatID = this.ChatID, Alias = user.Username });
                 }
             }
 
@@ -53,14 +53,15 @@ namespace ChatApp.Domain.Models
             {
                 UserID = user1.UserID,
                 ChatID = chatId,
-                ChatName = user2.Username
+                Alias = user2.Username,
             });
             chat.UserChats.Add(new UserChat
             {
                 UserID = user2.UserID,
                 ChatID = chatId,
-                ChatName = user1.Username
+                Alias = user1.Username,
             });
+
             return chat;
 
         }
@@ -85,7 +86,7 @@ namespace ChatApp.Domain.Models
                 {
                     UserID = user.UserID,
                     ChatID = chatId,
-                    ChatName = chatName
+                    Alias = user.Username
                 });
             }
 

@@ -6,6 +6,8 @@
         public string Username { get; set; } = string.Empty;
         public string AvatarUrl { get; set; } = string.Empty;
         public Guid ChatID { get; set; }
+        public string Alias { get; set; } = string.Empty;
+        public string OtherUserAlias { get; set; } = string.Empty;
         public string ChatName { get; set; } = string.Empty;
         public bool IsGroup { get; set; } = false;
         public Guid? OtherUserId { get; set; }

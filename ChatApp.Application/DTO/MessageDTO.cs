@@ -11,6 +11,7 @@ namespace ChatApp.Application.DTO
         public Guid? SenderID { get; set; }
         public Guid ReceiverId { get; set; }
         public string SenderUsername { get; set; } = string.Empty;
+        public string Alias { get; set; } = string.Empty;
         public Guid ChatID { get; set; }
         public MessageType MessageType { get; set; }
     }

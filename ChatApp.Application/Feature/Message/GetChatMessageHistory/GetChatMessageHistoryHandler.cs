@@ -9,14 +9,17 @@ namespace ChatApp.Application.Feature.Message.GetChatMessageHistory
     {
         private readonly IMessageRepository _messageRepo;
         private readonly IUserChatRepository _userChatRepo;
-        public GetChatHistoryHandler(IMessageRepository messageRepo, IUserChatRepository userChatRepo)
+        private readonly IChatRepository _chatRepo;
+        public GetChatHistoryHandler(IMessageRepository messageRepo, IUserChatRepository userChatRepo,IChatRepository chatRepo)
         {
             _messageRepo = messageRepo;
             _userChatRepo = userChatRepo;
+            _chatRepo = chatRepo;
         }
         public async Task<List<MessageDTO>> Handle(GetChatMessageHistoryQuery r, CancellationToken cancellationToken)
         {
             bool isArchive = await _userChatRepo.IsChatArchivedAsync(r.ChatId, r.UserId);
+            bool isGroup = await _chatRepo.IsChatGroupAsync(r.ChatId);
             DateTime? cutoffDate = null;
 
             if (isArchive)
@@ -30,18 +33,30 @@ namespace ChatApp.Application.Feature.Message.GetChatMessageHistory
             {
                 return new List<MessageDTO>();
             }
-
-            return messages.Select(m => new MessageDTO
+            
+            var list =  messages.Select(m => new MessageDTO
             {
                 MessageID = m.MessageID,
                 Content = m.Content,
                 imageUrl = m.imageUrl,
                 SentAt = m.SentAt,
+                SenderUsername = m.Sender?.Username,
                 SenderID = m.SenderID,
-                SenderUsername = m.MessageType == MessageType.System ? "SYSTEM" : (m.Sender?.Username ?? "Unknown"),
                 ChatID = m.ChatID,
                 MessageType = m.MessageType,
             }).ToList();
+            if(!isGroup)
+            {
+            var chatId = list.First().ChatID;
+            var userId = list.First().SenderID ?? Guid.CreateVersion7();
+            var sender = await _userChatRepo.GetPrivateUserAliasAsync(chatId, userId);
+            foreach (var message in list)
+            {
+                message.Alias = message.MessageType == MessageType.System ? "SYSTEM" : sender;
+
+            }
+            }
+            return list;
         }
     }
 }

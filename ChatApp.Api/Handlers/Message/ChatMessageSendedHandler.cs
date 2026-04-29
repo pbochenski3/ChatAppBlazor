@@ -22,7 +22,7 @@ namespace ChatApp.Api.Handlers.Message
             await _hubContext.Clients.Group(_message.ChatID.ToString()).SendAsync("ReceiveMessage", _message);
             var chat = await _userChatRepo.GetUsersInChatIdAsync(_message.ChatID);
             var participants = chat.Select(id => id.ToString()).ToList();
-            await _hubContext.Clients.Users(participants).SendAsync("UpdateLastMessage", _message.ChatID, _message.SenderUsername, _message.Content);
+            await _hubContext.Clients.Users(participants).SendAsync("UpdateLastMessage", _message.ChatID, _message.Alias, _message.Content);
         }
     }
 }
