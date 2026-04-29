@@ -101,16 +101,17 @@
     }
     private async Task HandleSendMessage()
     {
+        string _alias;
         var contentToSend = _messageContent;
         if (_appStateService.CurrentChat == null) return;
         var chatId = _appStateService.CurrentChat.Identity.ChatID;
         if (string.IsNullOrWhiteSpace(contentToSend) && _sendedPhoto == null) return;
-
             var newMessage = new MessageDTO
         {
             Content = contentToSend ?? string.Empty,
             imageUrl = string.Empty,
                 SenderUsername = _appStateService.CurrentUser.Username,
+                Alias = _appStateService.CurrentChat.Identity.Alias,
             ChatID = chatId,
                 SenderID = _appStateService.CurrentUser.UserID,
             SentAt = DateTime.UtcNow,

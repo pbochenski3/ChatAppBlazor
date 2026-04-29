@@ -40,7 +40,7 @@
                         @foreach (var user in FilteredContacts)
                         {
                             bool isSelected = ContactsToAdd.Contains(user.ContactUserID);
-                            <div class="search-result-item @(isSelected ? "selected" : "")"
+                            <div @key="user.ContactUserID" "class="search-result-item @(isSelected ? "selected" : "")"
                                  @onclick="async () => await AddUserToSelectionAsync(user.ContactUserID)">
                                 <div class="user-search-info">
                                     <img src="@user.AvatarUrl" class="user-avatar" />
@@ -61,12 +61,12 @@
                 <div class="sidebar-header"><h3>Uczestnicy</h3></div>
                 @foreach (var user in ExistingUsers)
                 {
-                    <div class="search-result-item">
-                        <div class="user-search-info">
+                    <button @key="user.UserID" class="users-in-chat-button" @onclick="() => OpenUserDetails(user.UserID,user.Username)">
+                        <div class="users-in-chat-detail">
                             <img src="@user.AvatarUrl" class="user-avatar" />
                             <span>@user.Username</span>
                         </div>
-                    </div>
+                    </button>
                 }
                 <button class="btn-add-action" @onclick="() => _chatStateService.SettingsView = ChatSettingsView.Settings">Cofnij</button>
                 break;
@@ -86,8 +86,18 @@
                                     Name="@_appStateService.CurrentChat.Identity.ChatName"
                                 LabelRole="Grupa"
                                 IsGroup="true" />
-                <button class="btn-secondary" @onclick="() => _chatStateService.SettingsView = ChatSettingsView.Settings">Cofnij</button>
+                <button class="btn-secondary" @onclick="() => _chatStateService.SettingsView = ChatSettingsView.Users">Cofnij</button>
                 </div>
+                break;
+            case ChatSettingsView.UserDetails:
+                <h3>USERS DETAILS</h3>
+                <button class="btn-add-action" @onclick="async () => { _chatStateService.SettingsView = ChatSettingsView.ChangeAlias; await HandleChatNameChangeAsync(_newChatName); }">Zmień nazwe użytkownika</button>
+                <button class="btn-add-action" @onclick="CloseUserDetails">Cofnij</button>
+                break;
+            case ChatSettingsView.ChangeAlias:
+                <input type="text" class="form-control" placeholder="Nowa nazwa użytkownika..."
+                       @bind="_newAlias" />
+                <button class="btn-add-action" @onclick="async () => await HandleAliasChangeAsync()">Zatwierdź</button>
 
                 break;
         }
@@ -100,6 +110,9 @@
     public HashSet<Guid> ContactsToAdd { get; set; } = new();
     private string _contactSearchTerm = string.Empty;
     private string _newChatName = string.Empty;
+    private string _newAlias = string.Empty;
+    private string _currentUsername = string.Empty;
+    private Guid _currentUserDetails;
     private AddType _type;
     private IEnumerable<ContactDTO> FilteredContacts =>
        UserContacts?.Where(c =>
@@ -140,7 +153,36 @@
         _chatSettingsActionService.RequestContactDelete(_appStateService.CurrentChat.Identity.ChatID);
 
     }
+    private void OpenUserDetails(Guid userId,string username)
+    {
+        _currentUsername = username;
+        _currentUserDetails = userId;
+        _chatStateService.SettingsView = ChatSettingsView.UserDetails;
+    }
+    private void CloseUserDetails()
+    {
+        _currentUserDetails = Guid.Empty;
+        _currentUsername = string.Empty;
+        _chatStateService.SettingsView = ChatSettingsView.Users;
+    }
+    private async Task HandleAliasChangeAsync()
+    {
+        try
+        {
 
+            Guid chatId = _appStateService.CurrentChat.Identity.ChatID;
+            _chatStateService.SettingsView = ChatSettingsView.UserDetails;
+            Guid adminId = _appStateService.CurrentUser.UserID;
+            string adminName = _appStateService.CurrentUser.Username;
+            await _chatApiClient.ChangeUserAliasAsync(chatId, adminId, _newAlias, adminName, _currentUserDetails, _currentUsername);
+            _appStateService.CurrentChat.Identity.Alias = _newAlias;
+            _newAlias = string.Empty;
+        }
+        catch(Exception ex)
+        {
+            throw new Exception($"[ChatSettings] {ex.Message}");
+        }
+    }
     private async Task HandleChatLeaveAsync()
     {
         //IsSettingsOpen = false;

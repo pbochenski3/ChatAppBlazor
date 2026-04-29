@@ -2,6 +2,7 @@
 using ChatApp.Application.DTO.Chats;
 using ChatApp.Application.DTO.Requests;
 using ChatApp.Web.Services.Api.Interfaces;
+using ChatApp.Web.Services.State;
 using System.Net.Http.Json;
 
 namespace ChatApp.Web.Services.Api
@@ -10,10 +11,12 @@ namespace ChatApp.Web.Services.Api
     {
         private readonly ILogger<ChatApiClient> _logger;
         private readonly HttpClient _httpClient;
-        public ChatApiClient(ILogger<ChatApiClient> logger, HttpClient httpClient)
+        private readonly AppStateService _appState;
+        public ChatApiClient(ILogger<ChatApiClient> logger, HttpClient httpClient,AppStateService appState)
         {
             _logger = logger;
             _httpClient = httpClient;
+            _appState = appState;
         }
         public async Task MarkMessageAsReadAsync(Guid chatId, Guid messageId)
         {
@@ -89,9 +92,24 @@ namespace ChatApp.Web.Services.Api
         {
             return await _httpClient.GetFromJsonAsync<HashSet<Guid>>($"api/chat/{chatId}/usersId");
         }
-        public async Task ChangeChatNameAsync(Guid chatId, string chatName, string adminName)
+        public async Task ChangeUserAliasAsync(Guid chatId,Guid adminId,string newAlias, string adminName,Guid userId,string username)
         {
-            var request = new ChangeChatNameRequest(chatName, adminName);
+            var request = new ChangeAliasRequest(adminId, newAlias, adminName,userId,username);
+            var response = await _httpClient.PatchAsJsonAsync($"/api/chat/{chatId}/alias", request);
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation($"Alias succesfuly changed fo chat {chatId}", chatId);
+            }
+            else
+            {
+                _logger.LogError($"Alias change for chat {chatId} FAILED", chatId, response.StatusCode);
+                throw new Exception();
+            }
+
+        }
+        public async Task ChangeChatNameAsync(Guid chatId, string chatName, string adminName,bool isGroup)
+        {
+            var request = new ChangeChatNameRequest(chatName, adminName,isGroup);
             var response = await _httpClient.PatchAsJsonAsync($"/api/chat/{chatId}/name", request);
             if (response.IsSuccessStatusCode)
             {
@@ -99,8 +117,8 @@ namespace ChatApp.Web.Services.Api
             }
             else
             {
-                throw new Exception();
                 _logger.LogError("Failed to change chat name for ChatId: {ChatId}. Status Code: {StatusCode}", chatId, response.StatusCode);
+                throw new Exception();
             }
         }
     }

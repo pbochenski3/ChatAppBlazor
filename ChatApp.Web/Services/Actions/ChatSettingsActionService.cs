@@ -154,14 +154,13 @@ namespace ChatApp.Web.Services.Actions
         {
             var chatId = _appStateService.CurrentChat?.Identity.ChatID;
             var adminName = _appStateService.CurrentUser?.Username;
+            var isGroup = _appStateService.CurrentChat.Identity.IsGroup;
             if (chatId != null && adminName != null)
             {
                 try
                 {
-                    await _chatApi.ChangeChatNameAsync(chatId.Value, chatName, adminName);
+                    await _chatApi.ChangeChatNameAsync(chatId.Value, chatName, adminName, isGroup);
                     _notification.Notify("Nazwa czatu zmieniona pomyślnie!", NotificationType.Info);
-
-
                 }
                 catch (Exception ex)
                 {

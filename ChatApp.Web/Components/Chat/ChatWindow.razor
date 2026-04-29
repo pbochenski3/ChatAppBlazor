@@ -27,8 +27,16 @@
                                 {
                                 <div class="message-info">
                                 <span class="message-time">[@msg.SentAt.ToString("HH:mm")]</span>
-                                <span class="message-user">@msg.SenderUsername:</span>
-                                </div>
+                                @if(_appStateService.CurrentChat.Identity.IsGroup)
+                                        {
+                                        <span class="message-user">@_appStateService.CurrentChat.Identity.OtherUserAlias:</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="message-user">@_appStateService.CurrentChat.Identity.ChatName:</span>
+
+                                        }
+                                    </div>
                                 }
                                 <div class="message-body">
                                 @if (HasImage(msg.imageUrl))

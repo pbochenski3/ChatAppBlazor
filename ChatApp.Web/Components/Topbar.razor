@@ -8,6 +8,7 @@
         </div>
         <div class="user-info-text-top">
             <span class="user-name">@_appStateService.CurrentChat.Identity.ChatName</span>
+
         </div>
     </div>
     @if (_appStateService.CurrentChat.State.IsArchive == false)
@@ -18,6 +19,7 @@
 
 
 @code {
+    private string _alias => _appStateService.CurrentChat.Identity.Alias;
     protected override void OnInitialized()
     {
         _chatSettingsActionService.OnStateChanged += HandleStateChanged;

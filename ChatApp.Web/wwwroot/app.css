@@ -828,6 +828,28 @@ body {
         color: var(--accent);
         background: var(--accent-dim);
     }
+.users-in-chat-button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    justify-content: space-between;
+    padding: 0.625rem 0.75rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: border-color var(--transition);
+}
+
+    .users-in-chat-button:hover {
+        border-color: var(--border-hover);
+        background: var(--surface3);
+        cursor: pointer;
+    }
+.users-in-chat-detail {
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+}
 
 /* =========================================
    CHAT MAIN WRAPPER
