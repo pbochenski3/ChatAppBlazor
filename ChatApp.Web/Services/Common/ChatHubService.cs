@@ -39,6 +39,7 @@ public class ChatHubService : IAsyncDisposable
         HubConnection.On("ChatClose", async () => await _mediator.Publish(new ChatRoomClosed()));
         HubConnection.On<Guid, bool>("ChatReload", async (id, force) => await _mediator.Publish(new ChatUpdated(id, force)));
         HubConnection.On<Guid>("UsersInChatReload", async (chatId) => await _mediator.Publish(new UsersInChatUpdated(chatId)));
+        HubConnection.On<Guid, Guid, string>("UserAliasChanged", async (chatId, userId, newAlias) => await _mediator.Publish(new UserAliasChanged(chatId, userId, newAlias)));
 
         HubConnection.On<Guid, string>("UpdateChatName", async (chatId, newName) => await _mediator.Publish(new ChatNameChanged(chatId, newName)));
         HubConnection.On("SidebarChatsReload", async () => await _mediator.Publish(new ChatListChanged()));

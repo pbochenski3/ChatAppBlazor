@@ -1,4 +1,4 @@
-﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO;
 using ChatApp.Web.Events;
 using ChatApp.Web.Services.Actions.Interfaces;
 using MediatR;
@@ -10,7 +10,8 @@ namespace ChatApp.Web.Handlers
         INotificationHandler<IncomingMessageReceived>,
         INotificationHandler<ChatRoomClosed>,
         INotificationHandler<ChatUpdated>,
-        INotificationHandler<UsersInChatUpdated>
+        INotificationHandler<UsersInChatUpdated>,
+        INotificationHandler<UserAliasChanged>
     {
         private readonly IChatActionService _chatActionService;
         public ChatEventsHandler(IChatActionService chatActionService)
@@ -35,6 +36,11 @@ namespace ChatApp.Web.Handlers
         public async Task Handle(ChatEvents.UsersInChatUpdated notification, CancellationToken cancellationToken)
         {
             await _chatActionService.HandleUserOnGroupLoadAsync(notification.ChatId);
+        }
+
+        public async Task Handle(ChatEvents.UserAliasChanged notification, CancellationToken cancellationToken)
+        {
+            await _chatActionService.HandleUserAliasChangeAsync(notification.ChatId, notification.UserId, notification.NewAlias);
         }
     }
 }

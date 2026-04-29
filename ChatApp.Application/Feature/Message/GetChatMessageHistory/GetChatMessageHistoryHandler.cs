@@ -1,4 +1,4 @@
-﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO;
 using ChatApp.Domain.Enums;
 using ChatApp.Domain.Interfaces.Repository;
 using MediatR;
@@ -33,8 +33,10 @@ namespace ChatApp.Application.Feature.Message.GetChatMessageHistory
             {
                 return new List<MessageDTO>();
             }
+
+            var aliases = await _userChatRepo.GetChatAliasesAsync(r.ChatId);
             
-            var list =  messages.Select(m => new MessageDTO
+            return messages.Select(m => new MessageDTO
             {
                 MessageID = m.MessageID,
                 Content = m.Content,
@@ -44,19 +46,10 @@ namespace ChatApp.Application.Feature.Message.GetChatMessageHistory
                 SenderID = m.SenderID,
                 ChatID = m.ChatID,
                 MessageType = m.MessageType,
+                Alias = m.MessageType == MessageType.System 
+                    ? "SYSTEM" 
+                    : (m.SenderID.HasValue && aliases.TryGetValue(m.SenderID.Value, out var alias) ? alias : m.Sender?.Username ?? "Użytkownik")
             }).ToList();
-            if(!isGroup)
-            {
-            var chatId = list.First().ChatID;
-            var userId = list.First().SenderID ?? Guid.CreateVersion7();
-            var sender = await _userChatRepo.GetPrivateUserAliasAsync(chatId, userId);
-            foreach (var message in list)
-            {
-                message.Alias = message.MessageType == MessageType.System ? "SYSTEM" : sender;
-
-            }
-            }
-            return list;
         }
     }
 }

@@ -28,7 +28,8 @@ namespace ChatApp.Domain.Interfaces.Repository
         Task<UserChat?> GetUserChatAsync(Guid chatId, Guid userId, CancellationToken token);
         Task<Guid> GetReceiverUserIdAsync(Guid chatId, Guid userId, CancellationToken token);
         Task<string> GetPrivateUserAliasAsync(Guid chatId, Guid userId);
-        Task<Dictionary<Guid, string>> GetPrivateUsersAliasesAsync(Guid chatId, List<Guid> userIds);
+        Task<Dictionary<Guid, string>> GetPrivateUsersAliasesAsync(Guid userId, List<Guid> chatsIds);
+        Task<Dictionary<Guid, string>> GetChatAliasesAsync(Guid chatId);
         #endregion
     }
 }

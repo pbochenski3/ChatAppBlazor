@@ -1,4 +1,4 @@
-﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO;
 using ChatApp.Domain.Enums;
 using ChatApp.Web.Services.Actions.Interfaces;
 using ChatApp.Web.Services.Api.Interfaces;
@@ -174,6 +174,18 @@ namespace ChatApp.Web.Services.Actions
                 _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", chatId);
             }
         }
+
+        public async Task HandleUserAliasChangeAsync(Guid chatId, Guid userId, string newAlias)
+        {
+            if (_appStateService.CurrentChat?.Identity.ChatID != chatId)
+            {
+                return;
+            }
+
+            _chatStateService.UpdateUserAliasInMessages(userId, newAlias);
+            OnStateChanged?.Invoke();
+        }
+
         public async Task HandleChatCloseAsync()
         {
             await _appStateService.SetChatAsync(null);
