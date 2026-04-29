@@ -1,4 +1,4 @@
-﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO;
 using ChatApp.Domain.Interfaces.Repository;
 using MediatR;
 
@@ -17,11 +17,13 @@ namespace ChatApp.Application.Feature.GroupChat.GetChatUsers
         {
             var userIds = await _userChatRepo.GetUsersInChatIdAsync(r.ChatId);
             var users = await _userRepo.GetUsersByIdsAsync(userIds);
+            var aliases = await _userChatRepo.GetChatAliasesAsync(r.ChatId);
 
             return users.Select(u => new UserDTO
             {
                 UserID = u.UserID,
                 Username = u.Username,
+                Alias = aliases.TryGetValue(u.UserID, out var alias) ? alias : u.Username,
                 AvatarUrl = u.AvatarUrl,
                 IsOnline = u.IsOnline
             }).ToHashSet();

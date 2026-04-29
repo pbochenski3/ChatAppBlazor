@@ -1,4 +1,4 @@
-﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO;
 using ChatApp.Domain.Enums;
 
 namespace ChatApp.Web.Services.State
@@ -39,6 +39,24 @@ namespace ChatApp.Web.Services.State
                 _logger.LogDebug("AddMessage OnStateChanged. InstanceHash={Hash}, MessageId={MessageId}", this.GetHashCode(), dto.MessageID);
                 OnStateChanged?.Invoke();
             }
+        }
+
+        public void UpdateUserAliasInMessages(Guid userId, string newAlias)
+        {
+            var messagesToUpdate = ReceivedMessages.Where(m => m.SenderID == userId).ToList();
+            foreach (var message in messagesToUpdate)
+            {
+                message.Alias = newAlias;
+            }
+
+            var userToUpdate = UsersInChat.FirstOrDefault(u => u.UserID == userId);
+            if (userToUpdate != null)
+            {
+                userToUpdate.Alias = newAlias;
+            }
+
+            _logger.LogDebug("UpdateUserAliasInMessages OnStateChanged. UserId={UserId}, NewAlias={NewAlias}", userId, newAlias);
+            OnStateChanged?.Invoke();
         }
 
     }

@@ -1,4 +1,4 @@
-﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO;
 using MediatR;
 
 namespace ChatApp.Web.Events
@@ -9,6 +9,7 @@ namespace ChatApp.Web.Events
         public record ChatRoomClosed() : INotification;
         public record ChatUpdated(Guid ChatId, bool Force) : INotification;
         public record UsersInChatUpdated(Guid ChatId) : INotification;
-        public record RequestToJoinSignalR(Guid chatId) : INotification;
+        public record UserAliasChanged(Guid ChatId, Guid UserId, string NewAlias) : INotification;
+        public record RequestToJoinSignalR(Guid ChatId) : INotification;
     }
 }

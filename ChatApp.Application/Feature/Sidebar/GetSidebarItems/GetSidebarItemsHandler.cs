@@ -1,4 +1,4 @@
-﻿using ChatApp.Application.DTO;
+using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
 using ChatApp.Domain.Interfaces.Repository;
 using ChatApp.Domain.Models;
@@ -55,14 +55,15 @@ namespace ChatApp.Application.Feature.Sidebar.GetSidebarItems
          Dictionary<Guid, int> unreadCounters)
         {
             var isGroup = uc.Chat.IsGroup;
+            var otherUser = !uc.Chat.IsGroup
+                ? uc.Chat.UserChats.FirstOrDefault(p => p.UserID != currentUserId)?.User
+                : null;
+
             string displayName = isGroup
                 ? uc.Chat.ChatName
                 : (privateAliases.TryGetValue(uc.ChatID, out var alias) && !string.IsNullOrWhiteSpace(alias)
                     ? alias
-                    : uc.Chat.ChatName);
-            var otherUser = !uc.Chat.IsGroup
-                ? uc.Chat.UserChats.FirstOrDefault(p => p.UserID != currentUserId)?.User
-                : null;
+                    : (otherUser?.Username ?? uc.Chat.ChatName));
 
 
 

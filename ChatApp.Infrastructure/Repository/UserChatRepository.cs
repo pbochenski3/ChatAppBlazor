@@ -26,7 +26,7 @@ namespace ChatApp.Infrastructure.Persistence
                     .SetProperty(uc => uc.LastReadAt, DateTime.UtcNow)
                 );
         }
-        public async Task UpdateAliasOnChat(Guid userId, Guid chatId,string newAlias)
+        public async Task UpdateAliasOnChat(Guid userId, Guid chatId, string newAlias)
         {
             await _context.UserChat
                 .Where(uc => uc.UserID == userId && uc.ChatID == chatId)
@@ -200,11 +200,15 @@ namespace ChatApp.Infrastructure.Persistence
         }
         public async Task<string> GetPrivateUserAliasAsync(Guid chatId, Guid userId)
         {
-            return await _context.UserChat
+            var data = await _context.UserChat
              .AsNoTracking()
              .Where(uc => uc.ChatID == chatId && uc.UserID != userId)
-             .Select(uc => uc.Alias)
-             .FirstOrDefaultAsync() ?? "Default";
+             .Select(uc => new { uc.Alias, uc.User.Username })
+             .FirstOrDefaultAsync();
+
+            return data != null
+                ? (!string.IsNullOrEmpty(data.Alias) ? data.Alias : data.Username)
+                : "Użytkownik";
         }
 
         public async Task<Dictionary<Guid, string>> GetPrivateUsersAliasesAsync(Guid userId, List<Guid> chatsIds)
@@ -215,11 +219,20 @@ namespace ChatApp.Infrastructure.Persistence
             return await _context.UserChat
                 .AsNoTracking()
                 .Where(uc => uc.UserID != userId && chatsIds.Contains(uc.ChatID))
-                .Select(uc => new { uc.ChatID, uc.Alias })
+                .Select(uc => new { uc.ChatID, uc.Alias, uc.User.Username })
                 .ToDictionaryAsync(
                     x => x.ChatID,
-                    x => x.Alias ?? "Default" 
+                    x => !string.IsNullOrEmpty(x.Alias) ? x.Alias : x.Username
                 );
+        }
+
+        public async Task<Dictionary<Guid, string>> GetChatAliasesAsync(Guid chatId)
+        {
+            return await _context.UserChat
+                .AsNoTracking()
+                .Where(uc => uc.ChatID == chatId)
+                .Select(uc => new { uc.UserID, Alias = !string.IsNullOrEmpty(uc.Alias) ? uc.Alias : uc.User.Username })
+                .ToDictionaryAsync(x => x.UserID, x => x.Alias);
         }
         #endregion
 
