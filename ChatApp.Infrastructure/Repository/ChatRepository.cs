@@ -40,7 +40,6 @@ namespace ChatApp.Infrastructure.Persistence
         }
         public async Task AddUserGroupToDb(Guid chatId, HashSet<Guid> userIdsToAdd)
         {
-
             var chat = await _context.Chats
                 .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(c => c.ChatID == chatId);
@@ -58,19 +57,25 @@ namespace ChatApp.Infrastructure.Persistence
                 .Where(uc => uc.ChatID == chatId)
                 .Select(uc => uc.UserID)
                 .ToListAsync();
+            var newIds = userIdsToAdd
+                 .Where(id => !existingUserIds.Contains(id))
+                 .Distinct() 
+                 .ToList();
 
-            var filteredUsers = userIdsToAdd
-                .Where(id => !existingUserIds.Contains(id))
-                .Select(userId => new UserChat
+            if (newIds.Any())
+            {
+                var aliasMap = await _context.Users
+                    .Where(u => newIds.Contains(u.UserID))
+                    .Select(u => new { u.UserID, u.Username })
+                    .ToDictionaryAsync(x => x.UserID, x => x.Username);
+
+                var filteredUsers = newIds.Select(userId => new UserChat
                 {
                     UserID = userId,
                     ChatID = chat.ChatID,
-                    ChatName = chat.ChatName,
-                    IsArchive = false
+                    IsArchive = false,
+                    Alias = aliasMap.GetValueOrDefault(userId)
                 }).ToList();
-
-            if (filteredUsers.Any())
-            {
                 await _context.UserChat.AddRangeAsync(filteredUsers);
             }
         }

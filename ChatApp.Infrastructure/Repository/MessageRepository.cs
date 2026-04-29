@@ -25,18 +25,25 @@ namespace ChatApp.Infrastructure.Persistence
 
         public async Task<Dictionary<Guid, MessagePreview>> GetMessagePreviewsAsync(List<Guid> ids)
         {
+            if (ids == null || !ids.Any())
+                return new Dictionary<Guid, MessagePreview>();
+
             return await _context.Messages
                 .AsNoTracking()
-                .Include(m => m.Sender)
                 .Where(m => ids.Contains(m.MessageID))
-                .ToDictionaryAsync(
-                    m => m.MessageID,
-                    m => new MessagePreview
+                .Select(m => new
+                {
+                    m.MessageID,
+                    Preview = new MessagePreview
                     {
                         Content = m.Content,
-                        Author = m.Sender?.Username ?? ""
+                        Author = m.Sender.UserChats
+                            .Where(u => u.Alias != null) 
+                            .Select(u => u.Alias)
+                            .FirstOrDefault() ?? string.Empty
                     }
-                );
+                })
+                .ToDictionaryAsync(x => x.MessageID, x => x.Preview);
         }
         public async Task<List<Message>> GetMessageHistoryAsync(Guid userId, Guid chatId, DateTime? cutoffDate, CancellationToken token)
         {

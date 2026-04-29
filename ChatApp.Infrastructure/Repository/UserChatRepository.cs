@@ -2,6 +2,7 @@ using ChatApp.Domain.Interfaces.Repository;
 using ChatApp.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 
 namespace ChatApp.Infrastructure.Persistence
 {
@@ -25,6 +26,15 @@ namespace ChatApp.Infrastructure.Persistence
                     .SetProperty(uc => uc.LastReadAt, DateTime.UtcNow)
                 );
         }
+        public async Task UpdateAliasOnChat(Guid userId, Guid chatId,string newAlias)
+        {
+            await _context.UserChat
+                .Where(uc => uc.UserID == userId && uc.ChatID == chatId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(uc => uc.Alias, newAlias)
+                );
+        }
+
         public async Task UpdateLastSentMessageAsync(Guid chatId, Guid messageId)
         {
             var affected = await _context.UserChat
@@ -130,13 +140,7 @@ namespace ChatApp.Infrastructure.Persistence
                                c.UserID == userId &&
                                c.IsArchive == true);
         }
-        public async Task SetNewChatNameAsync(Guid chatId, Guid userId, string newName)
-        {
-            await _context.UserChat
-                .Where(uc => uc.ChatID == chatId && uc.UserID != userId)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(uc => uc.ChatName, newName));
-        }
+
 
         public async Task<bool> GetChatStatusById(Guid chatId, Guid userId)
         {
@@ -193,6 +197,29 @@ namespace ChatApp.Infrastructure.Persistence
                 .Where(uc => uc.ChatID == chatId && uc.UserID != userId)
                 .Select(uc => uc.UserID)
                 .FirstOrDefaultAsync(token);
+        }
+        public async Task<string> GetPrivateUserAliasAsync(Guid chatId, Guid userId)
+        {
+            return await _context.UserChat
+             .AsNoTracking()
+             .Where(uc => uc.ChatID == chatId && uc.UserID != userId)
+             .Select(uc => uc.Alias)
+             .FirstOrDefaultAsync() ?? "Default";
+        }
+
+        public async Task<Dictionary<Guid, string>> GetPrivateUsersAliasesAsync(Guid userId, List<Guid> chatsIds)
+        {
+            if (chatsIds == null || !chatsIds.Any())
+                return new Dictionary<Guid, string>();
+
+            return await _context.UserChat
+                .AsNoTracking()
+                .Where(uc => uc.UserID != userId && chatsIds.Contains(uc.ChatID))
+                .Select(uc => new { uc.ChatID, uc.Alias })
+                .ToDictionaryAsync(
+                    x => x.ChatID,
+                    x => x.Alias ?? "Default" 
+                );
         }
         #endregion
 
