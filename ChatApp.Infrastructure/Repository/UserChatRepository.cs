@@ -85,7 +85,9 @@ namespace ChatApp.Infrastructure.Persistence
                 .Where(ch => ch.ChatID == chatId && ch.UserID == userId)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(ch => ch.IsArchive, true)
-                    .SetProperty(ch => ch.ArchivedAt, DateTime.UtcNow));
+                    .SetProperty(ch => ch.ArchivedAt, DateTime.UtcNow)
+                    .SetProperty(ch => ch.IsAdmin, false)
+                    );
         }
         public async Task ArchivePrivateChatAsync(Guid chatId, Guid userId, Guid contactId)
         {
@@ -198,6 +200,7 @@ namespace ChatApp.Infrastructure.Persistence
         public async Task<HashSet<Guid>> GetUsersInChatIdAsync(Guid chatId)
         {
             var userIds = await _context.UserChat
+                .IgnoreQueryFilters()
                 .AsNoTracking()
                 .Where(uc => uc.ChatID == chatId && uc.IsArchive == false)
                 .Select(uc => uc.UserID)

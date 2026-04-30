@@ -11,7 +11,7 @@ namespace ChatApp.Api.Handlers.User
              
         public async Task Handle(UserActionFailedNotification n, CancellationToken cancellationToken)
         {
-            await _hubContext.Clients.Client(n.userId.ToString()).SendAsync("ReceiveStatus", n.message);
+            await _hubContext.Clients.User(n.userId.ToString()).SendAsync("ReceiveStatus", n.message);
 
         }
     }

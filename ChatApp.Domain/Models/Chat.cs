@@ -17,24 +17,30 @@ namespace ChatApp.Domain.Models
 
         public Message AddMembers(User admin, List<User> usersToAdd)
         {
-            var names = string.Join(", ", usersToAdd.Select(u => u.Username));
-            var content = usersToAdd.Count == 1
-                ? $"{admin.Username} dodał użytkownika: {names} do czatu."
-                : $"{admin.Username} dodał użytkowników: {names} do czatu.";
-
             foreach (var user in usersToAdd)
             {
                 var existingRelation = UserChats.FirstOrDefault(uc => uc.UserID == user.UserID);
+
                 if (existingRelation != null)
                 {
-
                     existingRelation.IsArchive = false;
                 }
                 else
                 {
-                    UserChats.Add(new UserChat { UserID = user.UserID, ChatID = this.ChatID, Alias = user.Username });
+                    UserChats.Add(new UserChat
+                    {
+                        UserID = user.UserID,
+                        ChatID = this.ChatID,
+                        Alias = user.Username,
+                        IsArchive = false
+                    });
                 }
             }
+
+            var names = string.Join(", ", usersToAdd.Select(u => u.Username));
+            var content = usersToAdd.Count == 1
+                ? $"{admin.Username} dodał użytkownika {names}"
+                : $"{admin.Username} dodał użytkowników {names}";
 
             return Message.CreateSystemMessage(this.ChatID, content);
         }

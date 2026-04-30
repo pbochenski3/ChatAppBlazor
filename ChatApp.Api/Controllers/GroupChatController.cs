@@ -24,7 +24,6 @@ namespace ChatApp.Api.Controllers
         [HttpPost("{chatId}/add-users")]
         public async Task<IActionResult> AddUsersToGroupChatAsync([FromBody] HashSet<Guid> usersToAdd, [FromRoute] Guid chatId, CancellationToken ct)
         {
-
             var userId = CurrentUserId;
             try
             {
@@ -74,7 +73,7 @@ namespace ChatApp.Api.Controllers
             if (userId == CurrentUserId) return BadRequest();
             try
             {
-                var result = await _mediator.Send(new RemoveUserFromGroupCommand(chatId, userId, removedUserName,adminName));
+                var result = await _mediator.Send(new RemoveUserFromGroupCommand(chatId, userId,CurrentUserId, removedUserName,adminName));
 
                 return result ? Ok() : BadRequest();
             }

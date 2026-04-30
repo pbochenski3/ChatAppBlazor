@@ -1,3 +1,4 @@
+@implements IDisposable
 <div class="contact-settings-panel">
     <div class="settings-content">
         @switch (_chatStateService.SettingsView)
@@ -144,6 +145,10 @@
            &&
            !ExistingUsers.Any(u => u.UserID == c.ContactUserID)
        ) ?? Enumerable.Empty<ContactDTO>();
+    protected override async Task OnInitializedAsync()
+    {
+        _chatSettingsActionService.OnStateChanged += StateHasChanged;
+    }
     private async Task AddUserToSelectionAsync(Guid contactId)
     {
         if (ContactsToAdd.Contains(contactId))
@@ -194,7 +199,7 @@
         }
         StateHasChanged();
     }
-  private async Task HandleAliasChangeAsync()
+    private async Task HandleAliasChangeAsync()
 {
     try
     {
@@ -246,10 +251,13 @@
     {
         await _chatSettingsActionService.HandleChatLeaveAsync();
     }
-
     private async Task HandleChatDeleteAsync()
     {
         await _chatSettingsActionService.HandleChatDeleteAsync();
 
+    }
+    public void Dispose()
+    {
+        _chatSettingsActionService.OnStateChanged -= StateHasChanged;
     }
 }

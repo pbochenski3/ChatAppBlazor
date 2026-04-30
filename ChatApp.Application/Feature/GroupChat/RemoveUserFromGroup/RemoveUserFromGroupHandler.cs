@@ -24,7 +24,7 @@ namespace ChatApp.Application.Feature.GroupChat.RemoveUserFromGroup
         }
         public async Task<bool> Handle(RemoveUserFromGroupCommand r, CancellationToken cancellationToken)
         {
-            var isAdmin = await _userChatRepo.GetUserAdminFlagAsync(r.UserId, r.ChatId);
+            var isAdmin = await _userChatRepo.GetUserAdminFlagAsync(r.AdminId, r.ChatId);
             if (!isAdmin)
             {
                 r.AddEvent(new UserActionFailedNotification(r.UserId, "Nie posiadasz uprawnień!"));

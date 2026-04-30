@@ -83,6 +83,8 @@ namespace ChatApp.Infrastructure.Persistence
         public async Task<Chat?> FetchChatById(Guid chatId)
         {
             return await _context.Chats
+                .IgnoreQueryFilters()
+                .Include(u => u.UserChats)
                 .FirstOrDefaultAsync(c => c.ChatID == chatId);
         }
 

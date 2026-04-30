@@ -1,4 +1,5 @@
 using ChatApp.Application.DTO;
+using ChatApp.Web.Services.Common.Interfaces;
 using ChatApp.Web.Services.State;
 using MediatR;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -17,18 +18,21 @@ public class ChatHubService : IAsyncDisposable
     private readonly string _baseHubUrl;
     private readonly ILogger<ChatHubService> _logger;
     private readonly IMediator _mediator;
+    private readonly INotificationService _notify;
 
     public ChatHubService(
         IConfiguration configuration,
         AppStateService appStateService,
         ILogger<ChatHubService> logger,
-        IMediator mediator
+        IMediator mediator,
+        INotificationService notify
         )
     {
         _appStateService = appStateService;
         _baseHubUrl = configuration["SignalR:HubUrl"] ?? throw new ArgumentNullException("SignalR:HubUrl");
         _logger = logger;
         _mediator = mediator;
+        _notify = notify;
     }
 
     private void RegisterHandlers()
@@ -54,7 +58,7 @@ public class ChatHubService : IAsyncDisposable
         {
             await (OnGroupAvatarReload?.Invoke(avatarUrl, chatId) ?? Task.CompletedTask);
         });
-        HubConnection.On<string>("ReceiveStatus", async (status) => await InviteStatusMessage.Invoke(status));
+        HubConnection.On<string>("ReceiveStatus", (status) => _notify.Notify(status,ChatApp.Domain.Enums.NotificationType.Warning));
         HubConnection.On<Guid>("RequestLeaveGroupSignalR", async (chatId) =>
         {
             await HubConnection.InvokeAsync("RemoveMeFromChatGroup", chatId);
