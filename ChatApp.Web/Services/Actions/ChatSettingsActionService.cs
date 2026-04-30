@@ -1,6 +1,7 @@
 ﻿
 using ChatApp.Domain.Enums;
 using ChatApp.Web.Services.Actions.Interfaces;
+using ChatApp.Web.Services.Api;
 using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.Common;
 using ChatApp.Web.Services.Common.Interfaces;
@@ -44,6 +45,25 @@ namespace ChatApp.Web.Services.Actions
             _notification = notification;
         }
         public event Action? OnStateChanged;
+        public void RequestUserRemove()
+        {
+            _dialogService.ShowConfirm(
+                "Usuwanie użytkownika",
+                "Czy na pewno chcesz usunąć tego użytkownika z czatu?",
+                "Usuń",
+                "Anuluj",
+                async () => await HandleRemoveUserFromChat()
+            );
+        }
+        public async Task HandleRemoveUserFromChat()
+        {
+            var userId = _chatStateService.CurrentUserDetailsId;
+            var userAlias = _chatStateService.CurrentAlias;
+            var adminName = _appStateService.CurrentChat.Identity.Alias;
+            var chatId = _appStateService.CurrentChat.Identity.ChatID;
+            await _groupChatApi.DeleteUserFromChat( chatId, userId, userAlias,adminName);
+            CloseUserDetails();
+        }
         public void RequestDeleteChat()
         {
             _dialogService.ShowConfirm(
@@ -194,6 +214,25 @@ namespace ChatApp.Web.Services.Actions
 
                 }
             }
+        }
+        public async Task OpenUserDetails(Guid userId, string alias, string username)
+        {
+            var chatId = _appStateService.CurrentChat.Identity.ChatID;
+            _chatStateService.CurrentAlias = alias;
+            _chatStateService.CurrentUsername = username;
+            _chatStateService.CurrentUserDetailsId = userId;
+            _chatStateService.IsAdmin = await _chatApi.GetChatPermissions(chatId, userId);
+            _chatStateService.SettingsView = ChatSettingsView.UserDetails;
+            OnStateChanged?.Invoke();
+        }
+        public void CloseUserDetails()
+        {
+            _chatStateService.CurrentUserDetailsId = Guid.Empty;
+            _chatStateService.CurrentAlias = string.Empty;
+            _chatStateService.CurrentUsername = string.Empty;
+            _chatStateService.SettingsView = ChatSettingsView.Users;
+            OnStateChanged?.Invoke();
+
         }
 
 

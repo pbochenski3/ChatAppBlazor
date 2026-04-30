@@ -10,6 +10,7 @@ using ChatApp.Application.Feature.Chat.UpdateChatName;
 using ChatApp.Application.Feature.Chat.UpdateUserAlias;
 using ChatApp.Application.Feature.File.SaveChatImage;
 using ChatApp.Application.Feature.File.SaveGroupAvatar;
+using ChatApp.Domain.Models;
 using ChatApp.Domain.Shared;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -108,7 +109,8 @@ namespace ChatApp.Api.Controllers
         public async Task<IActionResult> UpdateAdminFlagOnChatAsync([FromRoute] Guid chatId, [FromRoute] Guid selectedUserId, [FromQuery] bool flag)
         {
             if (chatId == Guid.Empty) return BadRequest();
-            if (selectedUserId == Guid.Empty) return BadRequest();
+            if (selectedUserId == Guid.Empty || selectedUserId == CurrentUserId) return BadRequest();
+
             var result = await _mediator.Send(new UpdateAdminFlagOnChatCommand(chatId, selectedUserId,flag));
             return result ? Ok() : BadRequest();
         }

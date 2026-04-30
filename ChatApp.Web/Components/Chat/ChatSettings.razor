@@ -61,7 +61,7 @@
                 <div class="sidebar-header"><h3>Uczestnicy</h3></div>
                 @foreach (var user in ExistingUsers)
                 {
-                    <button @key="user.UserID" class="users-in-chat-button" @onclick="async () => await OpenUserDetails(user.UserID,user.Alias,user.Username)">
+                    <button @key="user.UserID" class="users-in-chat-button" @onclick="async () => await _chatSettingsActionService.OpenUserDetails(user.UserID,user.Alias,user.Username)">
                         <div class="users-in-chat-detail">
                             <img src="@user.AvatarUrl" class="user-avatar" />
                             <span>@(!string.IsNullOrEmpty(user.Alias) ? user.Alias : user.Username)</span>
@@ -105,16 +105,17 @@
                 @if(_appStateService.CurrentChat.Identity.IsGroup)
                 {
                     
-                @if(_chatStateService.IsAdmin)
+                @if(_chatStateService.IsAdmin && _appStateService.CurrentUser.UserID != _chatStateService.CurrentUserDetailsId)
                 {
                 <button class="btn-secondary" @onclick="() => HandleAdminFlagActionAsync(false)">Zabierz admina</button>
+                <button class="btn-secondary btn-delete" @onclick="_chatSettingsActionService.RequestUserRemove">Usuń użytkownika</button>
                 }
-                else
+                    else if (_appStateService.CurrentUser.UserID != _chatStateService.CurrentUserDetailsId)
                 {
                     <button class="btn-secondary" @onclick="() => HandleAdminFlagActionAsync(true)">Nadaj admina</button>
                 }
                 }
-                <button class="btn-add-action" @onclick="CloseUserDetails">Cofnij</button>
+                <button class="btn-add-action" @onclick="_chatSettingsActionService.CloseUserDetails">Cofnij</button>
                 break;
             case ChatSettingsView.ChangeAlias:
                  <div class="search-container">
@@ -123,9 +124,6 @@
                        </div>
                 <button class="btn-add-action" @onclick="async () => await HandleAliasChangeAsync()">Zatwierdź</button>
                 <button class="btn-secondary" @onclick="() => _chatStateService.SettingsView = ChatSettingsView.UserDetails">Cofnij</button>
-
-
-
                 break;
         }
     </div>
@@ -196,70 +194,54 @@
         }
         StateHasChanged();
     }
-    private async Task OpenUserDetails(Guid userId,string alias,string username)
+  private async Task HandleAliasChangeAsync()
+{
+    try
     {
-        var chatId = _appStateService.CurrentChat.Identity.ChatID;
-        _chatStateService.CurrentAlias = alias;
-        _chatStateService.CurrentUsername = username;
-        _chatStateService.CurrentUserDetailsId = userId;
-        _chatStateService.IsAdmin = await _chatApiClient.GetChatPermissions(chatId, userId);
+        if (string.IsNullOrWhiteSpace(_newAlias) || _newAlias.Length > 50 || _newAlias.Length < 3)
+        {
+            _notificationService.Notify("Niepoprawny alias (3-50 znaków)", NotificationType.Warning);
+            return;
+        }
+
+        var identity = _appStateService.CurrentChat.Identity;
+        Guid chatId = identity.ChatID;
+        Guid adminId = _appStateService.CurrentUser.UserID;
+        var targetUserId = _chatStateService.CurrentUserDetailsId;
+        
+        string adminName = _appStateService.CurrentChat.Identity.Alias; 
+
+        await _chatApiClient.ChangeUserAliasAsync(chatId, adminId, _newAlias, adminName, targetUserId, _chatStateService.CurrentAlias);
+
+        var userInList = ExistingUsers.FirstOrDefault(u => u.UserID == targetUserId);
+        if (userInList != null)
+        {
+            userInList.Alias = _newAlias;
+        }
+
+        _chatStateService.CurrentAlias = _newAlias;
+
+        if (targetUserId == adminId)
+        {
+            identity.Alias = _newAlias;
+        }
+        else if (!identity.IsGroup && targetUserId == identity.OtherUserId)
+        {
+            identity.OtherUserAlias = _newAlias;
+            identity.ChatName = _newAlias;
+        }
+
+        _newAlias = string.Empty;
         _chatStateService.SettingsView = ChatSettingsView.UserDetails;
-        StateHasChanged();
+        
+        StateHasChanged(); 
+        
     }
-    private void CloseUserDetails()
+    catch (Exception ex)
     {
-        _chatStateService.CurrentUserDetailsId = Guid.Empty;
-        _chatStateService.CurrentAlias = string.Empty;
-        _chatStateService.CurrentUsername = string.Empty;
-        _chatStateService.SettingsView = ChatSettingsView.Users;
+        _notificationService.Notify("Błąd podczas zmiany aliasu", NotificationType.Error);
     }
-    private async Task HandleAliasChangeAsync()
-    {
-        try
-        {
-            if (string.IsNullOrWhiteSpace(_newAlias) || _newAlias.Length > 50 || _newAlias.Length < 3)
-            {
-                _notificationService.Notify("Niepoprawny alias (3-50 znaków)", NotificationType.Warning);
-                return;
-            }
-
-            var identity = _appStateService.CurrentChat.Identity;
-            Guid chatId = identity.ChatID;
-            Guid adminId = _appStateService.CurrentUser.UserID;
-            var _currentUserDetails = _chatStateService.CurrentUserDetailsId;
-            var _currentAlias = _chatStateService.CurrentAlias;
-
-            string adminName = identity.Alias;
-
-            await _chatApiClient.ChangeUserAliasAsync(chatId, adminId, _newAlias, adminName, _currentUserDetails, _currentAlias);
-
-            var userInList = ExistingUsers.FirstOrDefault(u => u.UserID == _currentUserDetails);
-            if (userInList != null)
-            {
-                userInList.Alias = _newAlias;
-            }
-
-            if (_currentUserDetails == adminId)
-            {
-                identity.Alias = _newAlias;
-                _currentAlias = _newAlias; 
-            }
-            else if (!identity.IsGroup && _currentUserDetails == identity.OtherUserId)
-            {
-                identity.OtherUserAlias = _newAlias;
-                identity.ChatName = _newAlias;
-            }
-
-            _newAlias = string.Empty;
-            _chatStateService.SettingsView = ChatSettingsView.UserDetails;
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            _notificationService.Notify("Błąd podczas zmiany aliasu", NotificationType.Error);
-            Console.WriteLine($"[AliasChange Error]: {ex.Message}");
-        }
-    }
+}
     private async Task HandleChatLeaveAsync()
     {
         await _chatSettingsActionService.HandleChatLeaveAsync();

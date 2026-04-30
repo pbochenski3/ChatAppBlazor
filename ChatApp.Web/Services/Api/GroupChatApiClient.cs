@@ -35,5 +35,13 @@ namespace ChatApp.Web.Services.Api
         {
             return await _httpClient.GetFromJsonAsync<HashSet<UserDTO>>($"api/groupchat/{chatId}/users");
         }
+        public async Task DeleteUserFromChat(Guid chatId, Guid userId,string removedUser, string adminName)
+
+
+        {
+            var url = $"/api/groupchat/{chatId}/remove/{userId}?removedUserName={Uri.EscapeDataString(removedUser)}&adminName={Uri.EscapeDataString(adminName)}";
+            var response = await _httpClient.DeleteAsync(url);
+            response.EnsureSuccessStatusCode();
+        }
     }
 }

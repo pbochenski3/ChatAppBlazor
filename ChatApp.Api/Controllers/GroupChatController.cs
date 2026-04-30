@@ -3,6 +3,7 @@ using ChatApp.Application.Feature.GroupChat.AddUsersToGroupChat;
 using ChatApp.Application.Feature.GroupChat.CreateGroupChat;
 using ChatApp.Application.Feature.GroupChat.GetChatUsers;
 using ChatApp.Application.Feature.GroupChat.LeaveGroupChatAsync;
+using ChatApp.Application.Feature.GroupChat.RemoveUserFromGroup;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -53,7 +54,7 @@ namespace ChatApp.Api.Controllers
         }
 
         [HttpDelete("{chatId}/{username}")]
-        public async Task<IActionResult> LeaveGroupChatAsync(Guid chatId, string username)
+        public async Task<IActionResult> LeaveGroupChatAsync([FromRoute] Guid chatId, [FromRoute] string username)
         {
             var userId = CurrentUserId;
             try
@@ -61,6 +62,21 @@ namespace ChatApp.Api.Controllers
                 await _mediator.Send(new LeaveGroupChatCommand(chatId, userId, username));
 
                 return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpDelete("{chatId}/remove/{userId}")]
+        public async Task<IActionResult> RemoveUserFromGroup([FromRoute] Guid chatId, [FromRoute] Guid userId, [FromQuery] string removedUserName, [FromQuery] string adminName)
+        {
+            if (userId == CurrentUserId) return BadRequest();
+            try
+            {
+                var result = await _mediator.Send(new RemoveUserFromGroupCommand(chatId, userId, removedUserName,adminName));
+
+                return result ? Ok() : BadRequest();
             }
             catch (Exception ex)
             {

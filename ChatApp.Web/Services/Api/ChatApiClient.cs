@@ -140,5 +140,6 @@ namespace ChatApp.Web.Services.Api
              return await _httpClient.GetFromJsonAsync<bool>($"/api/chat/{chatId}/permissions");
 
         }
+
     }
 }

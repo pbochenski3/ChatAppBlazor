@@ -9,6 +9,8 @@ namespace ChatApp.Web.Services.Api.Interfaces
         Task AddUsersToGroupChatAsync(Guid chatId, HashSet<Guid> userIdsToAdd);
         Task LeaveGroupChatAsync(Guid chatId, string username);
         Task<HashSet<UserDTO>> GetChatUsersAsync(Guid chatId);
+        Task DeleteUserFromChat(Guid chatId, Guid userId, string removedUser, string adminName);
+
 
     }
 }
