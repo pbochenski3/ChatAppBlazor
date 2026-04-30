@@ -11,6 +11,7 @@ namespace ChatApp.Web.Services.Actions.Interfaces
         Task Refresh();
         Task HandleUserOnGroupLoadAsync(Guid chatId);
         Task HandleChatCloseAsync();
+        Task HandleUserAliasChangeAsync(Guid chatId, Guid userId, string newAlias);
 
 
 

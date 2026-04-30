@@ -4,7 +4,7 @@ namespace ChatApp.Web.Events
 {
     public class SidebarEvents
     {
-        public record ChatNameChanged(Guid ChatId, string NewName) : INotification;
+        public record ChatNameChanged(Guid ChatId, string NewName,Guid UserId) : INotification;
         public record ChatListChanged() : INotification;
         public record InvitesListChanged() : INotification;
         public record SidebarLastMessageChanged(Guid ChatId, string LastSender, string LastMessage) : INotification;

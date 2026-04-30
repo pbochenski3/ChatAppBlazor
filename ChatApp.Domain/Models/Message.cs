@@ -18,7 +18,7 @@ namespace ChatApp.Domain.Models
 
         public static Message CreateSystemMessage(Guid chatId, string content)
         {
-            return new Message
+            return  new Message
             {
                 MessageID = Guid.CreateVersion7(),
                 ChatID = chatId,

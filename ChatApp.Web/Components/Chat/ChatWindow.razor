@@ -29,11 +29,11 @@
                                 <span class="message-time">[@msg.SentAt.ToString("HH:mm")]</span>
                                 @if(_appStateService.CurrentChat.Identity.IsGroup)
                                         {
-                                        <span class="message-user">@_appStateService.CurrentChat.Identity.OtherUserAlias:</span>
+                                            <span class="message-user">@_appStateService.CurrentChat.Identity.ChatName:</span>
                                         }
                                         else
                                         {
-                                            <span class="message-user">@_appStateService.CurrentChat.Identity.ChatName:</span>
+                                        <span class="message-user">@_appStateService.CurrentChat.Identity.OtherUserAlias:</span>
 
                                         }
                                     </div>

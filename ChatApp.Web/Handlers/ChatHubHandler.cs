@@ -14,7 +14,7 @@ namespace ChatApp.Web.Handlers
 
         public async Task Handle(RequestToJoinSignalR notification, CancellationToken cancellationToken)
         {
-            await _chatHubService.JoinChatGroupSignalAsync(notification.chatId);
+            await _chatHubService.JoinChatGroupSignalAsync(notification.ChatId);
         }
     }
 }

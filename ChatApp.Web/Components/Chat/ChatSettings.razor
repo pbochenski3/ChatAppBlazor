@@ -6,7 +6,6 @@
                 <div class="sidebar-header"><h3>Ustawienia</h3></div>
                 if (!_chatStateService.IsArchive)
                 {
-                    <button class="btn-secondary" @onclick="() => _chatStateService.SettingsView = ChatSettingsView.ChangeName">Zmień nazwe czatu</button>
                     <button class="btn-secondary" @onclick="() => _chatStateService.SettingsView = ChatSettingsView.Users">Uczestnicy</button>
 
 
@@ -18,6 +17,7 @@
                     }
                     else
                     {
+                        <button class="btn-secondary" @onclick="() => _chatStateService.SettingsView = ChatSettingsView.ChangeName">Zmień nazwe czatu</button>
                         <button class="btn-secondary" @onclick="@(async () => { _type = AddType.Group; await _chatSettingsActionService.HandleLoadUsersToAddAsync(); })">Dodaj osoby</button>
                         <button class="btn-secondary" @onclick="() => _chatStateService.SettingsView = ChatSettingsView.ChangePhoto">Zmień zdjecie grupy</button>
                         <button class="btn-secondary btn-delete" @onclick="_chatSettingsActionService.RequestLeaveChat">Opuść czat</button>
@@ -61,7 +61,7 @@
                 <div class="sidebar-header"><h3>Uczestnicy</h3></div>
                 @foreach (var user in ExistingUsers)
                 {
-                    <button @key="user.UserID" class="users-in-chat-button" @onclick="() => OpenUserDetails(user.UserID,user.Username)">
+                    <button @key="user.UserID" class="users-in-chat-button" @onclick="() => OpenUserDetails(user.UserID,user.Alias,user.Username)">
                         <div class="users-in-chat-detail">
                             <img src="@user.AvatarUrl" class="user-avatar" />
                             <span>@(!string.IsNullOrEmpty(user.Alias) ? user.Alias : user.Username)</span>
@@ -90,22 +90,29 @@
                 </div>
                 break;
             case ChatSettingsView.UserDetails:
-                <div class="sidebar-header"><h3>Szczegóły użytkownika</h3></div>
-                <div class="user-details-info">
-                    <img src="@(ExistingUsers.FirstOrDefault(u => u.UserID == _currentUserDetails)?.AvatarUrl)" class="user-avatar-large" />
-                    <h4>@(ExistingUsers.FirstOrDefault(u => u.UserID == _currentUserDetails)?.Alias ?? _currentUsername)</h4>
+                <div class="user-details-wrapper">
+                    <div class="sidebar-header"><h3>Szczegóły użytkownika</h3></div>
+                <div class="users-chat-detail">
+                    <img src="@(ExistingUsers.FirstOrDefault(u => u.UserID == _currentUserDetails)?.AvatarUrl)" class="avatar-wrapper" />
+                    <h4>@(ExistingUsers.FirstOrDefault(u => u.UserID == _currentUserDetails)?.Alias ?? _currentAlias)</h4>
                     @if (!string.IsNullOrEmpty(ExistingUsers.FirstOrDefault(u => u.UserID == _currentUserDetails)?.Alias) && ExistingUsers.FirstOrDefault(u => u.UserID == _currentUserDetails)?.Alias != _currentUsername)
                     {
-                        <span class="username-sub">(@_currentUsername)</span>
+                        <span class="username-sub">@_currentUsername</span>
                     }
+                </div>
                 </div>
                 <button class="btn-secondary" @onclick="() => _chatStateService.SettingsView = ChatSettingsView.ChangeAlias">Zmień alias</button>
                 <button class="btn-add-action" @onclick="CloseUserDetails">Cofnij</button>
                 break;
             case ChatSettingsView.ChangeAlias:
+                 <div class="search-container">
                 <input type="text" class="form-control" placeholder="Nowa nazwa użytkownika..."
                        @bind="_newAlias" />
+                       </div>
                 <button class="btn-add-action" @onclick="async () => await HandleAliasChangeAsync()">Zatwierdź</button>
+                <button class="btn-secondary" @onclick="() => _chatStateService.SettingsView = ChatSettingsView.UserDetails">Cofnij</button>
+
+
 
                 break;
         }
@@ -120,6 +127,7 @@
     private string _newChatName = string.Empty;
     private string _newAlias = string.Empty;
     private string _currentUsername = string.Empty;
+    private string _currentAlias = string.Empty;
     private Guid _currentUserDetails;
     private AddType _type;
     private IEnumerable<ContactDTO> FilteredContacts =>
@@ -161,8 +169,9 @@
         _chatSettingsActionService.RequestContactDelete(_appStateService.CurrentChat.Identity.ChatID);
 
     }
-    private void OpenUserDetails(Guid userId,string username)
+    private void OpenUserDetails(Guid userId,string alias,string username)
     {
+        _currentAlias = alias;
         _currentUsername = username;
         _currentUserDetails = userId;
         _chatStateService.SettingsView = ChatSettingsView.UserDetails;
@@ -170,6 +179,7 @@
     private void CloseUserDetails()
     {
         _currentUserDetails = Guid.Empty;
+        _currentAlias = string.Empty;
         _currentUsername = string.Empty;
         _chatStateService.SettingsView = ChatSettingsView.Users;
     }
@@ -181,15 +191,13 @@
             Guid chatId = _appStateService.CurrentChat.Identity.ChatID;
             _chatStateService.SettingsView = ChatSettingsView.UserDetails;
             Guid adminId = _appStateService.CurrentUser.UserID;
-            string adminName = _appStateService.CurrentUser.Username;
-            await _chatApiClient.ChangeUserAliasAsync(chatId, adminId, _newAlias, adminName, _currentUserDetails, _currentUsername);
+            string adminName = _appStateService.CurrentChat.Identity.Alias;
+            await _chatApiClient.ChangeUserAliasAsync(chatId, adminId, _newAlias, adminName, _currentUserDetails, _currentAlias);
             
-            // Jeśli zmieniamy alias aktualnie zalogowanego użytkownika
             if (_currentUserDetails == _appStateService.CurrentUser.UserID)
             {
                 _appStateService.CurrentChat.Identity.Alias = _newAlias;
             }
-            // Jeśli to czat prywatny i zmieniamy alias drugiej osoby
             else if (!_appStateService.CurrentChat.Identity.IsGroup && _currentUserDetails == _appStateService.CurrentChat.Identity.OtherUserId)
             {
                 _appStateService.CurrentChat.Identity.OtherUserAlias = _newAlias;
@@ -205,13 +213,11 @@
     }
     private async Task HandleChatLeaveAsync()
     {
-        //IsSettingsOpen = false;
         await _chatSettingsActionService.HandleChatLeaveAsync();
     }
 
     private async Task HandleChatDeleteAsync()
     {
-        //IsSettingsOpen = false;
         await _chatSettingsActionService.HandleChatDeleteAsync();
 
     }

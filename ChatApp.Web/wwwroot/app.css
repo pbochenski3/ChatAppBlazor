@@ -850,6 +850,33 @@ body {
     font-family: 'DM Sans', sans-serif;
     font-size: 0.85rem;
 }
+user-details-wrapper {
+    display: flex;
+    flex-direction: column; /* Układ pionowy: Nagłówek -> Detale */
+    align-items: center;
+    width: 100%;
+}
+
+.users-chat-detail {
+    display: flex;
+    flex-direction: column; /* Układ pionowy: Avatar -> Nick -> Username */
+    align-items: center; /* Środkowanie w poziomie */
+    text-align: center; /* Środkowanie tekstu wewnątrz linii */
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    margin-top: 20px;
+}
+
+.avatar-wrapper {
+    padding: 10px;
+    margin-bottom: 20px;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
 
 /* =========================================
    CHAT MAIN WRAPPER
