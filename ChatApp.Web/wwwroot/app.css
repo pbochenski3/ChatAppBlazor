@@ -852,16 +852,16 @@ body {
 }
 user-details-wrapper {
     display: flex;
-    flex-direction: column; /* Układ pionowy: Nagłówek -> Detale */
+    flex-direction: column; 
     align-items: center;
     width: 100%;
 }
 
 .users-chat-detail {
     display: flex;
-    flex-direction: column; /* Układ pionowy: Avatar -> Nick -> Username */
-    align-items: center; /* Środkowanie w poziomie */
-    text-align: center; /* Środkowanie tekstu wewnątrz linii */
+    flex-direction: column; 
+    align-items: center; 
+    text-align: center; 
     color: white;
     font-family: 'DM Sans', sans-serif;
     font-size: 0.85rem;

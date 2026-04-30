@@ -25,17 +25,13 @@
                             @(IsMyMessage(msg) ? "mine" : "")">
                                 @if (!IsSystem(msg) && !IsMyMessage(msg))
                                 {
-                                <div class="message-info">
-                                <span class="message-time">[@msg.SentAt.ToString("HH:mm")]</span>
-                                @if(_appStateService.CurrentChat.Identity.IsGroup)
-                                        {
-                                            <span class="message-user">@_appStateService.CurrentChat.Identity.ChatName:</span>
+                                    <div class="message-info">
+                                        <span class="message-time">[@msg.SentAt.ToString("HH:mm")]</span>
+                                        @{
+                                            var sender = _chatStateService.UsersInChat.FirstOrDefault(u => u.Username == msg.SenderUsername);
+                                            var displayName = sender?.Alias ?? msg.SenderUsername;
                                         }
-                                        else
-                                        {
-                                        <span class="message-user">@_appStateService.CurrentChat.Identity.OtherUserAlias:</span>
-
-                                        }
+                                        <span class="message-user">@displayName:</span>
                                     </div>
                                 }
                                 <div class="message-body">

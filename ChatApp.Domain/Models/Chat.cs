@@ -53,13 +53,13 @@ namespace ChatApp.Domain.Models
             {
                 UserID = user1.UserID,
                 ChatID = chatId,
-                Alias = user2.Username,
+                Alias = user1.Username,
             });
             chat.UserChats.Add(new UserChat
             {
                 UserID = user2.UserID,
                 ChatID = chatId,
-                Alias = user1.Username,
+                Alias = user2.Username,
             });
 
             return chat;

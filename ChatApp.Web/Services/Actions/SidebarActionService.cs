@@ -120,19 +120,40 @@ namespace ChatApp.Web.Services.Actions
             OnSidebarStateChanged?.Invoke();
 
         }
-        public async Task HandleChatNameReloadAsync(Guid chatId, string newChatName,Guid userId)
+        public async Task HandleChatNameReloadAsync(Guid chatId, string newChatName, Guid userId)
         {
-            var chat = _sidebarStateService.SidebarItems.FirstOrDefault(c => c.Identity.ChatID == chatId && c.Identity.UserID != userId);
-            if (chat != null)
-            {
-                chat.Identity.ChatName = newChatName;
-            }
-            if (_appStateService.CurrentChat != null && _appStateService.CurrentChat.Identity.ChatID == chatId)
-            {
-                _appStateService.CurrentChat.Identity.ChatName = newChatName;
-            }
-            OnSidebarStateChanged?.Invoke();
+            var chatsToUpdate = _sidebarStateService.SidebarItems
+                .Where(c => c.Identity.ChatID == chatId)
+                .ToList();
 
+            foreach (var chat in chatsToUpdate)
+            {
+                if (chat.Identity.IsGroup)
+                {
+                    chat.Identity.ChatName = newChatName;
+                }
+                else if (chat.Identity.OtherUserId == userId)
+                {
+                    chat.Identity.ChatName = newChatName;
+                    chat.Identity.OtherUserAlias = newChatName;
+                }
+            }
+
+            var current = _appStateService.CurrentChat;
+            if (current != null && current.Identity.ChatID == chatId)
+            {
+                if (current.Identity.IsGroup)
+                {
+                    current.Identity.ChatName = newChatName;
+                }
+                else if (current.Identity.OtherUserId == userId)
+                {
+                    current.Identity.ChatName = newChatName;
+                    current.Identity.OtherUserAlias = newChatName;
+                }
+            }
+
+            OnSidebarStateChanged?.Invoke();
         }
         public async Task HandleSidebarLockAsync()
         {
