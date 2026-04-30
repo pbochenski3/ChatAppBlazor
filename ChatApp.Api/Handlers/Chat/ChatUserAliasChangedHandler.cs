@@ -24,20 +24,14 @@ namespace ChatApp.Api.Handlers.Chat
             var isGroup = await _chatRepo.IsChatGroupAsync(n.ChatId);
             var usersInChat = await _userChatRepo.GetUsersInChatIdAsync(n.ChatId);
             var usersToNofitify = usersInChat.Select(u => u.ToString()).ToList();
-            var systemMessage = new Domain.Models.Message
-            {
-                ChatID = n.ChatId,
-                MessageID = Guid.CreateVersion7(),
-                Content = $"{n.Request.adminName} zmienił nazwe użytkownika {n.Request.username} na {n.Request.Alias} !",
-                MessageType = MessageType.System,
-                SentAt = DateTime.UtcNow,
-            };
+            var systemMessage = Domain.Models.Message.CreateSystemMessage(n.ChatId, $"{n.Request.adminName} zmienił nazwe użytkownika {n.Request.username} na {n.Request.Alias} !");
             await _messageRepo.AddMessageAsync(systemMessage);
             await _hubContext.Clients.Users(usersToNofitify).SendAsync("ReceiveMessage", systemMessage);
 
             if (!isGroup)
             {
-                await _hubContext.Clients.Users(usersToNofitify).SendAsync("UpdateChatName", n.ChatId, n.Request.Alias);
+                await _hubContext.Clients.Users(usersToNofitify).SendAsync("UpdateChatName", n.ChatId, n.Request.Alias,n.Request.changeUserId);
+
             }
 
             await _hubContext.Clients.Users(usersToNofitify).SendAsync("UserAliasChanged", n.ChatId, n.Request.changeUserId, n.Request.Alias);

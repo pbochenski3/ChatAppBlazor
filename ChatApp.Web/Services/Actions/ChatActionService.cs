@@ -177,11 +177,8 @@ namespace ChatApp.Web.Services.Actions
 
         public async Task HandleUserAliasChangeAsync(Guid chatId, Guid userId, string newAlias)
         {
-            if (_appStateService.CurrentChat?.Identity.ChatID != chatId)
-            {
-                return;
-            }
-
+            if (_appStateService.CurrentUser?.UserID != userId) return;
+            if (_appStateService.CurrentChat?.Identity.ChatID != chatId) return;
             _chatStateService.UpdateUserAliasInMessages(userId, newAlias);
             OnStateChanged?.Invoke();
         }

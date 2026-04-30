@@ -92,9 +92,9 @@ namespace ChatApp.Web.Services.Api
         {
             return await _httpClient.GetFromJsonAsync<HashSet<Guid>>($"api/chat/{chatId}/usersId");
         }
-        public async Task ChangeUserAliasAsync(Guid chatId,Guid adminId,string newAlias, string adminName,Guid userId,string username)
+        public async Task ChangeUserAliasAsync(Guid chatId,Guid adminId,string newAlias, string adminAlias,Guid userId,string username)
         {
-            var request = new ChangeAliasRequest(adminId, newAlias, adminName,userId,username);
+            var request = new ChangeAliasRequest(adminId, newAlias, adminAlias,userId,username);
             var response = await _httpClient.PatchAsJsonAsync($"/api/chat/{chatId}/alias", request);
             if (response.IsSuccessStatusCode)
             {

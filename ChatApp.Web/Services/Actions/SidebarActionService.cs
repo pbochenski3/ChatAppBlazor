@@ -120,9 +120,9 @@ namespace ChatApp.Web.Services.Actions
             OnSidebarStateChanged?.Invoke();
 
         }
-        public async Task HandleChatNameReloadAsync(Guid chatId, string newChatName)
+        public async Task HandleChatNameReloadAsync(Guid chatId, string newChatName,Guid userId)
         {
-            var chat = _sidebarStateService.SidebarItems.FirstOrDefault(c => c.Identity.ChatID == chatId);
+            var chat = _sidebarStateService.SidebarItems.FirstOrDefault(c => c.Identity.ChatID == chatId && c.Identity.UserID != userId);
             if (chat != null)
             {
                 chat.Identity.ChatName = newChatName;

@@ -1,4 +1,5 @@
 ﻿using ChatApp.Application.DTO;
+using ChatApp.Domain.Enums;
 using ChatApp.Domain.Interfaces.Repository;
 using ChatApp.Domain.Models;
 using ChatApp.Domain.Repository.Decorators;
@@ -18,7 +19,7 @@ namespace ChatApp.Infrastructure.Persistence.Decorators
         }
         public async Task AddMessageAsync(Message message)
         {
-            if (!string.IsNullOrWhiteSpace(message.Content))
+            if (!string.IsNullOrWhiteSpace(message.Content) && message.MessageType != MessageType.System)
             {
                 message.Content = _encryptionService.Encrypt(message.Content);
             }

@@ -18,7 +18,7 @@ namespace ChatApp.Web.Handlers
         }
         public async Task Handle(SidebarEvents.ChatNameChanged notification, CancellationToken cancellationToken)
         {
-            await _sidebarActionService.HandleChatNameReloadAsync(notification.ChatId, notification.NewName);
+            await _sidebarActionService.HandleChatNameReloadAsync(notification.ChatId, notification.NewName,notification.UserId);
         }
 
         public async Task Handle(SidebarEvents.ChatListChanged notification, CancellationToken cancellationToken)
