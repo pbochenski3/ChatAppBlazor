@@ -31,9 +31,10 @@ namespace ChatApp.Api.Handlers.Chat
                 MessageType = MessageType.System,
                 SentAt = DateTime.UtcNow,
             };
+            Guid userIdDummy = Guid.Empty;
             await _messageRepo.AddMessageAsync(systemMessage);
             await _hubContext.Clients.Users(usersToNofitify).SendAsync("ReceiveMessage", systemMessage);
-            await _hubContext.Clients.Users(usersToNofitify).SendAsync("UpdateChatName", n.ChatId, n.Request.NewName);
+            await _hubContext.Clients.Users(usersToNofitify).SendAsync("UpdateChatName", n.ChatId, n.Request.NewName, userIdDummy);
         }
     }
 }
