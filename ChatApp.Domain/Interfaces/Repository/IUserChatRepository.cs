@@ -5,6 +5,7 @@ namespace ChatApp.Domain.Interfaces.Repository
     public interface IUserChatRepository
     {
         #region Read & Sync Status
+        Task UpdateAdminFlagAsync(Guid userId, Guid chatId, bool flag);
         Task UpdateLastReadMessageAsync(Guid userId, Guid chatId, Guid messageId);
         Task UpdateAliasOnChat(Guid userId, Guid chatId, string newAlias);
         Task UpdateLastSentMessageAsync(Guid chatId, Guid messageId);
@@ -21,6 +22,7 @@ namespace ChatApp.Domain.Interfaces.Repository
         Task<bool> GetChatStatusById(Guid chatId, Guid userId);
         #endregion
         #region Queries & Membership
+        Task<bool> GetUserAdminFlagAsync(Guid userId, Guid chatId);
         Task<DateTime?> GetLastMessageDateAsync(Guid userId, Guid chatId);
         Task<bool> ExistsAsync(Guid chatId);
         Task<HashSet<Guid>> GetUsersInChatIdAsync(Guid chatId);

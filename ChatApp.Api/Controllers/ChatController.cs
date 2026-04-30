@@ -4,6 +4,8 @@ using ChatApp.Application.Feature.Chat.CheckGroupChatExists;
 using ChatApp.Application.Feature.Chat.DeleteChat;
 using ChatApp.Application.Feature.Chat.GetChatDetails;
 using ChatApp.Application.Feature.Chat.GetChatUsers;
+using ChatApp.Application.Feature.Chat.GetUserPermissions;
+using ChatApp.Application.Feature.Chat.UpdateAdminFlagOnChat;
 using ChatApp.Application.Feature.Chat.UpdateChatName;
 using ChatApp.Application.Feature.Chat.UpdateUserAlias;
 using ChatApp.Application.Feature.File.SaveChatImage;
@@ -102,6 +104,22 @@ namespace ChatApp.Api.Controllers
 
             return result ? Ok() : BadRequest();
         }
+        [HttpPatch("{chatId}/admin/{selectedUserId}")]
+        public async Task<IActionResult> UpdateAdminFlagOnChatAsync([FromRoute] Guid chatId, [FromRoute] Guid selectedUserId, [FromQuery] bool flag)
+        {
+            if (chatId == Guid.Empty) return BadRequest();
+            if (selectedUserId == Guid.Empty) return BadRequest();
+            var result = await _mediator.Send(new UpdateAdminFlagOnChatCommand(chatId, selectedUserId,flag));
+            return result ? Ok() : BadRequest();
+        }
+        [HttpGet("{chatId}/permissions")]
+        public async Task<ActionResult<UserChatDTO>> GetChatPermissions([FromRoute] Guid chatId, CancellationToken ct)
+        {
+            var userId = CurrentUserId;
+            var response = await _mediator.Send(new GetUserPermissionsOnChatQuery(userId, chatId));
+            return Ok(response);
+        }
+
 
     }
 }

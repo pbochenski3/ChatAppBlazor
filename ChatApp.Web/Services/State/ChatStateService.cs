@@ -17,6 +17,10 @@ namespace ChatApp.Web.Services.State
         public bool IsSettingsOpen { get; set; }
         public bool IsArchive { get; set; } = false;
         public bool IsChatLocked { get; set; } = true;
+        public string CurrentUsername { get; set; } = string.Empty;
+        public string CurrentAlias { get; set; } = string.Empty;
+        public Guid CurrentUserDetailsId;
+        public bool IsAdmin { get; set; } = false;
         public ChatSettingsView SettingsView { get; set; } = ChatSettingsView.Settings;
         public event Action? OnStateChanged;
         public void ToggleSettings()

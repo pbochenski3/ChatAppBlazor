@@ -17,6 +17,13 @@ namespace ChatApp.Infrastructure.Persistence
             _logger = logger;
         }
         #region Read & Sync Status
+        public async Task UpdateAdminFlagAsync(Guid userId,Guid chatId,bool flag)
+        {
+            await _context.UserChat
+                .Where(uc => uc.UserID == userId && uc.ChatID == chatId)
+                .ExecuteUpdateAsync(s => s
+                .SetProperty(uc => uc.IsAdmin, flag));
+        }
         public async Task UpdateLastReadMessageAsync(Guid userId, Guid chatId, Guid messageId)
         {
             await _context.UserChat
@@ -151,6 +158,13 @@ namespace ChatApp.Infrastructure.Persistence
         }
         #endregion
         #region Queries & Membership
+        public async Task<bool> GetUserAdminFlagAsync(Guid userId, Guid chatId)
+        {
+            return await _context.UserChat
+            .Where(u => u.ChatID == chatId && u.UserID == userId)
+            .Select(u => u.IsAdmin)
+            .FirstOrDefaultAsync();
+        }
         public async Task<DateTime?> GetLastMessageDateAsync(Guid userId, Guid chatId)
         {
             return await _context.UserChat

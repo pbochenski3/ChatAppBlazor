@@ -67,8 +67,8 @@
     private async Task SelectContact(Guid contactId)
     {
         _sidebarStateService.SelectedContactId = contactId;
-        await _chatActionService.HandleChatLoadAsync(new ContactSelectedArgs(contactId));
         _chatStateService.SettingsView = ChatSettingsView.Settings;
+        await _chatActionService.HandleChatLoadAsync(new ContactSelectedArgs(contactId));
         StateHasChanged();
     }
     private void HandleStateChange()

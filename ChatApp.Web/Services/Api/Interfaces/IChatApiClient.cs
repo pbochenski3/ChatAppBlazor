@@ -14,5 +14,7 @@ namespace ChatApp.Web.Services.Api.Interfaces
         Task<bool> IsChatExistingAsync(Guid chatId);
         Task<HashSet<Guid>> GetChatUsersIdsAsync(Guid chatId);
         Task ChangeUserAliasAsync(Guid chatId, Guid adminId, string newAlias, string adminName, Guid userId, string username);
+        Task ChangeAdminFlagAsync(Guid chatId, Guid userId, bool flag);
+        Task<bool> GetChatPermissions(Guid chatId, Guid userId);
     }
 }

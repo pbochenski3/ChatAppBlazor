@@ -3,6 +3,7 @@ using ChatApp.Application.DTO.Chats;
 using ChatApp.Application.DTO.Requests;
 using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.State;
+using MediatR;
 using System.Net.Http.Json;
 
 namespace ChatApp.Web.Services.Api
@@ -120,6 +121,24 @@ namespace ChatApp.Web.Services.Api
                 _logger.LogError("Failed to change chat name for ChatId: {ChatId}. Status Code: {StatusCode}", chatId, response.StatusCode);
                 throw new Exception();
             }
+        }
+        public async Task ChangeAdminFlagAsync(Guid chatId,Guid selectedUserId, bool flag)
+        {
+            var response = await _httpClient.PatchAsync($"/api/chat/{chatId}/admin/{selectedUserId}?flag={flag}", null);
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("Chat name changed successfully for ChatId: {ChatId}", chatId);
+            }
+            else
+            {
+                _logger.LogError("Failed to change chat name for ChatId: {ChatId}. Status Code: {StatusCode}", chatId, response.StatusCode);
+                throw new Exception();
+            }
+        }
+        public async Task<bool> GetChatPermissions(Guid chatId,Guid userId)
+        {
+             return await _httpClient.GetFromJsonAsync<bool>($"/api/chat/{chatId}/permissions");
+
         }
     }
 }
