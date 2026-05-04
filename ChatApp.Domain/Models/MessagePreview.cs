@@ -1,4 +1,4 @@
-﻿namespace ChatApp.Application.DTO
+﻿namespace ChatApp.Domain.Models
 {
     public class MessagePreview
     {

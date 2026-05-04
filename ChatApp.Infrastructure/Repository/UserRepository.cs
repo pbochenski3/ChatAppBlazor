@@ -1,10 +1,10 @@
+using ChatApp.Domain.Entities;
 using ChatApp.Domain.Enums;
 using ChatApp.Domain.Interfaces.Repository;
-using ChatApp.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace ChatApp.Infrastructure.Persistence
+namespace ChatApp.Infrastructure.Repository
 {
     public class UserRepository : IUserRepository
     {

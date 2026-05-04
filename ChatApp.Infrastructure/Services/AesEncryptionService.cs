@@ -1,4 +1,4 @@
-﻿using ChatApp.Domain.Repository.Decorators;
+﻿using ChatApp.Domain.Interfaces.Decorators;
 using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
 using System.Text;

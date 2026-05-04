@@ -1,6 +1,7 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.Notifications.GroupChat;
-using ChatApp.Domain.Enums;
+using ChatApp.Application.Notifications.User;
+using ChatApp.Domain.Entities;
 using ChatApp.Domain.Interfaces.Repository;
 using Mapster;
 using MediatR;
@@ -20,27 +21,23 @@ namespace ChatApp.Application.Feature.GroupChat.LeaveGroupChatAsync
         }
         public async Task<bool> Handle(LeaveGroupChatCommand r, CancellationToken cancellationToken)
         {
+            var groupHaveAdmin = await _userChatRepo.CheckIfGroupHaveAdminAsync(r.ChatId, r.UserId);
+            if (!groupHaveAdmin)
+            {
+                r.AddEvent(new UserActionFailedNotification(r.UserId, "Zanim opuścisz grupe nadaj komuś admina!"));
+                return false;
+            }
             var isArchive = await _chatRepo.CheckIfChatIsArchive(r.ChatId, r.UserId);
-            if (isArchive == true)
+            if (isArchive)
             {
                 return false;
             }
             await _userChatRepo.ArchiveChatAsync(r.ChatId, r.UserId);
 
+            var systemMessage = Message.CreateSystemMessage(r.ChatId, $"{r.Username} opuścił czat.");
 
-            var systemMessage = new MessageDTO
-            {
-                ChatID = r.ChatId,
-                MessageID = Guid.CreateVersion7(),
-                Content = $"{r.Username} opuścił czat.",
-                SenderUsername = "SYSTEM",
-                MessageType = MessageType.System,
-                SentAt = DateTime.UtcNow,
-            };
-            var message = systemMessage.Adapt<Domain.Models.Message>();
-
-            await _messageRepo.AddMessageAsync(message);
-            r.AddEvent(new UserLeavedGroupNotification(r.ChatId, systemMessage, r.UserId));
+            await _messageRepo.AddMessageAsync(systemMessage);
+            r.AddEvent(new UserLeavedGroupNotification(r.ChatId, systemMessage.Adapt<MessageDTO>(), r.UserId, false));
             return true;
         }
     }

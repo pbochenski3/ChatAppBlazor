@@ -1,4 +1,4 @@
-using ChatApp.Domain.Models;
+using ChatApp.Domain.Entities;
 
 namespace ChatApp.Application.DTO
 {
@@ -9,6 +9,7 @@ namespace ChatApp.Application.DTO
         public string Alias { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public bool IsOnline { get; set; }
+        public bool IsAdmin { get; set; }
         public string? AvatarUrl { get; set; }
         public string? Token { get; set; }
         public static UserDTO CreateUserDto(User user, string token)

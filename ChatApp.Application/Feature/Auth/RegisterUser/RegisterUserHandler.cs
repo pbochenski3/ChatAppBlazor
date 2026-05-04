@@ -1,4 +1,5 @@
-﻿using ChatApp.Domain.Interfaces.Repository;
+﻿using ChatApp.Domain.Entities;
+using ChatApp.Domain.Interfaces.Repository;
 using MediatR;
 
 namespace ChatApp.Application.Feature.Auth.RegisterUser
@@ -36,7 +37,7 @@ namespace ChatApp.Application.Feature.Auth.RegisterUser
                 throw new Exception("Username already exists.");
             }
 
-            var user = new Domain.Models.User
+            var user = new User
             {
                 Username = r.RegisterData.Username,
                 Password = BCrypt.Net.BCrypt.HashPassword(r.RegisterData.Password),

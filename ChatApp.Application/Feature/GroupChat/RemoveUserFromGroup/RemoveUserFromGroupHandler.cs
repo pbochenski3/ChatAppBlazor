@@ -1,13 +1,10 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.Notifications.GroupChat;
 using ChatApp.Application.Notifications.User;
-using ChatApp.Domain.Enums;
+using ChatApp.Domain.Entities;
 using ChatApp.Domain.Interfaces.Repository;
 using Mapster;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ChatApp.Application.Feature.GroupChat.RemoveUserFromGroup
 {
@@ -31,27 +28,15 @@ namespace ChatApp.Application.Feature.GroupChat.RemoveUserFromGroup
                 return false;
             }
             var isArchive = await _chatRepo.CheckIfChatIsArchive(r.ChatId, r.UserId);
-            if (isArchive == true)
+            if (isArchive)
             {
                 return false;
             }
             await _userChatRepo.ArchiveChatAsync(r.ChatId, r.UserId);
 
-
-            var systemMessage = new MessageDTO
-            {
-                ChatID = r.ChatId,
-                MessageID = Guid.CreateVersion7(),
-                Content = $"{r.AdminName} usunął użytkownika {r.RemovedUserAlias} z grupy!.",
-                SenderUsername = "SYSTEM",
-                MessageType = MessageType.System,
-                SentAt = DateTime.UtcNow,
-            };
-            var message = systemMessage.Adapt<Domain.Models.Message>();
-
-
-            await _messageRepo.AddMessageAsync(message);
-            r.AddEvent(new UserLeavedGroupNotification(r.ChatId, systemMessage, r.UserId));
+            var systemMessage = Message.CreateSystemMessage(r.ChatId, $"{r.AdminName} usunął użytkownika {r.RemovedUserAlias} z grupy!.");
+            await _messageRepo.AddMessageAsync(systemMessage);
+            r.AddEvent(new UserLeavedGroupNotification(r.ChatId, systemMessage.Adapt<MessageDTO>(), r.UserId, true));
             return true;
         }
     }

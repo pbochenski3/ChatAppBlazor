@@ -1,6 +1,8 @@
-﻿using ChatApp.Application.Notifications.GroupChat;
+﻿using ChatApp.Application.DTO;
+using ChatApp.Application.Notifications.GroupChat;
 using ChatApp.Application.Notifications.User;
 using ChatApp.Domain.Interfaces.Repository;
+using Mapster;
 using MediatR;
 
 namespace ChatApp.Application.Feature.GroupChat.AddUsersToGroupChat
@@ -11,13 +13,11 @@ namespace ChatApp.Application.Feature.GroupChat.AddUsersToGroupChat
         private readonly IUserRepository _userRepo;
         private readonly IUserChatRepository _userChatRepo;
         private readonly IMessageRepository _messageRepo;
-        private readonly IMediator _mediator;
-        public AddUsersToGroupHandler(IChatRepository chatRepo, IUserRepository userRepo, IMessageRepository messageRepo, IMediator mediator, IUserChatRepository userChatRepo)
+        public AddUsersToGroupHandler(IChatRepository chatRepo, IUserRepository userRepo, IMessageRepository messageRepo, IUserChatRepository userChatRepo)
         {
             _chatRepo = chatRepo;
             _userRepo = userRepo;
             _messageRepo = messageRepo;
-            _mediator = mediator;
             _userChatRepo = userChatRepo;
         }
         public async Task<bool> Handle(AddUsersToGroupChatCommand r, CancellationToken cancellationToken)
@@ -35,7 +35,7 @@ namespace ChatApp.Application.Feature.GroupChat.AddUsersToGroupChat
             var usersToAdd = await _userRepo.GetUsersByIdsAsync(r.UsersToAdd);
             var systemMessage = chat.AddMembers(admin, usersToAdd);
             await _messageRepo.AddMessageAsync(systemMessage);
-            r.AddEvent(new UsersAddedToGroupChatNotification(chat.ChatID, systemMessage, r.UsersToAdd));
+            r.AddEvent(new UsersAddedToGroupChatNotification(chat.ChatID, systemMessage.Adapt<MessageDTO>(), r.UsersToAdd));
 
             return true;
         }

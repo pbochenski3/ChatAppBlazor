@@ -1,9 +1,9 @@
+using ChatApp.Domain.Entities;
 using ChatApp.Domain.Interfaces.Repository;
-using ChatApp.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace ChatApp.Infrastructure.Persistence
+namespace ChatApp.Infrastructure.Repository
 {
     public class ChatRepository : IChatRepository
     {
@@ -59,7 +59,7 @@ namespace ChatApp.Infrastructure.Persistence
                 .ToListAsync();
             var newIds = userIdsToAdd
                  .Where(id => !existingUserIds.Contains(id))
-                 .Distinct() 
+                 .Distinct()
                  .ToList();
 
             if (newIds.Any())

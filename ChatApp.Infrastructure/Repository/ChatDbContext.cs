@@ -1,8 +1,7 @@
-﻿
-using ChatApp.Domain.Models;
+﻿using ChatApp.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace ChatApp.Infrastructure.Persistence
+namespace ChatApp.Infrastructure.Repository
 {
     public class ChatDbContext : DbContext
     {

@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 
-namespace ChatApp.Infrastructure.Persistence
+namespace ChatApp.Infrastructure.Repository
 {
     public class UnitOfWork : IUnitOfWork
     {

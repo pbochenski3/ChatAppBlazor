@@ -1,0 +1,29 @@
+﻿using ChatApp.Application.Interfaces;
+using ChatApp.Application.Notifications.Chat;
+using ChatApp.Domain.Enums;
+using ChatApp.Domain.Interfaces.Repository;
+using MediatR;
+
+namespace ChatApp.Application.Feature.Files.SaveGroupAvatar
+{
+    public class SaveGroupAvatarHandler : IRequestHandler<SaveGroupAvatarCommand, bool>
+    {
+        private readonly IFileService _fileService;
+        private readonly IChatRepository _chatRepo;
+        private readonly IMediator _mediator;
+        public SaveGroupAvatarHandler(IFileService fileService, IChatRepository chatRepo, IMediator mediator)
+        {
+            _fileService = fileService;
+            _chatRepo = chatRepo;
+            _mediator = mediator;
+        }
+        public async Task<bool> Handle(SaveGroupAvatarCommand r, CancellationToken cancellationToken)
+        {
+            string avatarUrl = await _fileService.SaveImageAsync(r.File, UploadType.ChatImage, r.ChatId, r.UserId);
+            await _chatRepo.UpdateGroupAvatarUrl(r.ChatId, avatarUrl);
+            r.AddEvent(new GroupAvatarUpdatedNotification(r.ChatId, avatarUrl));
+            return true;
+
+        }
+    }
+}

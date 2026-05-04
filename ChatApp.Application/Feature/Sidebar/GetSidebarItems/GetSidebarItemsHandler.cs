@@ -1,5 +1,5 @@
-using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
+using ChatApp.Domain.Entities;
 using ChatApp.Domain.Interfaces.Repository;
 using ChatApp.Domain.Models;
 using MediatR;
@@ -28,7 +28,7 @@ namespace ChatApp.Application.Feature.Sidebar.GetSidebarItems
                 .ToList();
 
             var privateAliases = await _userChatRepo.GetPrivateUsersAliasesAsync(r.UserId, privateChatIds);
-   
+
 
 
             var counters = await _userChatRepo.CountAllUnreadMessageCountsAsync(r.UserId);
@@ -40,7 +40,7 @@ namespace ChatApp.Application.Feature.Sidebar.GetSidebarItems
               .ToList();
 
             var contentDict = await _messageRepo.GetMessagePreviewsAsync(messageIds);
-            
+
             return chatEntries
          .Select(uc => MapToUserChatDto(uc, privateAliases, r.UserId, contentDict, counterDict))
          .ToList();
@@ -49,7 +49,7 @@ namespace ChatApp.Application.Feature.Sidebar.GetSidebarItems
 
         private UserChatDTO MapToUserChatDto(
          UserChat uc,
-         Dictionary<Guid,string> privateAliases,
+         Dictionary<Guid, string> privateAliases,
          Guid currentUserId,
          Dictionary<Guid, MessagePreview> contentDict,
          Dictionary<Guid, int> unreadCounters)

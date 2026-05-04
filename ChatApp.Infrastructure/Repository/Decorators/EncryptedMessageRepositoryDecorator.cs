@@ -1,10 +1,10 @@
-﻿using ChatApp.Application.DTO;
+﻿using ChatApp.Domain.Entities;
 using ChatApp.Domain.Enums;
+using ChatApp.Domain.Interfaces.Decorators;
 using ChatApp.Domain.Interfaces.Repository;
 using ChatApp.Domain.Models;
-using ChatApp.Domain.Repository.Decorators;
 
-namespace ChatApp.Infrastructure.Persistence.Decorators
+namespace ChatApp.Infrastructure.Repository.Decorators
 {
     public class EncryptedMessageRepositoryDecorator : IMessageRepository
     {

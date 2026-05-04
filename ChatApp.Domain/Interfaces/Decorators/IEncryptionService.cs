@@ -1,4 +1,4 @@
-﻿namespace ChatApp.Domain.Repository.Decorators
+﻿namespace ChatApp.Domain.Interfaces.Decorators
 {
     public interface IEncryptionService
     {

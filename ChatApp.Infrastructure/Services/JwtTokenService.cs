@@ -1,6 +1,6 @@
-﻿using ChatApp.Application.DTO;
+﻿using ChatApp.Application.DTO.Shared;
 using ChatApp.Application.Interfaces;
-using ChatApp.Domain.Models;
+using ChatApp.Domain.Entities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;

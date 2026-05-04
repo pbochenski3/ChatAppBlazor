@@ -1,12 +1,12 @@
 using ChatApp.Api;
 using ChatApp.Api.Components;
 using ChatApp.Api.Services;
-using ChatApp.Application.DTO;
+using ChatApp.Application.DTO.Shared;
 using ChatApp.Application.Interfaces;
 using ChatApp.Application.Notifications.Chat;
 using ChatApp.Domain.Interfaces.Repository;
-using ChatApp.Infrastructure.Persistence;
 using ChatApp.Infrastructure.Providers;
+using ChatApp.Infrastructure.Repository;
 using ChatApp.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.SignalR;

@@ -1,4 +1,5 @@
 ﻿using ChatApp.Application.Notifications.GroupChat;
+using ChatApp.Domain.Entities;
 using ChatApp.Domain.Interfaces.Repository;
 using MediatR;
 
@@ -21,13 +22,13 @@ namespace ChatApp.Application.Feature.GroupChat.CreateGroupChat
         }
         public async Task<bool> Handle(CreateGroupChatCommand r, CancellationToken cancellationToken)
         {
-            Domain.Models.Chat targetChat;
-            Domain.Models.Message systemMessage;
+            Chat targetChat;
+            Message systemMessage;
             var existingsUsersIds = await _userChatRepo.GetUsersInChatIdAsync(r.ChatId);
             existingsUsersIds.UnionWith(r.UsersToAdd);
             var existingUsers = await _userRepo.GetUsersByIdsAsync(existingsUsersIds);
             var usersToAddList = r.UsersToAdd.ToList();
-            var result = Domain.Models.Chat.CreateNewGroup(r.UserId, existingUsers);
+            var result = Chat.CreateNewGroup(r.UserId, existingUsers);
             targetChat = result.Chat;
             systemMessage = result.SystemMessage;
             await _messageRepo.AddMessageAsync(systemMessage);

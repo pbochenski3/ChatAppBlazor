@@ -1,18 +1,17 @@
+using ChatApp.Domain.Entities;
 using ChatApp.Domain.Models;
 
 namespace ChatApp.Domain.Interfaces.Repository
 {
     public interface IUserChatRepository
     {
-        #region Read & Sync Status
+        Task<bool> CheckIfGroupHaveAdminAsync(Guid chatId, Guid userId);
         Task UpdateAdminFlagAsync(Guid userId, Guid chatId, bool flag);
         Task UpdateLastReadMessageAsync(Guid userId, Guid chatId, Guid messageId);
         Task UpdateAliasOnChat(Guid userId, Guid chatId, string newAlias);
         Task UpdateLastSentMessageAsync(Guid chatId, Guid messageId);
         Task<List<(Guid ChatId, int Count)>> CountAllUnreadMessageCountsAsync(Guid userId);
         Task<int> CountUnreadMessagesAsync(Guid userId, Guid chatId);
-        #endregion
-        #region Visibility & Archive
         Task ArchiveChatAsync(Guid chatId, Guid userId);
         Task ArchivePrivateChatAsync(Guid chatId, Guid userId, Guid contactId);
         Task UnarchiveChatAsync(Guid chatId, HashSet<Guid> userIds);
@@ -20,8 +19,6 @@ namespace ChatApp.Domain.Interfaces.Repository
         Task SetChatAccessibilityAsync(Guid chatId, bool active, HashSet<Guid>? userIds = null);
         Task<bool> IsChatArchivedAsync(Guid chatId, Guid userId);
         Task<bool> GetChatStatusById(Guid chatId, Guid userId);
-        #endregion
-        #region Queries & Membership
         Task<bool> GetUserAdminFlagAsync(Guid userId, Guid chatId);
         Task<DateTime?> GetLastMessageDateAsync(Guid userId, Guid chatId);
         Task<bool> ExistsAsync(Guid chatId);
@@ -32,6 +29,6 @@ namespace ChatApp.Domain.Interfaces.Repository
         Task<string> GetPrivateUserAliasAsync(Guid chatId, Guid userId);
         Task<Dictionary<Guid, string>> GetPrivateUsersAliasesAsync(Guid userId, List<Guid> chatsIds);
         Task<Dictionary<Guid, string>> GetChatAliasesAsync(Guid chatId);
-        #endregion
+        Task<HashSet<ChatMemberInfo>> GetChatMembersAsync(Guid chatId);
     }
 }

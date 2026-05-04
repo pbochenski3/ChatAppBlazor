@@ -3,7 +3,6 @@ using ChatApp.Application.DTO.Chats;
 using ChatApp.Application.DTO.Requests;
 using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.State;
-using MediatR;
 using System.Net.Http.Json;
 
 namespace ChatApp.Web.Services.Api
@@ -13,7 +12,7 @@ namespace ChatApp.Web.Services.Api
         private readonly ILogger<ChatApiClient> _logger;
         private readonly HttpClient _httpClient;
         private readonly AppStateService _appState;
-        public ChatApiClient(ILogger<ChatApiClient> logger, HttpClient httpClient,AppStateService appState)
+        public ChatApiClient(ILogger<ChatApiClient> logger, HttpClient httpClient, AppStateService appState)
         {
             _logger = logger;
             _httpClient = httpClient;
@@ -93,9 +92,9 @@ namespace ChatApp.Web.Services.Api
         {
             return await _httpClient.GetFromJsonAsync<HashSet<Guid>>($"api/chat/{chatId}/usersId");
         }
-        public async Task ChangeUserAliasAsync(Guid chatId,Guid adminId,string newAlias, string adminAlias,Guid userId,string username)
+        public async Task ChangeUserAliasAsync(Guid chatId, Guid adminId, string newAlias, string adminAlias, Guid userId, string username)
         {
-            var request = new ChangeAliasRequest(adminId, newAlias, adminAlias,userId,username);
+            var request = new ChangeAliasRequest(adminId, newAlias, adminAlias, userId, username);
             var response = await _httpClient.PatchAsJsonAsync($"/api/chat/{chatId}/alias", request);
             if (response.IsSuccessStatusCode)
             {
@@ -108,9 +107,9 @@ namespace ChatApp.Web.Services.Api
             }
 
         }
-        public async Task ChangeChatNameAsync(Guid chatId, string chatName, string adminName,bool isGroup)
+        public async Task ChangeChatNameAsync(Guid chatId, string chatName, string adminName, bool isGroup)
         {
-            var request = new ChangeChatNameRequest(chatName, adminName,isGroup);
+            var request = new ChangeChatNameRequest(chatName, adminName, isGroup);
             var response = await _httpClient.PatchAsJsonAsync($"/api/chat/{chatId}/name", request);
             if (response.IsSuccessStatusCode)
             {
@@ -122,23 +121,19 @@ namespace ChatApp.Web.Services.Api
                 throw new Exception();
             }
         }
-        public async Task ChangeAdminFlagAsync(Guid chatId,Guid selectedUserId, bool flag)
+        public async Task ChangeAdminFlagAsync(Guid chatId, Guid selectedUserId, bool flag)
         {
-            var response = await _httpClient.PatchAsync($"/api/chat/{chatId}/admin/{selectedUserId}?flag={flag}", null);
+            var response = await _httpClient.PatchAsJsonAsync($"/api/chat/{chatId}/admin/{selectedUserId}", new UpdateAdminRequest(flag));
             if (response.IsSuccessStatusCode)
             {
                 _logger.LogInformation("Chat name changed successfully for ChatId: {ChatId}", chatId);
             }
             else
             {
-                _logger.LogError("Failed to change chat name for ChatId: {ChatId}. Status Code: {StatusCode}", chatId, response.StatusCode);
-                throw new Exception();
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogError("Błąd API ({StatusCode}): {Error}", response.StatusCode, errorContent);
+                throw new HttpRequestException($"Błąd serwera: {response.StatusCode}");
             }
-        }
-        public async Task<bool> GetChatPermissions(Guid chatId,Guid userId)
-        {
-             return await _httpClient.GetFromJsonAsync<bool>($"/api/chat/{chatId}/permissions");
-
         }
 
     }

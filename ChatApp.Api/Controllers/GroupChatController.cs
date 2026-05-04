@@ -58,9 +58,9 @@ namespace ChatApp.Api.Controllers
             var userId = CurrentUserId;
             try
             {
-                await _mediator.Send(new LeaveGroupChatCommand(chatId, userId, username));
+                var response = await _mediator.Send(new LeaveGroupChatCommand(chatId, userId, username));
 
-                return Ok();
+                return response ? Ok() : Forbid();
             }
             catch (Exception ex)
             {
@@ -73,7 +73,7 @@ namespace ChatApp.Api.Controllers
             if (userId == CurrentUserId) return BadRequest();
             try
             {
-                var result = await _mediator.Send(new RemoveUserFromGroupCommand(chatId, userId,CurrentUserId, removedUserName,adminName));
+                var result = await _mediator.Send(new RemoveUserFromGroupCommand(chatId, userId, CurrentUserId, removedUserName, adminName));
 
                 return result ? Ok() : BadRequest();
             }

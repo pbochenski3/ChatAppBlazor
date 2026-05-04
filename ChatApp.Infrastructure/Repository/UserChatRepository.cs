@@ -1,10 +1,10 @@
+using ChatApp.Domain.Entities;
 using ChatApp.Domain.Interfaces.Repository;
 using ChatApp.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 
-namespace ChatApp.Infrastructure.Persistence
+namespace ChatApp.Infrastructure.Repository
 {
     public class UserChatRepository : IUserChatRepository
     {
@@ -16,8 +16,7 @@ namespace ChatApp.Infrastructure.Persistence
             _context = context;
             _logger = logger;
         }
-        #region Read & Sync Status
-        public async Task UpdateAdminFlagAsync(Guid userId,Guid chatId,bool flag)
+        public async Task UpdateAdminFlagAsync(Guid userId, Guid chatId, bool flag)
         {
             await _context.UserChat
                 .Where(uc => uc.UserID == userId && uc.ChatID == chatId)
@@ -41,7 +40,6 @@ namespace ChatApp.Infrastructure.Persistence
                     .SetProperty(uc => uc.Alias, newAlias)
                 );
         }
-
         public async Task UpdateLastSentMessageAsync(Guid chatId, Guid messageId)
         {
             var affected = await _context.UserChat
@@ -77,8 +75,6 @@ namespace ChatApp.Infrastructure.Persistence
                 .ToListAsync();
             return rawData.Select(x => (x.Id, x.UnreadCount)).ToList();
         }
-        #endregion
-        #region Visibility & Archive
         public async Task ArchiveChatAsync(Guid chatId, Guid userId)
         {
             await _context.UserChat
@@ -149,8 +145,6 @@ namespace ChatApp.Infrastructure.Persistence
                                c.UserID == userId &&
                                c.IsArchive == true);
         }
-
-
         public async Task<bool> GetChatStatusById(Guid chatId, Guid userId)
         {
             return await _context.UserChat
@@ -158,8 +152,6 @@ namespace ChatApp.Infrastructure.Persistence
                 .Select(uc => uc.IsArchive)
                 .FirstOrDefaultAsync();
         }
-        #endregion
-        #region Queries & Membership
         public async Task<bool> GetUserAdminFlagAsync(Guid userId, Guid chatId)
         {
             return await _context.UserChat
@@ -227,7 +219,6 @@ namespace ChatApp.Infrastructure.Persistence
                 ? (!string.IsNullOrEmpty(data.Alias) ? data.Alias : data.Username)
                 : "Użytkownik";
         }
-
         public async Task<Dictionary<Guid, string>> GetPrivateUsersAliasesAsync(Guid userId, List<Guid> chatsIds)
         {
             if (chatsIds == null || !chatsIds.Any())
@@ -242,7 +233,13 @@ namespace ChatApp.Infrastructure.Persistence
                     x => !string.IsNullOrEmpty(x.Alias) ? x.Alias : x.Username
                 );
         }
-
+        public async Task<bool> CheckIfGroupHaveAdminAsync(Guid chatId, Guid userId)
+        {
+            return await _context.UserChat
+                .AsNoTracking()
+                .Where(uc => uc.ChatID == chatId && uc.UserID != userId && uc.IsArchive == false)
+                .AnyAsync(uc => uc.IsAdmin == true);
+        }
         public async Task<Dictionary<Guid, string>> GetChatAliasesAsync(Guid chatId)
         {
             return await _context.UserChat
@@ -251,9 +248,23 @@ namespace ChatApp.Infrastructure.Persistence
                 .Select(uc => new { uc.UserID, Alias = !string.IsNullOrEmpty(uc.Alias) ? uc.Alias : uc.User.Username })
                 .ToDictionaryAsync(x => x.UserID, x => x.Alias);
         }
-        #endregion
-
-
+        public async Task<HashSet<ChatMemberInfo>> GetChatMembersAsync(Guid chatId)
+        {
+            var members = await _context.UserChat
+           .AsNoTracking()
+           .Where(uc => uc.ChatID == chatId && !uc.IsArchive)
+           .Select(uc => new ChatMemberInfo
+           (
+               uc.UserID,
+               uc.User.Username,
+               uc.User.AvatarUrl,
+               uc.User.IsOnline,
+               uc.Alias,
+               uc.IsAdmin
+           ))
+           .ToListAsync();
+            return members.DistinctBy(m => m.UserID).ToHashSet();
+        }
 
     }
 }

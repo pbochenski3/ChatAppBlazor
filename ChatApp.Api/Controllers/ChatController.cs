@@ -1,16 +1,14 @@
 ﻿using ChatApp.Application.DTO.Chats;
 using ChatApp.Application.DTO.Requests;
-using ChatApp.Application.Feature.Chat.CheckGroupChatExists;
-using ChatApp.Application.Feature.Chat.DeleteChat;
-using ChatApp.Application.Feature.Chat.GetChatDetails;
-using ChatApp.Application.Feature.Chat.GetChatUsers;
-using ChatApp.Application.Feature.Chat.GetUserPermissions;
-using ChatApp.Application.Feature.Chat.UpdateAdminFlagOnChat;
-using ChatApp.Application.Feature.Chat.UpdateChatName;
-using ChatApp.Application.Feature.Chat.UpdateUserAlias;
-using ChatApp.Application.Feature.File.SaveChatImage;
-using ChatApp.Application.Feature.File.SaveGroupAvatar;
-using ChatApp.Domain.Models;
+using ChatApp.Application.Feature.Chats.CheckGroupChatExists;
+using ChatApp.Application.Feature.Chats.DeleteChat;
+using ChatApp.Application.Feature.Chats.GetChatDetails;
+using ChatApp.Application.Feature.Chats.GetChatUsers;
+using ChatApp.Application.Feature.Chats.UpdateAdminFlagOnChat;
+using ChatApp.Application.Feature.Chats.UpdateGroupChatName;
+using ChatApp.Application.Feature.Chats.UpdateUserAlias;
+using ChatApp.Application.Feature.Files.SaveChatImage;
+using ChatApp.Application.Feature.Files.SaveGroupAvatar;
 using ChatApp.Domain.Shared;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -106,22 +104,14 @@ namespace ChatApp.Api.Controllers
             return result ? Ok() : BadRequest();
         }
         [HttpPatch("{chatId}/admin/{selectedUserId}")]
-        public async Task<IActionResult> UpdateAdminFlagOnChatAsync([FromRoute] Guid chatId, [FromRoute] Guid selectedUserId, [FromQuery] bool flag)
+        public async Task<IActionResult> UpdateAdminFlagOnChatAsync([FromRoute] Guid chatId, [FromRoute] Guid selectedUserId, [FromBody] UpdateAdminRequest flag)
         {
             if (chatId == Guid.Empty) return BadRequest();
             if (selectedUserId == Guid.Empty || selectedUserId == CurrentUserId) return BadRequest();
 
-            var result = await _mediator.Send(new UpdateAdminFlagOnChatCommand(chatId, selectedUserId,flag));
+            var result = await _mediator.Send(new UpdateAdminFlagOnChatCommand(chatId, CurrentUserId, selectedUserId, flag.IsAdmin));
             return result ? Ok() : BadRequest();
         }
-        [HttpGet("{chatId}/permissions")]
-        public async Task<ActionResult<UserChatDTO>> GetChatPermissions([FromRoute] Guid chatId, CancellationToken ct)
-        {
-            var userId = CurrentUserId;
-            var response = await _mediator.Send(new GetUserPermissionsOnChatQuery(userId, chatId));
-            return Ok(response);
-        }
-
 
     }
 }

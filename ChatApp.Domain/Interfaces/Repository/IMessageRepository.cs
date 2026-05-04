@@ -1,4 +1,4 @@
-using ChatApp.Application.DTO;
+using ChatApp.Domain.Entities;
 using ChatApp.Domain.Models;
 
 namespace ChatApp.Domain.Interfaces.Repository

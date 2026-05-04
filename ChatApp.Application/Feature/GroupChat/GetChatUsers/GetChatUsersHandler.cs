@@ -1,5 +1,6 @@
 using ChatApp.Application.DTO;
 using ChatApp.Domain.Interfaces.Repository;
+using Mapster;
 using MediatR;
 
 namespace ChatApp.Application.Feature.GroupChat.GetChatUsers
@@ -7,26 +8,14 @@ namespace ChatApp.Application.Feature.GroupChat.GetChatUsers
     public class GetChatUsersHandler : IRequestHandler<GetChatUsersQuery, HashSet<UserDTO>>
     {
         private readonly IUserChatRepository _userChatRepo;
-        private readonly IUserRepository _userRepo;
-        public GetChatUsersHandler(IUserChatRepository userChatRepo, IUserRepository userRepo)
+        public GetChatUsersHandler(IUserChatRepository userChatRepo)
         {
             _userChatRepo = userChatRepo;
-            _userRepo = userRepo;
         }
         public async Task<HashSet<UserDTO>> Handle(GetChatUsersQuery r, CancellationToken cancellationToken)
         {
-            var userIds = await _userChatRepo.GetUsersInChatIdAsync(r.ChatId);
-            var users = await _userRepo.GetUsersByIdsAsync(userIds);
-            var aliases = await _userChatRepo.GetChatAliasesAsync(r.ChatId);
-
-            return users.Select(u => new UserDTO
-            {
-                UserID = u.UserID,
-                Username = u.Username,
-                Alias = aliases.TryGetValue(u.UserID, out var alias) ? alias : u.Username,
-                AvatarUrl = u.AvatarUrl,
-                IsOnline = u.IsOnline
-            }).ToHashSet();
+            var chatMembers = await _userChatRepo.GetChatMembersAsync(r.ChatId);
+            return chatMembers.Adapt<HashSet<UserDTO>>();
         }
     }
 }

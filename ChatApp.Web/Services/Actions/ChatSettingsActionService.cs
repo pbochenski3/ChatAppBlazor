@@ -1,12 +1,11 @@
 ﻿
+using ChatApp.Application.DTO;
 using ChatApp.Domain.Enums;
 using ChatApp.Web.Services.Actions.Interfaces;
-using ChatApp.Web.Services.Api;
 using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.Common;
 using ChatApp.Web.Services.Common.Interfaces;
 using ChatApp.Web.Services.State;
-using MediatR;
 
 namespace ChatApp.Web.Services.Actions
 {
@@ -18,7 +17,6 @@ namespace ChatApp.Web.Services.Actions
         private readonly IContactApiClient _contactApi;
         private readonly IGroupChatApiClient _groupChatApi;
         private readonly DialogService _dialogService;
-        private readonly IMediator _mediator;
         private readonly INotificationService _notification;
 
         private readonly ILogger<ChatSettingsActionService> _logger;
@@ -29,7 +27,6 @@ namespace ChatApp.Web.Services.Actions
             IGroupChatApiClient groupChatApi,
             DialogService dialogService,
             IContactApiClient contactApi,
-            IMediator mediator,
             ILogger<ChatSettingsActionService> logger,
             INotificationService notification
             )
@@ -41,7 +38,6 @@ namespace ChatApp.Web.Services.Actions
             _dialogService = dialogService;
             _contactApi = contactApi;
             _logger = logger;
-            _mediator = mediator;
             _notification = notification;
         }
         public event Action? OnStateChanged;
@@ -57,12 +53,16 @@ namespace ChatApp.Web.Services.Actions
         }
         public async Task HandleRemoveUserFromChat()
         {
-            var userId = _chatStateService.CurrentUserDetailsId;
+            var userId = _chatStateService.CurrentUserDetails.UserID;
             var userAlias = _chatStateService.CurrentAlias;
             var adminName = _appStateService.CurrentChat.Identity.Alias;
             var chatId = _appStateService.CurrentChat.Identity.ChatID;
-            await _groupChatApi.DeleteUserFromChat( chatId, userId, userAlias,adminName);
-            CloseUserDetails();
+            var success = await _groupChatApi.DeleteUserFromChat(chatId, userId, userAlias, adminName);
+            if (success)
+            {
+                _chatStateService.UsersInChat.Remove(_chatStateService.CurrentUserDetails);
+                CloseUserDetails();
+            }
         }
         public void RequestDeleteChat()
         {
@@ -104,26 +104,14 @@ namespace ChatApp.Web.Services.Actions
         }
         public async Task HandleChatLeaveAsync()
         {
-            try
+
+            if (_appStateService.CurrentChat != null)
             {
-                if (_appStateService.CurrentChat != null)
-                {
-                    var chatId = _appStateService.CurrentChat.Identity.ChatID;
-                    var username = _appStateService.CurrentUser.Username;
-                    await _groupChatApi.LeaveGroupChatAsync(chatId, username);
-                    _appStateService.CurrentChat.State.IsArchive = true;
-                    _notification.Notify("Pomyślnie opuszczono czat!", NotificationType.Info);
-                    OnStateChanged?.Invoke();
-                }
-
-            }
-            catch (Exception ex)
-            {
-                _notification.Notify("Nie udało się opuścić czatu!", NotificationType.Warning);
-
-                _logger.LogError($"[ChatSettingsService] HandleChatLeave {ex}");
-
-
+                var chatId = _appStateService.CurrentChat.Identity.ChatID;
+                var username = _appStateService.CurrentUser.Username;
+                var success = await _groupChatApi.LeaveGroupChatAsync(chatId, username);
+                if (success) _appStateService.CurrentChat.State.IsArchive = true;
+                OnStateChanged?.Invoke();
             }
         }
         public void RequestContactDelete(Guid chatId)
@@ -220,14 +208,13 @@ namespace ChatApp.Web.Services.Actions
             var chatId = _appStateService.CurrentChat.Identity.ChatID;
             _chatStateService.CurrentAlias = alias;
             _chatStateService.CurrentUsername = username;
-            _chatStateService.CurrentUserDetailsId = userId;
-            _chatStateService.IsAdmin = await _chatApi.GetChatPermissions(chatId, userId);
+            _chatStateService.CurrentUserDetails = _chatStateService.UsersInChat.FirstOrDefault(u => u.UserID == userId);
             _chatStateService.SettingsView = ChatSettingsView.UserDetails;
             OnStateChanged?.Invoke();
         }
         public void CloseUserDetails()
         {
-            _chatStateService.CurrentUserDetailsId = Guid.Empty;
+            _chatStateService.CurrentUserDetails = new UserDTO();
             _chatStateService.CurrentAlias = string.Empty;
             _chatStateService.CurrentUsername = string.Empty;
             _chatStateService.SettingsView = ChatSettingsView.Users;

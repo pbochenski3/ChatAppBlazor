@@ -1,0 +1,18 @@
+﻿using ChatApp.Domain.Interfaces.Repository;
+using MediatR;
+
+namespace ChatApp.Application.Feature.Chats.CheckGroupChatExists
+{
+    public class CheckGroupChatExistsHandler : IRequestHandler<CheckGroupChatExistsQuery, bool>
+    {
+        private readonly IChatRepository _chatRepo;
+        public CheckGroupChatExistsHandler(IChatRepository chatRepo)
+        {
+            _chatRepo = chatRepo;
+        }
+        public async Task<bool> Handle(CheckGroupChatExistsQuery r, CancellationToken cancellationToken)
+        {
+            return await _chatRepo.CheckIfGroupExist(r.ChatId, r.UserId);
+        }
+    }
+}

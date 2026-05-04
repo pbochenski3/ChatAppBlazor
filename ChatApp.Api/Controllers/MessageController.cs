@@ -1,8 +1,8 @@
 ﻿using ChatApp.Application.DTO;
-using ChatApp.Application.Feature.Message.GetChatMessageHistory;
-using ChatApp.Application.Feature.Message.MarkAllMessagesAsRead;
-using ChatApp.Application.Feature.Message.MarkAsRead;
-using ChatApp.Application.Feature.Message.SendChatMessage;
+using ChatApp.Application.Feature.Messages.GetChatMessageHistory;
+using ChatApp.Application.Feature.Messages.MarkAllMessagesAsRead;
+using ChatApp.Application.Feature.Messages.MarkAsRead;
+using ChatApp.Application.Feature.Messages.SendChatMessage;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

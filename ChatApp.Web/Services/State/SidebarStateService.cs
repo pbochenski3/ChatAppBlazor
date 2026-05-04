@@ -1,5 +1,6 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
+using ChatApp.Application.DTO.Result;
 using ChatApp.Domain.Enums;
 
 namespace ChatApp.Web.Services.State

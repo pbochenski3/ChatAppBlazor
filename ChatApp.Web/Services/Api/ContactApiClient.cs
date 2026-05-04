@@ -1,5 +1,6 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
+using ChatApp.Application.DTO.Result;
 using ChatApp.Web.Services.Api.Interfaces;
 using System.Net.Http.Json;
 

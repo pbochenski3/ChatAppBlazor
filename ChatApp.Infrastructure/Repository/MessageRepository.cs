@@ -1,10 +1,10 @@
-using ChatApp.Application.DTO;
+using ChatApp.Domain.Entities;
 using ChatApp.Domain.Interfaces.Repository;
 using ChatApp.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace ChatApp.Infrastructure.Persistence
+namespace ChatApp.Infrastructure.Repository
 {
     public class MessageRepository : IMessageRepository
     {
@@ -38,7 +38,7 @@ namespace ChatApp.Infrastructure.Persistence
                     {
                         Content = m.Content,
                         Author = m.Sender.UserChats
-                            .Where(u => u.Alias != null) 
+                            .Where(u => u.Alias != null)
                             .Select(u => u.Alias)
                             .FirstOrDefault() ?? string.Empty
                     }

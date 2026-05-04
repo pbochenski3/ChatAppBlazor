@@ -1,7 +1,7 @@
 ﻿using ChatApp.Application.DTO.Requests;
-using ChatApp.Application.Feature.Invite.GetUsersInvites;
-using ChatApp.Application.Feature.Invite.HandleInviteAction;
-using ChatApp.Application.Feature.Invite.SendContactInvite;
+using ChatApp.Application.Feature.Invites.GetUsersInvites;
+using ChatApp.Application.Feature.Invites.HandleInviteAction;
+using ChatApp.Application.Feature.Invites.SendContactInvite;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,8 +1,5 @@
-using ChatApp.Application.DTO.Requests;
-using ChatApp.Application.Feature.Chat.UpdateChatName;
-using ChatApp.Application.Feature.Chat.UpdateUserAlias;
-using ChatApp.Application.Feature.User.GetUsersToInvite;
-using ChatApp.Application.Feature.User.UpdateUserAvatar;
+using ChatApp.Application.Feature.Users.GetUsersToInvite;
+using ChatApp.Application.Feature.Users.UpdateUserAvatar;
 using ChatApp.Application.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -45,6 +42,6 @@ namespace ChatApp.Api.Controllers
             }
 
         }
-    
+
     }
 }

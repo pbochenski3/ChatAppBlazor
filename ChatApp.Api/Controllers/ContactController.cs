@@ -1,5 +1,5 @@
-﻿using ChatApp.Application.Feature.Contact.DeleteContact;
-using ChatApp.Application.Feature.Contact.GetUserContacts;
+﻿using ChatApp.Application.Feature.Contacts.DeleteContact;
+using ChatApp.Application.Feature.Contacts.GetUserContacts;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

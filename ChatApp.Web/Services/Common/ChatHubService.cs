@@ -10,7 +10,6 @@ using static ChatApp.Web.Events.SidebarEvents;
 public class ChatHubService : IAsyncDisposable
 {
     public HubConnection? HubConnection { get; private set; }
-    public event Func<string, Task>? InviteStatusMessage;
     public event Func<string, Guid, Task>? OnAvatarReload;
     public event Func<string, Guid, Task>? OnGroupAvatarReload;
 
@@ -45,7 +44,7 @@ public class ChatHubService : IAsyncDisposable
         HubConnection.On<Guid>("UsersInChatReload", async (chatId) => await _mediator.Publish(new UsersInChatUpdated(chatId)));
         HubConnection.On<Guid, Guid, string>("UserAliasChanged", async (chatId, userId, newAlias) => await _mediator.Publish(new UserAliasChanged(chatId, userId, newAlias)));
 
-        HubConnection.On<Guid, string,Guid>("UpdateChatName", async (chatId, newName,userId) => await _mediator.Publish(new ChatNameChanged(chatId, newName,userId)));
+        HubConnection.On<Guid, string, Guid>("UpdateChatName", async (chatId, newName, userId) => await _mediator.Publish(new ChatNameChanged(chatId, newName, userId)));
         HubConnection.On("SidebarChatsReload", async () => await _mediator.Publish(new ChatListChanged()));
         HubConnection.On("SidebarInvitesReload", async () => await _mediator.Publish(new InvitesListChanged()));
         HubConnection.On<Guid, string, string>("UpdateLastMessage", async (chatId, lastSender, lastMessage) => await _mediator.Publish(new SidebarLastMessageChanged(chatId, lastSender, lastMessage)));
@@ -58,7 +57,8 @@ public class ChatHubService : IAsyncDisposable
         {
             await (OnGroupAvatarReload?.Invoke(avatarUrl, chatId) ?? Task.CompletedTask);
         });
-        HubConnection.On<string>("ReceiveStatus", (status) => _notify.Notify(status,ChatApp.Domain.Enums.NotificationType.Warning));
+        HubConnection.On<string>("NotifyError", (status) => _notify.Notify(status, ChatApp.Domain.Enums.NotificationType.Warning));
+        HubConnection.On<string>("NotifyInfo", (status) => _notify.Notify(status, ChatApp.Domain.Enums.NotificationType.Info));
         HubConnection.On<Guid>("RequestLeaveGroupSignalR", async (chatId) =>
         {
             await HubConnection.InvokeAsync("RemoveMeFromChatGroup", chatId);

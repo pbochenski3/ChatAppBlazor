@@ -101,7 +101,6 @@
     }
     private async Task HandleSendMessage()
     {
-        string _alias;
         var contentToSend = _messageContent;
         if (_appStateService.CurrentChat == null) return;
         var chatId = _appStateService.CurrentChat.Identity.ChatID;

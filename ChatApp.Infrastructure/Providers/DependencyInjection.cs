@@ -1,7 +1,7 @@
-﻿using ChatApp.Domain.Interfaces.Repository;
-using ChatApp.Domain.Repository.Decorators;
-using ChatApp.Infrastructure.Persistence;
-using ChatApp.Infrastructure.Persistence.Decorators;
+﻿using ChatApp.Domain.Interfaces.Decorators;
+using ChatApp.Domain.Interfaces.Repository;
+using ChatApp.Infrastructure.Repository;
+using ChatApp.Infrastructure.Repository.Decorators;
 using ChatApp.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
