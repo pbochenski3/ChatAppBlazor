@@ -1,10 +1,10 @@
 ﻿
 using ChatApp.Application.DTO;
 using ChatApp.Domain.Enums;
-using ChatApp.Web.Services.Actions.Interfaces;
-using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.Common;
-using ChatApp.Web.Services.Common.Interfaces;
+using ChatApp.Web.Services.Interfaces.Actions;
+using ChatApp.Web.Services.Interfaces.Api;
+using ChatApp.Web.Services.Interfaces.Common;
 using ChatApp.Web.Services.State;
 
 namespace ChatApp.Web.Services.Actions
@@ -115,8 +115,8 @@ namespace ChatApp.Web.Services.Actions
                 var success = await _groupChatApi.LeaveGroupChatAsync(chatId, username);
                 if (success)
                 {
-                _appStateService.CurrentChat.State.IsArchive = true;
-                var chat = _sidebarStateService.SidebarItems.FirstOrDefault(s => s.Identity.ChatID == chatId);
+                    _appStateService.CurrentChat.State.IsArchive = true;
+                    var chat = _sidebarStateService.SidebarItems.FirstOrDefault(s => s.Identity.ChatID == chatId);
                     chat.State.IsArchive = true;
                 }
                 OnStateChanged?.Invoke();
@@ -148,7 +148,6 @@ namespace ChatApp.Web.Services.Actions
             }
 
         }
-
         public async Task HandleLoadUsersToAddAsync()
         {
             try
@@ -222,7 +221,7 @@ namespace ChatApp.Web.Services.Actions
         }
         public void CloseUserDetails()
         {
-            _chatStateService.CurrentUserDetails = new UserDTO();
+            _chatStateService.CurrentUserDetails = null;
             _chatStateService.CurrentAlias = string.Empty;
             _chatStateService.CurrentUsername = string.Empty;
             _chatStateService.SettingsView = ChatSettingsView.Users;

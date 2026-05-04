@@ -1,6 +1,6 @@
 using ChatApp.Application.DTO;
 using ChatApp.Web.Events;
-using ChatApp.Web.Services.Actions.Interfaces;
+using ChatApp.Web.Services.Interfaces.Actions;
 using MediatR;
 using static ChatApp.Web.Events.ChatEvents;
 

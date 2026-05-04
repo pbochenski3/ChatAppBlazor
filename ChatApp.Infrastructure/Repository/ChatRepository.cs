@@ -149,13 +149,6 @@ namespace ChatApp.Infrastructure.Repository
                 .AnyAsync(c => c.ChatID == chatId &&
                                c.IsGroup == true);
         }
-        public async Task<DateTime?> GetLastMessageDateAsync(Guid chatId)
-        {
-            return await _context.Chats
-                .Where(uc => uc.ChatID == chatId)
-                .Select(uc => (DateTime?)uc.LastMessageAt)
-                .FirstOrDefaultAsync();
-        }
         public async Task UpdateLastSentMessageAsync(Guid chatId, Guid messageId)
         {
             var affected = await _context.Chats

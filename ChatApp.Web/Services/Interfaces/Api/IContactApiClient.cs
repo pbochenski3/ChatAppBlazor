@@ -2,7 +2,7 @@
 using ChatApp.Application.DTO.Chats;
 using ChatApp.Application.DTO.Result;
 
-namespace ChatApp.Web.Services.Api.Interfaces
+namespace ChatApp.Web.Services.Interfaces.Api
 {
     public interface IContactApiClient
     {

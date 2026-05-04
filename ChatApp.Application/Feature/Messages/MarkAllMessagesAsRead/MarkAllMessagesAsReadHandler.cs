@@ -16,7 +16,7 @@ namespace ChatApp.Application.Feature.Messages.MarkAllMessagesAsRead
             var lastMessageId = userChat?.Chat.LastMessageID;
             if (lastMessageId.HasValue)
             {
-                await _userChatRepo.UpdateLastReadMessageAsync(new HashSet<Guid> {r.UserId}, r.ChatId, lastMessageId.Value);
+                await _userChatRepo.UpdateLastReadMessageAsync(new HashSet<Guid> { r.UserId }, r.ChatId, lastMessageId.Value);
                 return true;
             }
             return false;

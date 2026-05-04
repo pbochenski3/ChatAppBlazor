@@ -157,7 +157,7 @@ _appStateService.CurrentUser?.UserID != SelectedUser?.UserID;
        ) ?? Enumerable.Empty<ContactDTO>();
     protected override async Task OnInitializedAsync()
     {
-        _chatSettingsActionService.OnStateChanged += StateHasChanged;
+        _chatSettingsActionService.OnStateChanged += HandleStateChanged;
     }
     private async Task AddUserToSelectionAsync(Guid contactId)
     {
@@ -267,8 +267,12 @@ _appStateService.CurrentUser?.UserID != SelectedUser?.UserID;
         await _chatSettingsActionService.HandleChatDeleteAsync();
 
     }
+    private void HandleStateChanged()
+    {
+        InvokeAsync(StateHasChanged); 
+    }
     public void Dispose()
     {
-        _chatSettingsActionService.OnStateChanged -= StateHasChanged;
+        _chatSettingsActionService.OnStateChanged -= HandleStateChanged;
     }
 }

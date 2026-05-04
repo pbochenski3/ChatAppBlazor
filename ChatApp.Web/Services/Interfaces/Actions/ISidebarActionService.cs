@@ -1,6 +1,6 @@
 ﻿using ChatApp.Application.DTO.Requests;
 
-namespace ChatApp.Web.Services.Actions.Interfaces
+namespace ChatApp.Web.Services.Interfaces.Actions
 {
     public interface ISidebarActionService
     {

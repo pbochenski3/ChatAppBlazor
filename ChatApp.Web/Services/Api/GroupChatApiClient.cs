@@ -1,7 +1,7 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Domain.Enums;
-using ChatApp.Web.Services.Api.Interfaces;
-using ChatApp.Web.Services.Common.Interfaces;
+using ChatApp.Web.Services.Interfaces.Api;
+using ChatApp.Web.Services.Interfaces.Common;
 using System.Net.Http.Json;
 
 namespace ChatApp.Web.Services.Api

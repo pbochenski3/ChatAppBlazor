@@ -1,11 +1,11 @@
 using ChatApp.Application.Handlers;
 using ChatApp.Application.Interfaces;
 using ChatApp.Web.Services.Actions;
-using ChatApp.Web.Services.Actions.Interfaces;
 using ChatApp.Web.Services.Api;
-using ChatApp.Web.Services.Api.Interfaces;
 using ChatApp.Web.Services.Common;
-using ChatApp.Web.Services.Common.Interfaces;
+using ChatApp.Web.Services.Interfaces.Actions;
+using ChatApp.Web.Services.Interfaces.Api;
+using ChatApp.Web.Services.Interfaces.Common;
 using ChatApp.Web.Services.State;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -37,6 +37,6 @@ builder.Services.AddScoped(sp =>
 {
     var factory = sp.GetRequiredService<IHttpClientFactory>();
     return factory.CreateClient("ChatAPI");
-}); 
+});
 
 await builder.Build().RunAsync();

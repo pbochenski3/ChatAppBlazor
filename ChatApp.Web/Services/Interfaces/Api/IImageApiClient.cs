@@ -1,7 +1,7 @@
 ﻿using ChatApp.Domain.Enums;
 using Microsoft.AspNetCore.Components.Forms;
 
-namespace ChatApp.Web.Services.Api.Interfaces
+namespace ChatApp.Web.Services.Interfaces.Api
 {
     public interface IImageApiClient
     {

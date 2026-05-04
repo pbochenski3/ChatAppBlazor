@@ -1,5 +1,5 @@
 ﻿using ChatApp.Web.Events;
-using ChatApp.Web.Services.Actions.Interfaces;
+using ChatApp.Web.Services.Interfaces.Actions;
 using MediatR;
 
 namespace ChatApp.Web.Handlers

@@ -1,6 +1,6 @@
 ﻿using ChatApp.Application.DTO;
 
-namespace ChatApp.Web.Services.Api.Interfaces
+namespace ChatApp.Web.Services.Interfaces.Api
 {
     public interface IGroupChatApiClient
     {

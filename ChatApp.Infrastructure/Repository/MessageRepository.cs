@@ -45,7 +45,7 @@ namespace ChatApp.Infrastructure.Repository
                 })
                 .ToDictionaryAsync(x => x.MessageID, x => x.Preview);
         }
-        public async Task<List<Message>> GetMessageHistoryAsync(Guid userId, Guid chatId, DateTime? cutoffDate, CancellationToken token)
+        public async Task<List<Message>> GetMessageHistoryAsync(Guid chatId, DateTime? cutoffDate, CancellationToken token)
         {
             var query = _context.Messages
                 .AsNoTracking()

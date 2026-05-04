@@ -153,7 +153,6 @@ namespace ChatApp.Infrastructure.Repository
             .Select(u => u.IsAdmin)
             .FirstOrDefaultAsync();
         }
-
         public async Task<bool> ExistsAsync(Guid chatId)
         {
             return await _context.UserChat.AnyAsync(c => c.ChatID == chatId);
@@ -252,6 +251,13 @@ namespace ChatApp.Infrastructure.Repository
            ))
            .ToListAsync();
             return members.DistinctBy(m => m.UserID).ToHashSet();
+        }
+        public async Task<DateTime?> GetLastReadMessageDateAsync(Guid chatId)
+        {
+            return await _context.UserChat
+                .Where(uc => uc.ChatID == chatId)
+                .Select(uc => (DateTime?)uc.LastReadAt)
+                .FirstOrDefaultAsync();
         }
 
     }

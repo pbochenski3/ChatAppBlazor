@@ -1,5 +1,5 @@
 using ChatApp.Application.DTO;
-using ChatApp.Web.Services.Common.Interfaces;
+using ChatApp.Web.Services.Interfaces.Common;
 using ChatApp.Web.Services.State;
 using MediatR;
 using Microsoft.AspNetCore.SignalR.Client;

@@ -3,11 +3,7 @@
 @using ChatApp.Web.Services.Actions
 @implements IAsyncDisposable
 @inject ILogger<BlazorChat> _logger
-@inject SidebarStateService _sidebarStateService
-@inject ISidebarActionService _sidebarActionService
-@inject IChatActionService _chatActionService
-@inject ChatStateService _chatStateService
-@inject SidebarStateService _sidebarStateService
+
 
 @if (_isLoading == false)
 {

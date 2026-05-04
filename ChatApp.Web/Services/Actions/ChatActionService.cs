@@ -1,8 +1,8 @@
 using ChatApp.Application.DTO;
 using ChatApp.Domain.Enums;
-using ChatApp.Web.Services.Actions.Interfaces;
-using ChatApp.Web.Services.Api.Interfaces;
-using ChatApp.Web.Services.Common.Interfaces;
+using ChatApp.Web.Services.Interfaces.Actions;
+using ChatApp.Web.Services.Interfaces.Api;
+using ChatApp.Web.Services.Interfaces.Common;
 using ChatApp.Web.Services.State;
 using MediatR;
 using static ChatApp.Web.Events.ChatEvents;

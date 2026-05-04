@@ -1,6 +1,6 @@
 ﻿using ChatApp.Application.DTO;
 
-namespace ChatApp.Web.Services.Actions.Interfaces
+namespace ChatApp.Web.Services.Interfaces.Actions
 {
     public interface IChatActionService
     {

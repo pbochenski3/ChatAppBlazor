@@ -6,7 +6,7 @@ namespace ChatApp.Domain.Interfaces.Repository
     public interface IMessageRepository
     {
         Task AddMessageAsync(Message message);
-        Task<List<Message>> GetMessageHistoryAsync(Guid userId, Guid chatId, DateTime? cutoffDate, CancellationToken token);
+        Task<List<Message>> GetMessageHistoryAsync(Guid chatId, DateTime? cutoffDate, CancellationToken token);
         Task<Dictionary<Guid, MessagePreview>> GetMessagePreviewsAsync(List<Guid> ids);
     }
 }

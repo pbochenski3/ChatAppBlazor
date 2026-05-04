@@ -2,7 +2,7 @@
 using ChatApp.Domain.Interfaces.Repository;
 using MediatR;
 
-namespace ChatApp.Application.Feature.Chats.UpdateGroupChatName
+namespace ChatApp.Application.Feature.GroupChat.UpdateGroupChatName
 {
     public class UpdateChatNameHandler : IRequestHandler<UpdateChatNameCommand, bool>
     {

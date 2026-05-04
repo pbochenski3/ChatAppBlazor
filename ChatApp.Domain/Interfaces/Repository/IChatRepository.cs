@@ -16,7 +16,6 @@ namespace ChatApp.Domain.Interfaces.Repository
         Task<string> GetGroupAvatarUrlAsync(Guid chatId);
         Task<bool> CheckIfChatIsArchive(Guid chatId, Guid userId);
         Task<bool> IsChatGroupAsync(Guid chatId);
-        Task<DateTime?> GetLastMessageDateAsync(Guid chatId);
         Task UpdateLastSentMessageAsync(Guid chatId, Guid messageId);
     }
 }

@@ -27,9 +27,9 @@ namespace ChatApp.Infrastructure.Repository.Decorators
             await _innerRepository.AddMessageAsync(message);
         }
 
-        public async Task<List<Message>> GetMessageHistoryAsync(Guid userId, Guid chatId, DateTime? cutoffDate, CancellationToken token)
+        public async Task<List<Message>> GetMessageHistoryAsync(Guid chatId, DateTime? cutoffDate, CancellationToken token)
         {
-            var messages = await _innerRepository.GetMessageHistoryAsync(userId, chatId, cutoffDate, token);
+            var messages = await _innerRepository.GetMessageHistoryAsync(chatId, cutoffDate, token);
             foreach (var message in messages)
             {
                 if (!string.IsNullOrWhiteSpace(message.Content))

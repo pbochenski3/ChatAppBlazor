@@ -1,6 +1,6 @@
 ﻿using ChatApp.Domain.Enums;
 using ChatApp.Domain.Models;
-using ChatApp.Web.Services.Common.Interfaces;
+using ChatApp.Web.Services.Interfaces.Common;
 
 namespace ChatApp.Web.Services.Common
 {

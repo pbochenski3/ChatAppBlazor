@@ -1,4 +1,4 @@
-﻿namespace ChatApp.Application.NotificationHandlers
+﻿namespace ChatApp.Api.NotificationHandlers
 {
     internal interface ISignalRNotificationService
     {

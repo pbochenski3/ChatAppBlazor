@@ -1,7 +1,7 @@
 ﻿using ChatApp.Domain.Enums;
 using ChatApp.Domain.Models;
 
-namespace ChatApp.Web.Services.Common.Interfaces
+namespace ChatApp.Web.Services.Interfaces.Common
 {
     public interface INotificationService
     {

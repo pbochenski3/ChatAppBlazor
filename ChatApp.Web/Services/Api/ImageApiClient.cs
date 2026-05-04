@@ -1,6 +1,6 @@
 ﻿using ChatApp.Domain.Enums;
 using ChatApp.Domain.Shared;
-using ChatApp.Web.Services.Api.Interfaces;
+using ChatApp.Web.Services.Interfaces.Api;
 using Microsoft.AspNetCore.Components.Forms;
 using System.Net.Http.Json;
 
