@@ -41,7 +41,7 @@ namespace ChatApp.Application.Feature.Auth.RegisterUser
             {
                 Username = r.RegisterData.Username,
                 Password = BCrypt.Net.BCrypt.HashPassword(r.RegisterData.Password),
-                AvatarUrl = $"https://localhost:7255/cdn/avatars/default-avatar.png"
+                AvatarUrl = $"https://localhost:7256/cdn/avatars/default-avatar.png"
             };
             await _userRepo.RegisterAsync(user);
             return true;

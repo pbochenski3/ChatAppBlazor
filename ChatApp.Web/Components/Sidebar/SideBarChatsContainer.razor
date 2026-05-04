@@ -29,7 +29,8 @@
                         <p class="contact-name">
                             @((chat.LastMessage.LastMessageSender == _appStateService.CurrentUser.Username)
                                             ? $"Ty: {chat.LastMessage.LastMessageContent}"
-                                            : $"{chat.LastMessage.LastMessageSender}: {chat.LastMessage.LastMessageContent}")
+                                            : chat.State.IsArchive 
+                                            ? "Archiwum" : $"{chat.LastMessage.LastMessageSender}: {chat.LastMessage.LastMessageContent}")
                         </p>
 
                     }
@@ -48,6 +49,7 @@
 
     override protected async Task OnInitializedAsync()
     {
+        _chatSettingsActionService.OnStateChanged += HandleStateChange;
         _sidebarActionService.OnSidebarStateChanged += HandleStateChange;
     }
 
@@ -77,6 +79,7 @@
     }
     public void Dispose()
     {
+        _chatSettingsActionService.OnStateChanged -= HandleStateChange;
         _sidebarActionService.OnSidebarStateChanged -= HandleStateChange;
     }
 }

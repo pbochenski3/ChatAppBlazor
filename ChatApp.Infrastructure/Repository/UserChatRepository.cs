@@ -23,15 +23,17 @@ namespace ChatApp.Infrastructure.Repository
                 .ExecuteUpdateAsync(s => s
                 .SetProperty(uc => uc.IsAdmin, flag));
         }
-        public async Task UpdateLastReadMessageAsync(Guid userId, Guid chatId, Guid messageId)
+
+        public async Task UpdateLastReadMessageAsync(HashSet<Guid> userIds, Guid chatId, Guid messageId)
         {
             await _context.UserChat
-                .Where(uc => uc.UserID == userId && uc.ChatID == chatId)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(uc => uc.LastReadMessageID, messageId)
-                    .SetProperty(uc => uc.LastReadAt, DateTime.UtcNow)
-                );
+               .Where(uc => uc.ChatID == chatId && userIds.Contains(uc.UserID))
+               .ExecuteUpdateAsync(s => s
+                   .SetProperty(uc => uc.LastReadMessageID, messageId)
+                   .SetProperty(uc => uc.LastReadAt, DateTime.UtcNow)
+               );
         }
+
         public async Task UpdateAliasOnChat(Guid userId, Guid chatId, string newAlias)
         {
             await _context.UserChat
@@ -63,7 +65,7 @@ namespace ChatApp.Infrastructure.Repository
         public async Task<List<(Guid ChatId, int Count)>> CountAllUnreadMessageCountsAsync(Guid userId)
         {
             var rawData = await _context.UserChat
-                .Where(uc => uc.UserID == userId)
+                .Where(uc => uc.UserID == userId && uc.IsArchive == false)
                 .Select(uc => new
                 {
                     Id = uc.ChatID,

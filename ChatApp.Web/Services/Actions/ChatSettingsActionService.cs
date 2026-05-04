@@ -13,6 +13,7 @@ namespace ChatApp.Web.Services.Actions
     {
         private readonly ChatStateService _chatStateService;
         private readonly AppStateService _appStateService;
+        private readonly SidebarStateService _sidebarStateService;
         private readonly IChatApiClient _chatApi;
         private readonly IContactApiClient _contactApi;
         private readonly IGroupChatApiClient _groupChatApi;
@@ -23,6 +24,7 @@ namespace ChatApp.Web.Services.Actions
         public ChatSettingsActionService(
             ChatStateService chatStateService,
             AppStateService appStateService,
+            SidebarStateService sidebarStateService,
             IChatApiClient chatApi,
             IGroupChatApiClient groupChatApi,
             DialogService dialogService,
@@ -33,6 +35,7 @@ namespace ChatApp.Web.Services.Actions
         {
             _chatStateService = chatStateService;
             _appStateService = appStateService;
+            _sidebarStateService = sidebarStateService;
             _chatApi = chatApi;
             _groupChatApi = groupChatApi;
             _dialogService = dialogService;
@@ -110,7 +113,12 @@ namespace ChatApp.Web.Services.Actions
                 var chatId = _appStateService.CurrentChat.Identity.ChatID;
                 var username = _appStateService.CurrentUser.Username;
                 var success = await _groupChatApi.LeaveGroupChatAsync(chatId, username);
-                if (success) _appStateService.CurrentChat.State.IsArchive = true;
+                if (success)
+                {
+                _appStateService.CurrentChat.State.IsArchive = true;
+                var chat = _sidebarStateService.SidebarItems.FirstOrDefault(s => s.Identity.ChatID == chatId);
+                    chat.State.IsArchive = true;
+                }
                 OnStateChanged?.Invoke();
             }
         }

@@ -35,6 +35,9 @@ namespace ChatApp.Application.Feature.GroupChat.AddUsersToGroupChat
             var usersToAdd = await _userRepo.GetUsersByIdsAsync(r.UsersToAdd);
             var systemMessage = chat.AddMembers(admin, usersToAdd);
             await _messageRepo.AddMessageAsync(systemMessage);
+            var usersIds = usersToAdd.Select(u => u.UserID).ToHashSet();
+            await _userChatRepo.UpdateLastReadMessageAsync(usersIds, r.ChatId, systemMessage.MessageID);
+            
             r.AddEvent(new UsersAddedToGroupChatNotification(chat.ChatID, systemMessage.Adapt<MessageDTO>(), r.UsersToAdd));
 
             return true;

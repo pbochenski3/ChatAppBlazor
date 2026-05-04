@@ -76,8 +76,8 @@ namespace ChatApp.Application.Feature.Sidebar.GetSidebarItems
                     Alias = uc.Alias,
                     IsGroup = isGroup,
                     AvatarUrl = isGroup
-                        ? (uc.Chat.AvatarUrl ?? "https://localhost:7255/cdn/avatars/default-group.png")
-                        : (otherUser?.AvatarUrl ?? "https://localhost:7255/cdn/avatars/default-avatar.png"),
+                        ? (uc.Chat.AvatarUrl ?? "https://localhost:7256/cdn/avatars/default-group.png")
+                        : (otherUser?.AvatarUrl ?? "https://localhost:7256/cdn/avatars/default-avatar.png"),
                     OtherUserId = otherUser?.UserID,
                     UserID = uc.UserID
                 },
@@ -98,7 +98,7 @@ namespace ChatApp.Application.Feature.Sidebar.GetSidebarItems
                         : "Brak wiadomości",
                     LastMessageSender = uc.LastMessageID.HasValue && contentDict.TryGetValue(uc.LastMessageID.Value, out var authorPreview)
                         ? authorPreview.Author
-                        : null,
+                        : "System",
                     LastMessageAt = uc.LastMessageAt
                 }
             };

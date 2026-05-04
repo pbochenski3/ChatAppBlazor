@@ -29,7 +29,7 @@ namespace ChatApp.Application.Feature.Chats.GetChatDetails
                     OtherUserAlias = alias,
                     AvatarUrl = chat.Chat.IsGroup
                         ? chat.Chat.AvatarUrl
-                        : chat.Chat.UserChats.FirstOrDefault(p => p.UserID != r.UserId)?.User?.AvatarUrl ?? "https://localhost:7255/cdn/Avatars/default-avatar.png",
+                        : chat.Chat.UserChats.FirstOrDefault(p => p.UserID != r.UserId)?.User?.AvatarUrl ?? "https://localhost:7256/cdn/Avatars/default-avatar.png",
                     UserID = chat.UserID,
                     OtherUserId = chat.Chat.IsGroup ? null : chat.Chat.UserChats.FirstOrDefault(p => p.UserID != r.UserId)?.UserID
                 },

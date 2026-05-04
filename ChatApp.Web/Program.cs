@@ -30,13 +30,13 @@ builder.Services.AddScoped<ITokenProvider>(sp => sp.GetRequiredService<AppStateS
 builder.Services.AddTransient<AuthorizationHandler>();
 builder.Services.AddHttpClient("ChatAPI", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7255");
+    client.BaseAddress = new Uri("https://localhost:7256");
 })
 .AddHttpMessageHandler<AuthorizationHandler>();
 builder.Services.AddScoped(sp =>
 {
     var factory = sp.GetRequiredService<IHttpClientFactory>();
     return factory.CreateClient("ChatAPI");
-});
+}); 
 
 await builder.Build().RunAsync();

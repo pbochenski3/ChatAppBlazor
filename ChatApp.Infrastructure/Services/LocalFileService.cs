@@ -6,7 +6,7 @@ namespace ChatApp.Infrastructure.Services
 {
     public class LocalFileService : IFileService
     {
-        private readonly string _baseUrl = "https://localhost:7255";
+        private readonly string _baseUrl = "https://localhost:7256";
         private readonly string _storagePath;
         public LocalFileService(string storagePath)
         {

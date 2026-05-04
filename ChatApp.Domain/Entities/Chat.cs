@@ -82,7 +82,7 @@ namespace ChatApp.Domain.Entities
                 CreatedAt = DateTime.UtcNow,
                 IsGroup = true,
                 ChatName = chatName,
-                AvatarUrl = "https://localhost:7255/cdn/GroupAvatars/default-group-avatar.png"
+                AvatarUrl = "https://localhost:7256/cdn/GroupAvatars/default-group-avatar.png"
             };
 
 

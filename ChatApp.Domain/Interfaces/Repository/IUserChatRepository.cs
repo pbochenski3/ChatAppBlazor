@@ -7,7 +7,7 @@ namespace ChatApp.Domain.Interfaces.Repository
     {
         Task<bool> CheckIfGroupHaveAdminAsync(Guid chatId, Guid userId);
         Task UpdateAdminFlagAsync(Guid userId, Guid chatId, bool flag);
-        Task UpdateLastReadMessageAsync(Guid userId, Guid chatId, Guid messageId);
+        Task UpdateLastReadMessageAsync(HashSet<Guid> userId, Guid chatId, Guid messageId);
         Task UpdateAliasOnChat(Guid userId, Guid chatId, string newAlias);
         Task UpdateLastSentMessageAsync(Guid chatId, Guid messageId);
         Task<List<(Guid ChatId, int Count)>> CountAllUnreadMessageCountsAsync(Guid userId);

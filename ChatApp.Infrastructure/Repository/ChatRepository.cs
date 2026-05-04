@@ -109,7 +109,7 @@ namespace ChatApp.Infrastructure.Repository
                 .AsNoTracking()
                 .Where(c => c.ChatID == chatId && c.IsGroup)
                 .Select(c => c.AvatarUrl)
-                .FirstOrDefaultAsync() ?? "https://localhost:7255/cdn/avatars/default-group-avatar.png";
+                .FirstOrDefaultAsync() ?? "https://localhost:7256/cdn/avatars/default-group-avatar.png";
         }
         public async Task<HashSet<Guid>> GetExistingUsersInChat(Guid chatId, HashSet<Guid> userIdsToCheck)
         {

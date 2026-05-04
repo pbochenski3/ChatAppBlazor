@@ -14,7 +14,7 @@ namespace ChatApp.Application.Feature.Messages.MarkAsRead
 
         public async Task<bool> Handle(MarkMessageAsReadCommand r, CancellationToken token)
         {
-            await _userChatRepo.UpdateLastReadMessageAsync(r.UserId, r.ChatId, r.MessageId);
+            await _userChatRepo.UpdateLastReadMessageAsync(new HashSet<Guid> { r.UserId }, r.ChatId, r.MessageId);
 
             return true;
         }
