@@ -64,7 +64,6 @@
     protected override async Task OnInitializedAsync()
     {
         SubscribeToEvent();
-        await _chatActionService.HandleUserOnGroupLoadAsync(chatId);
     }
     private void SubscribeToEvent()
     {

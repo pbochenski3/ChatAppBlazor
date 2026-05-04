@@ -75,7 +75,6 @@ namespace ChatApp.Web.Services.Actions
         }
         public async Task HandleChatLoadAsync(ContactSelectedArgs args)
         {
-            _logger.LogDebug("Commence chat load");
             bool isSameChat = _appStateService.CurrentChat?.Identity.ChatID == args.ChatId;
 
             if (!args.Force && isSameChat)
@@ -95,28 +94,20 @@ namespace ChatApp.Web.Services.Actions
             _chatLoadingCts?.Cancel();
             _chatLoadingCts = new CancellationTokenSource();
             var token = _chatLoadingCts.Token;
-
             try
             {
                 _chatStateService.SetMessageList(new List<MessageDTO>());
-                _logger.LogInformation("Loading chat: {Id} (Force: {Force})", args.ChatId, args.Force);
-
                 _appStateService.CurrentChat = await _chatApi.GetChatDetailsAsync(args.ChatId, token);
 
                 if (_appStateService.CurrentChat == null)
                 {
                     _notification.Notify("Wystąpił bład podczas ładowania czatu!", NotificationType.Error);
-                    _logger.LogError("[BLAZORHUB] Chat not found: {Id}", args.ChatId);
                     return;
                 }
-
                 token.ThrowIfCancellationRequested();
-
-
                 _chatStateService.SetMessageList(await _chatApi.GetChatMessageHistoryAsync(_appStateService.CurrentChat.Identity.ChatID, token));
                 token.ThrowIfCancellationRequested();
 
-                // await _appStateService.SetChatAsync(_appStateService.CurrentChat);
                 if (!_appStateService.CurrentChat.State.IsArchive)
                 {
                     try
@@ -140,13 +131,11 @@ namespace ChatApp.Web.Services.Actions
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Critical error loading chat {Id}", args.ChatId);
-                // _ = ShowNotificationAsync("Błąd podczas ładowania czatu.");
             }
             finally
             {
                 if (!token.IsCancellationRequested)
                 {
-                    _logger.LogDebug("Invoking OnStateChanged in ChatActionService for chat {ChatId}. InstanceHash={Hash}", args.ChatId, this.GetHashCode());
                     OnStateChanged?.Invoke();
                 }
             }
