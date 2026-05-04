@@ -26,7 +26,7 @@
                 }
                 @if (_chatStateService.IsArchive)
                 {
-                    <button class="btn-secondary btn-delete" onclick="_chatSettingsActionService.RequestDeleteChat">Usuń czat</button>
+                   // <button class="btn-secondary btn-delete" onclick="_chatSettingsActionService.RequestDeleteChat">Usuń czat</button>
                 }
                 break;
             case ChatSettingsView.AddUsers:
@@ -157,6 +157,7 @@ _appStateService.CurrentUser?.UserID != SelectedUser?.UserID;
        ) ?? Enumerable.Empty<ContactDTO>();
     protected override async Task OnInitializedAsync()
     {
+        _chatStateService.OnStateChanged += HandleStateChanged;
         _chatSettingsActionService.OnStateChanged += HandleStateChanged;
     }
     private async Task AddUserToSelectionAsync(Guid contactId)
@@ -273,6 +274,7 @@ _appStateService.CurrentUser?.UserID != SelectedUser?.UserID;
     }
     public void Dispose()
     {
+        _chatStateService.OnStateChanged -= HandleStateChanged;
         _chatSettingsActionService.OnStateChanged -= HandleStateChanged;
     }
 }

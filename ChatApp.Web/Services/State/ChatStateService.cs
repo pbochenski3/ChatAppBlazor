@@ -1,5 +1,6 @@
 using ChatApp.Application.DTO;
 using ChatApp.Domain.Enums;
+using System.Collections.ObjectModel;
 
 namespace ChatApp.Web.Services.State
 {
@@ -20,7 +21,21 @@ namespace ChatApp.Web.Services.State
         public string CurrentUsername { get; set; } = string.Empty;
         public string CurrentAlias { get; set; } = string.Empty;
         public UserDTO CurrentUserDetails { get; set; }
-        public ChatSettingsView SettingsView { get; set; } = ChatSettingsView.Settings;
+        private ChatSettingsView _settingsView = ChatSettingsView.Settings;
+
+        public ChatSettingsView SettingsView
+        {
+            get => _settingsView;
+            set
+            {
+                if (_settingsView != value)
+                {
+                    _settingsView = value;
+                    OnStateChanged?.Invoke(); 
+                }
+            }
+        }
+
         public event Action? OnStateChanged;
         public void ToggleSettings()
         {

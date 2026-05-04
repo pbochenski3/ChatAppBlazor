@@ -51,7 +51,7 @@ namespace ChatApp.Web.Services.Api
         {
             var url = $"/api/groupchat/{chatId}/remove/{userId}?removedUserName={Uri.EscapeDataString(removedUser)}&adminName={Uri.EscapeDataString(adminName)}";
             var response = await _httpClient.DeleteAsync(url);
-            if (!response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
             {
                 return true;
             }
