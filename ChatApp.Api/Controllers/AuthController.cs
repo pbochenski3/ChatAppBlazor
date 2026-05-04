@@ -36,15 +36,9 @@ namespace ChatApp.Api.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUserAsync([FromBody] UserDTO dto)
         {
-            try
-            {
+
                 var result = await _mediator.Send(new RegisterUserCommand(dto));
-                return result ? Ok() : BadRequest();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return result.Success ? Ok(result.Message) : BadRequest(result.Message);
         }
     }
 }

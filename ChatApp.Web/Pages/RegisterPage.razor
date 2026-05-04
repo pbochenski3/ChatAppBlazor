@@ -63,24 +63,9 @@
 
     private async Task HandleRegisterAsync()
     {
+        _isProcessing = true;
+        await _authService.RegisterUserAsync(_registerModel);
+        _isProcessing = false;
         StateHasChanged();
-        try
-        {
-            _isProcessing = true;
-            await _authService.RegisterUserAsync(_registerModel);
-            _notificationService.Notify("Rejestracja przebiegła pomyślnie!", NotificationType.Info);
-            _navManager.NavigateTo("/");
-
-        }
-        catch (Exception ex)
-        {
-            _notificationService.Notify(ex.Message,NotificationType.Warning);
-            _isProcessing = false;
-        }
-        finally
-        {
-            _isProcessing = false;
-            StateHasChanged();
-        }
     }
 }
