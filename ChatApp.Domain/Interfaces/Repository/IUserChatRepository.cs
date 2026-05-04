@@ -9,7 +9,6 @@ namespace ChatApp.Domain.Interfaces.Repository
         Task UpdateAdminFlagAsync(Guid userId, Guid chatId, bool flag);
         Task UpdateLastReadMessageAsync(HashSet<Guid> userId, Guid chatId, Guid messageId);
         Task UpdateAliasOnChat(Guid userId, Guid chatId, string newAlias);
-        Task UpdateLastSentMessageAsync(Guid chatId, Guid messageId);
         Task<List<(Guid ChatId, int Count)>> CountAllUnreadMessageCountsAsync(Guid userId);
         Task<int> CountUnreadMessagesAsync(Guid userId, Guid chatId);
         Task ArchiveChatAsync(Guid chatId, Guid userId);
@@ -20,7 +19,6 @@ namespace ChatApp.Domain.Interfaces.Repository
         Task<bool> IsChatArchivedAsync(Guid chatId, Guid userId);
         Task<bool> GetChatStatusById(Guid chatId, Guid userId);
         Task<bool> GetUserAdminFlagAsync(Guid userId, Guid chatId);
-        Task<DateTime?> GetLastMessageDateAsync(Guid userId, Guid chatId);
         Task<bool> ExistsAsync(Guid chatId);
         Task<HashSet<Guid>> GetUsersInChatIdAsync(Guid chatId);
         Task<List<UserChat>?> GetAllUserChatsAsync(Guid userId);

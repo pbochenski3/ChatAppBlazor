@@ -1,4 +1,5 @@
 using ChatApp.Domain.Entities;
+using ChatApp.Domain.Enums;
 using ChatApp.Domain.Interfaces.Repository;
 using ChatApp.Domain.Models;
 using Microsoft.EntityFrameworkCore;
@@ -42,16 +43,6 @@ namespace ChatApp.Infrastructure.Repository
                     .SetProperty(uc => uc.Alias, newAlias)
                 );
         }
-        public async Task UpdateLastSentMessageAsync(Guid chatId, Guid messageId)
-        {
-            var affected = await _context.UserChat
-                .Where(uc => uc.ChatID == chatId && uc.IsArchive == false)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(uc => uc.LastMessageID, messageId)
-                    .SetProperty(uc => uc.LastMessageAt, DateTime.UtcNow)
-                );
-            _logger.LogInformation("UpdateLastSentMessageAsync: updated {Count} UserChat rows for ChatID={ChatId}", affected, chatId);
-        }
         public async Task<int> CountUnreadMessagesAsync(Guid userId, Guid chatId)
         {
             return await _context.UserChat
@@ -72,7 +63,8 @@ namespace ChatApp.Infrastructure.Repository
                     UnreadCount = uc.Chat.Messages.Count(m =>
                         m.SentAt > uc.LastReadAt &&
                         m.SenderID != userId &&
-                        !m.IsDeleted)
+                        !m.IsDeleted &&
+                        m.MessageType != MessageType.System)
                 })
                 .ToListAsync();
             return rawData.Select(x => (x.Id, x.UnreadCount)).ToList();
@@ -161,13 +153,7 @@ namespace ChatApp.Infrastructure.Repository
             .Select(u => u.IsAdmin)
             .FirstOrDefaultAsync();
         }
-        public async Task<DateTime?> GetLastMessageDateAsync(Guid userId, Guid chatId)
-        {
-            return await _context.UserChat
-                .Where(uc => uc.ChatID == chatId && uc.UserID == userId)
-                .Select(uc => (DateTime?)uc.LastMessageAt)
-                .FirstOrDefaultAsync();
-        }
+
         public async Task<bool> ExistsAsync(Guid chatId)
         {
             return await _context.UserChat.AnyAsync(c => c.ChatID == chatId);

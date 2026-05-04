@@ -15,8 +15,6 @@
         public DateTime? DeletedAt { get; set; }
         public Guid? LastReadMessageID { get; set; }
         public DateTime LastReadAt { get; set; }
-        public Guid? LastMessageID { get; private set; }
-        public DateTime LastMessageAt { get; set; }
 
 
     }

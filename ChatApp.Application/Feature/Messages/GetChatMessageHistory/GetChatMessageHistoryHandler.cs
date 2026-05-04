@@ -24,7 +24,7 @@ namespace ChatApp.Application.Feature.Messages.GetChatMessageHistory
 
             if (isArchive)
             {
-                cutoffDate = await _userChatRepo.GetLastMessageDateAsync(r.UserId, r.ChatId);
+                cutoffDate = await _chatRepo.GetLastMessageDateAsync(r.ChatId);
             }
 
             var messages = await _messageRepo.GetMessageHistoryAsync(r.UserId, r.ChatId, cutoffDate, cancellationToken);

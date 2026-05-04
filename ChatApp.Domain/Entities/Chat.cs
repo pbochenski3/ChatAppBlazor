@@ -14,6 +14,8 @@ namespace ChatApp.Domain.Entities
         public string AvatarUrl { get; set; } = string.Empty;
         public bool IsGroup { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
+        public Guid? LastMessageID { get; private set; }
+        public DateTime LastMessageAt { get; set; }
 
         public Message AddMembers(User admin, List<User> usersToAdd)
         {
