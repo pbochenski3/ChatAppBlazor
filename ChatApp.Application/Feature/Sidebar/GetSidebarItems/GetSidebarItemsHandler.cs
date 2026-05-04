@@ -34,8 +34,8 @@ namespace ChatApp.Application.Feature.Sidebar.GetSidebarItems
             var counters = await _userChatRepo.CountAllUnreadMessageCountsAsync(r.UserId);
             var counterDict = counters.ToDictionary(t => t.ChatId, t => t.Count);
             var messageIds = chatEntries
-              .Where(uc => uc.LastMessageID.HasValue)
-              .Select(uc => uc.LastMessageID.Value)
+              .Where(uc => uc.Chat.LastMessageID.HasValue)
+              .Select(uc => uc.Chat.LastMessageID.Value)
               .Distinct()
               .ToList();
 
@@ -92,14 +92,14 @@ namespace ChatApp.Application.Feature.Sidebar.GetSidebarItems
                 },
                 LastMessage = new LastMessageDTO
                 {
-                    LastMessageID = uc.LastMessageID,
-                    LastMessageContent = uc.LastMessageID.HasValue && contentDict.TryGetValue(uc.LastMessageID.Value, out var preview)
+                    LastMessageID = uc.Chat.LastMessageID,
+                    LastMessageContent = uc.Chat.LastMessageID.HasValue && contentDict.TryGetValue(uc.Chat.LastMessageID.Value, out var preview)
                         ? preview.Content
                         : "Brak wiadomości",
-                    LastMessageSender = uc.LastMessageID.HasValue && contentDict.TryGetValue(uc.LastMessageID.Value, out var authorPreview)
+                    LastMessageSender = uc.Chat.LastMessageID.HasValue && contentDict.TryGetValue(uc.Chat.LastMessageID.Value, out var authorPreview)
                         ? authorPreview.Author
                         : "System",
-                    LastMessageAt = uc.LastMessageAt
+                    LastMessageAt = uc.Chat.LastMessageAt
                 }
             };
         }

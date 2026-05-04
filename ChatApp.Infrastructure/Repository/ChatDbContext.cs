@@ -104,6 +104,8 @@ namespace ChatApp.Infrastructure.Repository
                 .HasPrecision(0);
                 entity.Property(c => c.DeletedAt)
                 .HasPrecision(0);
+                entity.Property(uc => uc.LastMessageAt)
+                .HasPrecision(0);
 
                 entity.HasMany(c => c.Messages)
                         .WithOne(m => m.Chat)
@@ -113,7 +115,6 @@ namespace ChatApp.Infrastructure.Repository
             mb.Entity<UserChat>(entity =>
             {
                 entity.HasQueryFilter(uc => !uc.IsDeleted);
-                entity.HasIndex(uc => new { uc.UserID, uc.LastMessageAt });
                 entity.HasIndex(uc => uc.UserID);
 
                 entity.HasKey(uc => new { uc.UserID, uc.ChatID });
@@ -132,8 +133,6 @@ namespace ChatApp.Infrastructure.Repository
                 entity.Property(uc => uc.ArchivedAt)
                 .HasPrecision(0);
                 entity.Property(uc => uc.DeletedAt)
-                .HasPrecision(0);
-                entity.Property(uc => uc.LastMessageAt)
                 .HasPrecision(0);
                 entity.Property(uc => uc.LastReadAt)
                 .HasPrecision(0);

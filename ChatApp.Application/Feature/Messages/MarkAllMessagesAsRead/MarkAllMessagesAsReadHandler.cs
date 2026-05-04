@@ -13,7 +13,7 @@ namespace ChatApp.Application.Feature.Messages.MarkAllMessagesAsRead
         public async Task<bool> Handle(MarkAllMessagesAsReadCommand r, CancellationToken cancellationToken)
         {
             var userChat = await _userChatRepo.GetUserChatAsync(r.ChatId, r.UserId, cancellationToken);
-            var lastMessageId = userChat?.LastMessageID;
+            var lastMessageId = userChat?.Chat.LastMessageID;
             if (lastMessageId.HasValue)
             {
                 await _userChatRepo.UpdateLastReadMessageAsync(new HashSet<Guid> {r.UserId}, r.ChatId, lastMessageId.Value);

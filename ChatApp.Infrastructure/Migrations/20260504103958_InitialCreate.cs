@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace ChatApp.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,7 +21,9 @@ namespace ChatApp.Infrastructure.Migrations
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     AvatarUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsGroup = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true)
+                    DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
+                    LastMessageID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    LastMessageAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -103,12 +106,13 @@ namespace ChatApp.Infrastructure.Migrations
                 {
                     MessageID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    imageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SentAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false),
                     ChatID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SenderID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
-                    IsSystemMessage = table.Column<bool>(type: "bit", nullable: false)
+                    MessageType = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -133,7 +137,7 @@ namespace ChatApp.Infrastructure.Migrations
                 {
                     UserID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ChatID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ChatName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Alias = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     JoinedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false),
                     IsAdmin = table.Column<bool>(type: "bit", nullable: false),
                     IsArchive = table.Column<bool>(type: "bit", nullable: false),
@@ -141,9 +145,7 @@ namespace ChatApp.Infrastructure.Migrations
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
                     LastReadMessageID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    LastReadAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false),
-                    LastMessageID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    LastMessageAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false)
+                    LastReadAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -201,11 +203,6 @@ namespace ChatApp.Infrastructure.Migrations
                 name: "IX_UserChat_UserID",
                 table: "UserChat",
                 column: "UserID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserChat_UserID_LastMessageAt",
-                table: "UserChat",
-                columns: new[] { "UserID", "LastMessageAt" });
         }
 
         /// <inheritdoc />
