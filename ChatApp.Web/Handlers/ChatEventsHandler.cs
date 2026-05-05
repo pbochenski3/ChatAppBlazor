@@ -11,7 +11,8 @@ namespace ChatApp.Web.Handlers
         INotificationHandler<ChatRoomClosed>,
         INotificationHandler<ChatUpdated>,
         INotificationHandler<UsersInChatUpdated>,
-        INotificationHandler<UserAliasChanged>
+        INotificationHandler<UserAliasChanged>,
+        INotificationHandler<RequestToUpdateFlagOnChat>
     {
         private readonly IChatActionService _chatActionService;
         public ChatEventsHandler(IChatActionService chatActionService)
@@ -41,6 +42,11 @@ namespace ChatApp.Web.Handlers
         public async Task Handle(ChatEvents.UserAliasChanged notification, CancellationToken cancellationToken)
         {
             await _chatActionService.HandleUserAliasChangeAsync(notification.ChatId, notification.UserId, notification.NewAlias);
+        }
+
+        public async Task Handle(RequestToUpdateFlagOnChat n, CancellationToken cancellationToken)
+        {
+            await _chatActionService.HandleUpdateFlagOnChatAsync(n.UserId, n.ChatId, n.Flag);
         }
     }
 }

@@ -12,6 +12,7 @@ namespace ChatApp.Web.Services.Interfaces.Actions
         Task HandleUserOnGroupLoadAsync(Guid chatId);
         Task HandleChatCloseAsync();
         Task HandleUserAliasChangeAsync(Guid chatId, Guid userId, string newAlias);
+        Task HandleUpdateFlagOnChatAsync(Guid userId, Guid chatId, bool flag);
 
 
 

@@ -11,5 +11,6 @@ namespace ChatApp.Web.Events
         public record UsersInChatUpdated(Guid ChatId) : INotification;
         public record UserAliasChanged(Guid ChatId, Guid UserId, string NewAlias) : INotification;
         public record RequestToJoinSignalR(Guid ChatId) : INotification;
+        public record RequestToUpdateFlagOnChat(Guid UserId,Guid ChatId,bool Flag) : INotification;
     }
 }

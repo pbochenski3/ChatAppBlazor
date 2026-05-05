@@ -159,6 +159,7 @@ _appStateService.CurrentUser?.UserID != SelectedUser?.UserID;
     {
         _chatStateService.OnStateChanged += HandleStateChanged;
         _chatSettingsActionService.OnStateChanged += HandleStateChanged;
+        _chatActionService.OnStateChanged += HandleStateChanged;
     }
     private async Task AddUserToSelectionAsync(Guid contactId)
     {
@@ -276,5 +277,7 @@ _appStateService.CurrentUser?.UserID != SelectedUser?.UserID;
     {
         _chatStateService.OnStateChanged -= HandleStateChanged;
         _chatSettingsActionService.OnStateChanged -= HandleStateChanged;
+        _chatActionService.OnStateChanged -= HandleStateChanged;
+
     }
 }

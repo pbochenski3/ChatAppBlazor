@@ -171,7 +171,22 @@ namespace ChatApp.Web.Services.Actions
             _chatStateService.UpdateUserAliasInMessages(userId, newAlias);
             OnStateChanged?.Invoke();
         }
-
+        public async Task HandleUpdateFlagOnChatAsync(Guid userId,Guid chatId, bool flag)
+        {
+            if(_appStateService.CurrentChat?.Identity.ChatID == chatId)
+            {
+                var selectedUser = _chatStateService.UsersInChat.FirstOrDefault(u => u.UserID == userId);
+                if(selectedUser != null)
+                {
+                selectedUser.IsAdmin = flag;
+                }
+                if(_appStateService.CurrentUser.UserID == userId)
+                {
+                    _appStateService.CurrentChat.State.IsAdmin = flag;
+                }
+                OnStateChanged?.Invoke();
+            }
+        }
         public async Task HandleChatCloseAsync()
         {
             await _appStateService.SetChatAsync(null);

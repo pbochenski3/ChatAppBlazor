@@ -1,4 +1,5 @@
-﻿using ChatApp.Application.Notifications.User;
+﻿using ChatApp.Application.Notifications.Chat;
+using ChatApp.Application.Notifications.User;
 using ChatApp.Domain.Interfaces.Repository;
 using MediatR;
 
@@ -20,6 +21,7 @@ namespace ChatApp.Application.Feature.Chats.UpdateAdminFlagOnChat
                 return false;
             }
             await _userChatRepo.UpdateAdminFlagAsync(r.SelectedUserId, r.ChatId, r.Flag);
+            r.AddEvent(new UserAdminFlagUpdatedNotification(r.SelectedUserId,r.ChatId,r.Flag));
             return true;
         }
     }
