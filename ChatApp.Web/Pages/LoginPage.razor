@@ -1,4 +1,6 @@
 @page "/"
+@inject IJSRuntime JS
+
 <div class="login-page">
     <div class="login-card">
         <div class="login-header">
@@ -53,6 +55,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await JS.InvokeVoidAsync("hideLoader");
         if (_appStateService.CurrentUser != null)
         {
             _navManager.NavigateTo("/hub");

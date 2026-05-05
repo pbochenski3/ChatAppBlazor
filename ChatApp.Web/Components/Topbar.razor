@@ -11,10 +11,7 @@
 
         </div>
     </div>
-    @if (_appStateService.CurrentChat.State.IsArchive == false)
-    {
         <div class="contact-config" @onclick="_chatStateService.ToggleSettings">⚙️</div>
-    }
 </div>
 
 
@@ -31,10 +28,8 @@
     }
     public void Dispose()
     {
-        _chatSettingsActionService.OnStateChanged += HandleStateChanged;
-        _chatActionService.OnStateChanged += HandleStateChanged;
-
-
+        _chatSettingsActionService.OnStateChanged -= HandleStateChanged;
+        _chatActionService.OnStateChanged -= HandleStateChanged;
     }
 
 }

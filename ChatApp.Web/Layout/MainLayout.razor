@@ -2,10 +2,13 @@
 <NotificationWindow />
 @if (_appStateService.IsInitialized)
 {
-@Body
+    @Body
 }
+
 @code 
 {
+
+
     protected override async Task OnInitializedAsync()
     {
         await _appStateService.LoadSessionAsync();

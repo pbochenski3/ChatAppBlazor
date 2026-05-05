@@ -23,20 +23,24 @@
                     <img src="@chat.Identity.AvatarUrl" class="contact-img" alt="avatar" />
                 </div>
                 <div class="contact-info">
-                        <p class="contact-name">@chat.Identity.ChatName</p>
-                    @if (chat.LastMessage.LastMessageContent != null)
-                    {
-                        <p class="contact-name">
+                    <p class="contact-name">@chat.Identity.ChatName</p>
+
+                    <p class="contact-name @(chat.State.IsArchive ? "is-archive" : "")">
+                        @if (chat.State.IsArchive)
+                        {
+                            @("🔒 Archiwum")
+                        }
+                        else if (chat.LastMessage?.LastMessageContent != null)
+                        {
                             @((chat.LastMessage.LastMessageSender == _appStateService.CurrentUser.Username)
                                             ? $"Ty: {chat.LastMessage.LastMessageContent}"
-                                            : chat.State.IsArchive 
-                                            ? "Archiwum" : $"{chat.LastMessage.LastMessageSender}: {chat.LastMessage.LastMessageContent}")
-                        </p>
+                                            : $"{chat.LastMessage.LastMessageSender}: {chat.LastMessage.LastMessageContent}")
+                        }
+                    </p>
 
-                    }
                     @if (chat.State.UnreadMessageCount > 0)
                     {
-                        <p class="contact-name">@chat.State.UnreadMessageCount nowe wiadomości!</p>
+                        <p class="unread-badge">@chat.State.UnreadMessageCount nowe wiadomości!</p>
                     }
                 </div>
             </div>

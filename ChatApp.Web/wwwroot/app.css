@@ -28,6 +28,8 @@
     --radius-full: 9999px;
     --transition: 0.2s ease;
     --green-dark-gradient: radial-gradient(ellipse at 85% 85%, rgba(0, 229, 160, 0.25) 0%, transparent 45%), radial-gradient(ellipse at 15% 15%, rgba(0, 184, 122, 0.20) 0%, transparent 45%), linear-gradient(135deg, #0d2b1e 0%, #0b0f0e 100%);
+    --archive-yellow: #ffca28; 
+    --archive-glow: rgba(255, 202, 40, 0.3);
 }
 
 /* =========================================
@@ -103,17 +105,6 @@ body {
             flex-shrink: 0;
         }
 
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-
-    50% {
-        opacity: 0.5;
-        transform: scale(0.75);
-    }
-}
 .user-info-wrapper {
     display: flex;
     align-items: center;
@@ -186,19 +177,20 @@ body {
 
 .search-container {
     margin-top: 0.75rem;
+    margin-bottom: 1.25rem; 
 }
 
 .search-input {
     width: 100%;
     background-color: var(--surface2);
-    border: 1px solid var(--border);
+    border: 1.5px solid var(--border);
     border-radius: var(--radius-md);
     padding: 0.5625rem 0.875rem;
     font-family: 'DM Sans', sans-serif;
     font-size: 0.85rem;
     color: var(--text);
     outline: none;
-    transition: border-color var(--transition), box-shadow var(--transition);
+    transition: all var(--transition);
 }
 
     .search-input::placeholder {
@@ -207,9 +199,9 @@ body {
 
     .search-input:focus {
         background-color: var(--surface3) !important;
-        color: var(--text) !important;
-        border-color: var(--accent-ring);
+        border-color: var(--accent); 
         box-shadow: 0 0 0 3px var(--accent-dim);
+        color: var(--text) !important;
     }
 
 .contacts-list {
@@ -243,10 +235,10 @@ body {
     transition: all var(--transition);
     position: relative;
 
+}
     .contacts-list {
         overflow-y: auto;
     }
-}
 
     .contact-item:hover {
         background-color: var(--surface2);
@@ -326,6 +318,11 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+    .contact-name.is-archive {
+        color: var(--archive-yellow) !important;
+        text-shadow: 0 0 8px var(--archive-glow);
+        font-weight: 600;
+    }
 
 .contact-item.active .contact-name {
     color: var(--accent);
@@ -391,7 +388,6 @@ body {
     }
 
 .search-results {
-    margin-top: 1.125rem;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -1083,10 +1079,13 @@ user-details-wrapper {
     caret-color: var(--accent);
     -webkit-text-fill-color: var(--text);
 }
+.form-control.search-input {
+    border: 1.5px solid var(--accent-ring);
+}
 
-    .form-control::placeholder {
-        color: var(--muted2);
-    }
+.form-control::placeholder {
+    color: var(--muted2);
+}
 
     .form-control::selection {
         background: var(--accent-dim);
@@ -1096,6 +1095,10 @@ user-details-wrapper {
     .form-control:focus {
         background: transparent;
         -webkit-text-fill-color: var(--text);
+        /* Zielona poświata */
+        border-color: var(--accent);
+        box-shadow: 0 0 0 1px var(--accent-ring), 0 0 12px var(--accent-glow);
+        outline: none;
     }
 
     .form-control:-webkit-autofill,
@@ -1254,21 +1257,16 @@ user-details-wrapper {
             transform: none;
         }
 
-    .spinner {
-        width: 14px;
-        height: 14px;
-        border: 2px solid rgba(0, 0, 0, 0.2);
-        border-top-color: var(--bg);
-        border-radius: 50%;
-        animation: spin 0.7s linear infinite;
-        flex-shrink: 0;
-    }
+.spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-top-color: var(--bg);
+    border-radius: 50%;
+    animation: spin-loader 0.7s linear infinite;
+    flex-shrink: 0;
+}
 
-    @keyframes spin {
-        to {
-            transform: rotate(360deg);
-        }
-    }
 
     .validation-summary {
         background: var(--danger-dim);
@@ -1383,27 +1381,7 @@ user-details-wrapper {
             color: var(--text);
         }
 
-    @keyframes toast-lifecycle {
-        0% {
-            transform: translateY(-140%);
-            opacity: 0;
-        }
-
-        8% {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        92% {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        100% {
-            transform: translateY(-140%);
-            opacity: 0;
-        }
-    }
+   
     /* =========================================
    6. ANIMACJE GLOBALNE
    ========================================= */
@@ -1418,6 +1396,55 @@ user-details-wrapper {
             transform: translateY(0);
         }
     }
+    @keyframes spin-loader {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    @keyframes slideIn {
+        from {
+            transform: translateY(10px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        50% {
+            opacity: 0.5;
+            transform: scale(0.75);
+        }
+    }
+@keyframes toast-lifecycle {
+    0% {
+        transform: translateY(-140%);
+        opacity: 0;
+    }
+
+    8% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    92% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(-140%);
+        opacity: 0;
+    }
+}
+
 /* =========================================
    Emoji Component
    ========================================= */
@@ -1533,17 +1560,7 @@ user-details-wrapper {
     z-index: 10000;
 }
 
-@keyframes slideIn {
-    from {
-        transform: translateY(10px);
-        opacity: 0;
-    }
 
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
 /* =========================================
    7. ImageComponent
    ========================================= */
@@ -1890,3 +1907,6 @@ user-details-wrapper {
         padding: 1rem;
     }
 }
+
+
+

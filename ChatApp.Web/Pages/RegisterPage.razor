@@ -1,4 +1,6 @@
 @page "/register"
+@inject IJSRuntime JS
+
 
 
 <div class="login-page">
@@ -55,6 +57,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await JS.InvokeVoidAsync("hideLoader");
         if (_appStateService.CurrentUser != null)
         {
             _navManager.NavigateTo("/hub");

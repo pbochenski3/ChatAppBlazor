@@ -2,11 +2,11 @@
 @using ChatApp.Application.DTO.Requests
 @using ChatApp.Web.Services.Actions
 @implements IAsyncDisposable
+@inject IJSRuntime JS
 @inject ILogger<BlazorChat> _logger
 
 
-@if (_isLoading == false)
-{
+
     <main class="main-layout">
         <Sidebar
             OnProfileOpen="HandleOpenProfile"/>
@@ -19,15 +19,16 @@
             <ProfileWindow/>
         }
     </main>
-}
 
 @code {
+    private bool _isDataLoaded = false; 
     private string? _notification = string.Empty;
     private UserDTO _currentUser = new UserDTO();
-    private bool _isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
+
+
         if (_appStateService.CurrentUser == null)
         {
             _navManager.NavigateTo("/");
@@ -45,16 +46,27 @@
 
             await _sidebarActionService.HandleInvitesLoadAsync();
             await _sidebarActionService.HandleChatsLoadAsync();
-            _isLoading = false;
+            await JS.InvokeVoidAsync("hideLoader");
             _notificationService.Notify($"{_currentUser.Username} witaj ponownie!", NotificationType.System);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during initialization");
-            _ = ShowNotificationAsync($"{ex.Message}");
             _appStateService.CurrentUser = null;
             _navManager.NavigateTo("/");
+            _notificationService.Notify("Bład podczas logowania! Zaloguj się ponownie!",NotificationType.Warning);
             return;
+        }
+        finally
+        {
+          _isDataLoaded = true;
+        }
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_isDataLoaded)
+        {
+            await JS.InvokeVoidAsync("hideLoader");
         }
     }
     private void SubscribeToEvent()
@@ -88,16 +100,6 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task ShowNotificationAsync(string message, int durationInSeconds = 5)
-    {
-        _notification = message;
-        await InvokeAsync(StateHasChanged); 
-
-        await Task.Delay(durationInSeconds * 1000); 
-
-        _notification = string.Empty;
-        await InvokeAsync(StateHasChanged);
-    }
     private async Task HandleGroupAvatarReloadAsync(string newAvatarUrl, Guid chatId)
     {
         var chatToUpdate = _sidebarStateService.SidebarItems.FirstOrDefault(sb => sb.Identity.ChatID == chatId);

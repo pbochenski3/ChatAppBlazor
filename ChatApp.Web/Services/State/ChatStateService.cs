@@ -16,6 +16,7 @@ namespace ChatApp.Web.Services.State
         public List<MessageDTO> ReceivedMessages { get; private set; } = new List<MessageDTO>();
 
         public bool IsSettingsOpen { get; set; }
+        public bool IsEmojiOpen { get; set; }
         public bool IsArchive { get; set; } = false;
         public bool IsChatLocked { get; set; } = true;
         public string CurrentUsername { get; set; } = string.Empty;
@@ -40,13 +41,16 @@ namespace ChatApp.Web.Services.State
         public void ToggleSettings()
         {
             IsSettingsOpen = !IsSettingsOpen;
-            _logger.LogDebug("ToggleSettings OnStateChanged. InstanceHash={Hash}, IsSettingsOpen={IsSettingsOpen}", this.GetHashCode(), IsSettingsOpen);
+            OnStateChanged?.Invoke();
+        }
+        public void ToggleEmojiMenu()
+        {
+            IsEmojiOpen = !IsEmojiOpen;
             OnStateChanged?.Invoke();
         }
         public void SetMessageList(List<MessageDTO> messages)
         {
             ReceivedMessages = messages;
-            _logger.LogDebug("SetMessageList OnStateChanged. InstanceHash={Hash}, MessagesCount={MessagesCount}", this.GetHashCode(), messages?.Count);
             OnStateChanged?.Invoke();
         }
         public void AddMessage(MessageDTO dto)
@@ -54,7 +58,6 @@ namespace ChatApp.Web.Services.State
             if (dto != null)
             {
                 ReceivedMessages.Add(dto);
-                _logger.LogDebug("AddMessage OnStateChanged. InstanceHash={Hash}, MessageId={MessageId}", this.GetHashCode(), dto.MessageID);
                 OnStateChanged?.Invoke();
             }
         }
@@ -73,7 +76,6 @@ namespace ChatApp.Web.Services.State
                 userToUpdate.Alias = newAlias;
             }
 
-            _logger.LogDebug("UpdateUserAliasInMessages OnStateChanged. UserId={UserId}, NewAlias={NewAlias}", userId, newAlias);
             OnStateChanged?.Invoke();
         }
 

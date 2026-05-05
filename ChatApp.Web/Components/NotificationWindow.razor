@@ -1,18 +1,18 @@
 ﻿@using ChatApp.Domain.Models
+@using System.Collections.Concurrent
 @implements IDisposable
 
 <div class="toast-container">
-    @foreach (var note in _activeNotifications.ToList())
+    @foreach (var note in _activeNotifications.Keys.ToList())
     {
-        <div class="notification-toast @note.Type.ToString().ToLower()">
+        <div class="notification-toast @note.Type.ToString().ToLower()" @key="note">
             <p>@note.Message</p>
         </div>
     }
 </div>
 
 @code {
-    private List<NotificationMessage> _activeNotifications = new();
-    private readonly object _lock = new();
+    private ConcurrentDictionary<NotificationMessage, byte> _activeNotifications = new();
     private bool _isDisposed;
 
     protected override void OnInitialized()
@@ -22,13 +22,13 @@
 
     private void HandleNotification(NotificationMessage note)
     {
-        lock (_lock)
-        {
-            _activeNotifications.Add(note);
-        }
+        if (_isDisposed) return;
 
-        InvokeAsync(StateHasChanged);
-        _ = RemoveAfterDelay(note);
+        if (_activeNotifications.TryAdd(note, 0))
+        {
+            InvokeAsync(StateHasChanged);
+            _ = RemoveAfterDelay(note);
+        }
     }
 
     private async Task RemoveAfterDelay(NotificationMessage note)
@@ -37,12 +37,10 @@
 
         if (_isDisposed) return;
 
-        lock (_lock)
+        if (_activeNotifications.TryRemove(note, out _))
         {
-            _activeNotifications.Remove(note);
+            await InvokeAsync(StateHasChanged);
         }
-
-        await InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()

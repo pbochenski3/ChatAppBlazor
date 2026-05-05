@@ -7,6 +7,7 @@ namespace ChatApp.Web.Services.Interfaces.Actions
         event Action? OnStateChanged;
         void RequestUserRemove();
         Task HandleRemoveUserFromChat();
+        void RequestDeleteChat();
         Task HandleChatDeleteAsync();
         void RequestLeaveChat();
         Task HandleChatLeaveAsync();

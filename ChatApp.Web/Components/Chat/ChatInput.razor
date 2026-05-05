@@ -35,7 +35,7 @@
                             class="chat-image-icon">🖼️
                 </label>
             <EmojiWindow
-                OnEmojiSelect="HandleAddEmojiToInput" />
+                OnEmojiSelect="HandleAddEmojiToInput"/>
                     <button class="btn-primary"
                     disabled="@(_isArchive || (string.IsNullOrWhiteSpace(_messageContent) && _sendedPhoto == null))"
                     @onclick="HandleSendMessage">
@@ -112,7 +112,9 @@
     }
     private async Task HandleSendMessage()
     {
+        _chatStateService.IsEmojiOpen = false;
         if (_appStateService.CurrentChat == null) return;
+        StateHasChanged();
         var contentToSend = _messageContent;
         var photoToRestore = _sendedPhoto;
         var chatId = _appStateService.CurrentChat.Identity.ChatID;

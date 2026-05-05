@@ -1,6 +1,7 @@
-﻿<div class="emoji-open" onclick="@OpenEmojiMenu">😊</div>
+﻿@implements IDisposable
+<div class="emoji-open" onclick="@_chatStateService.ToggleEmojiMenu">😊</div>
 
-@if(_isOpen)
+@if(_chatStateService.IsEmojiOpen)
 {
     <div class="emoji-picker-container">
     <div class="emoji-picker">
@@ -25,10 +26,17 @@
         "🤗", "🤭", "🤫", "🤔", "🤐", "🤨", "😐", "😑", "😶", "😏", "😒", "🙄", "😬",
         "🤥", "😌", "😔", "😪", "🤤", "😴", "😷", "🤒", "🤕", "🤢", "🤮", "🤧", "🥵"
     };
-    private bool _isOpen = false;
-    private void OpenEmojiMenu()
+    protected override void OnInitialized()
     {
-        _isOpen = !_isOpen;
+        _chatStateService.OnStateChanged += HandleStateChange;
+    }
+    private void HandleStateChange()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+    public void Dispose()
+    {
+        _chatStateService.OnStateChanged -= HandleStateChange;
     }
 
 }

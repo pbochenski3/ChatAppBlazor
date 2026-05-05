@@ -5,11 +5,9 @@
         {
             case ChatSettingsView.Settings:
                 <div class="sidebar-header"><h3>Ustawienia</h3></div>
-                if (!_chatStateService.IsArchive)
+                if (!_appStateService.CurrentChat.State.IsArchive)
                 {
                     <button class="btn-secondary" @onclick="() => _chatStateService.SettingsView = ChatSettingsView.Users">Uczestnicy</button>
-
-
 
                     @if (!_appStateService.CurrentChat.Identity.IsGroup)
                     {
@@ -24,13 +22,16 @@
                         <button class="btn-secondary btn-delete" @onclick="_chatSettingsActionService.RequestLeaveChat">Opuść czat</button>
                     }
                 }
-                @if (_chatStateService.IsArchive)
+                else
                 {
-                   // <button class="btn-secondary btn-delete" onclick="_chatSettingsActionService.RequestDeleteChat">Usuń czat</button>
+                   <button class="btn-secondary btn-delete" @onclick="_chatSettingsActionService.RequestDeleteChat">Usuń czat</button>
                 }
                 break;
             case ChatSettingsView.AddUsers:
                 <div class="sidebar-header"><h3>Dodaj osoby</h3></div>
+                if(FilteredContacts.Any())
+                {
+                    
                 <div class="search-container">
                     <input type="text" class="form-control search-input" placeholder="Szukaj..."
                            @bind="_contactSearchTerm" @bind:event="oninput" />
@@ -51,6 +52,12 @@
                         }
                     }
                 </div>
+                }
+                else
+                {
+                    <p class="section-hint">Nie masz użytkowników których możesz dodać! Możesz czas poznać nowych znajomych?</p>
+
+                }
                 @if (ContactsToAdd != null && ContactsToAdd.Any())
                 {
                     <button class="btn-add-action" @onclick="async () => { _chatStateService.SettingsView = ChatSettingsView.Settings; await AddUserToGroupAsync(ContactsToAdd); }">Zatwierdź</button>
