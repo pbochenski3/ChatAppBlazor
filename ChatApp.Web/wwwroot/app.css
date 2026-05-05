@@ -881,6 +881,11 @@ user-details-wrapper {
 /* =========================================
    CHAT MAIN WRAPPER
    ========================================= */
+/*JS*/
+.message-input-area.drag-active {
+    border: 2px dashed #007bff;
+    background-color: rgba(0, 123, 255, 0.05);
+}
 .chat-main-wrapper {
     display: flex;
     height: 100%;

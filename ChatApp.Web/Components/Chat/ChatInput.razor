@@ -25,10 +25,14 @@
                    @bind:event="oninput"
                    @onkeydown="HandleKeyDownAsync" />
 
-                <InputFile id="chat-image-icon" OnChange="OnImageSend"
-                           style="display:none;" accept=".jpg,.jpeg,.png,.jfif" />
-                <label for="chat-image-icon" disabled="@_isUploading" class="chat-image-icon">
-                🖼️
+                <InputFile id="chat-image-icon"
+                           @ref="_inputFile"
+                           OnChange="OnImageSend"
+                           style="display:none;"
+                           accept=".jpg,.jpeg,.png,.jfif" />
+                <label for="chat-image-icon" 
+                            disabled="@_isUploading" 
+                            class="chat-image-icon">🖼️
                 </label>
             <EmojiWindow
                 OnEmojiSelect="HandleAddEmojiToInput" />
@@ -48,6 +52,7 @@
 </div>
 
 @code {
+    private InputFile? _inputFile;
     private bool _isArchive => _appStateService.CurrentChat?.State.IsArchive ?? false;
     private bool _isUploading = false;
     private string _tempImageUrl = string.Empty;
@@ -57,6 +62,14 @@
     {
         _chatSettingsActionService.OnStateChanged += HandleStateChange;
         _chatActionService.OnStateChanged += HandleStateChange;
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("initializeChatDragAndPaste",
+                DotNetObjectReference.Create(this), "chat-image-icon");
+        }
     }
     private void ClearSelectedPhoto()
     {
@@ -103,7 +116,7 @@
         if (_appStateService.CurrentChat == null) return;
         var chatId = _appStateService.CurrentChat.Identity.ChatID;
         if (string.IsNullOrWhiteSpace(contentToSend) && _sendedPhoto == null) return;
-            var newMessage = new MessageDTO
+        var newMessage = new MessageDTO
         {
             Content = string.IsNullOrWhiteSpace(contentToSend) ? "🖼️ Zdjęcie" : contentToSend,
             imageUrl = string.Empty,

@@ -17,10 +17,48 @@
 <body>
     <Routes @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
     <script>
+        //Image drag/paste
+                      window.initializeChatDragAndPaste = (dotNetHelper, inputId) => {
+            const handleFiles = (files) => {
+                if (files && files.length > 0) {
+                    const file = files[0];
+                    if (!file.type.startsWith('image/')) return; 
+
+                    const input = document.getElementById(inputId);
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    input.files = dataTransfer.files;
+
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            };
+
+            window.addEventListener('paste', (e) => {
+                const items = e.clipboardData.items;
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type.indexOf("image") !== -1) {
+                        handleFiles([items[i].getAsFile()]);
+                    }
+                }
+            });
+
+            const zone = document.querySelector('.message-input-area');
+            if (zone) {
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    handleFiles(e.dataTransfer.files);
+                });
+            }
+        zone.addEventListener('dragover', () => zone.classList.add('drag-active'));
+        zone.addEventListener('dragleave', () => zone.classList.remove('drag-active'));
+        zone.addEventListener('drop', () => zone.classList.remove('drag-active'));
+        };
+        //focus na czat
                 window.focusElement = (id) => {
             const ellement = document.getElementById(id);
             if (element) element.focus();
         };
+        //scroll
                 window.setupSmartScroll = (container) => {
             if (!container) return;
 
