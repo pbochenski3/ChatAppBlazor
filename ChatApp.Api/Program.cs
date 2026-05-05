@@ -9,11 +9,13 @@ using ChatApp.Infrastructure.Providers;
 using ChatApp.Infrastructure.Repository;
 using ChatApp.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +25,45 @@ var issuer = JwtSetting["Issuer"];
 var audience = JwtSetting["Audience"];
 builder.Services.AddAntiforgery();
 builder.Services.AddSignalR();
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("chat-send-policy", httpContext =>
+    {
+        var userId = httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                 ?? httpContext.User.Identity?.Name;
+        var partitionKey = userId ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
+
+        return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromSeconds(10),
+            QueueLimit = 0
+        });
+    });
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+    {
+        if (httpContext.Request.Path.StartsWithSegments("/cdn") ||
+        httpContext.Request.Path.Value!.EndsWith(".js"))
+        {
+            return RateLimitPartition.GetNoLimiter("bypass");
+        }
+        var clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
+
+        return RateLimitPartition.GetFixedWindowLimiter(clientIp, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 50,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        });
+    });
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = 429;
+        await context.HttpContext.Response.WriteAsync("Too many requests. Please try again later.", token);
+    };
+});
 builder.Services.AddDbContextFactory<ChatDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ChatDatabase")));
 builder.Services.AddCors(options =>
@@ -122,12 +163,12 @@ app.UseStaticFiles(new StaticFileOptions
 });
 app.UseStaticFiles();
 app.MapStaticAssets();
-
 app.UseCors("BlazorAppPolicy");
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.UseAntiforgery();
 app.MapControllers();
 app.MapHub<ChatHub>("/chathub");

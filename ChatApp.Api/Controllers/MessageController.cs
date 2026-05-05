@@ -5,6 +5,7 @@ using ChatApp.Application.Feature.Messages.MarkAsRead;
 using ChatApp.Application.Feature.Messages.SendChatMessage;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ChatApp.Api.Controllers
 {
@@ -17,6 +18,7 @@ namespace ChatApp.Api.Controllers
         {
             _mediator = mediator;
         }
+        [EnableRateLimiting("chat-send-policy")]
         [HttpPost]
         public async Task<IActionResult> SendChatMessageAsync([FromBody] MessageDTO dto)
         {
