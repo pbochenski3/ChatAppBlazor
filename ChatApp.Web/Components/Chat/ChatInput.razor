@@ -17,7 +17,7 @@
         }
         <div class="input-group">
             <input type="text"
-                    @key="_inputFileKey"
+                   id="messageInput"
                    class="form-control"
                    placeholder="Napisz wiadomość..."
                    disabled="@_isArchive"
@@ -53,7 +53,6 @@
     private string _tempImageUrl = string.Empty;
     private string _messageContent = string.Empty;
     private IBrowserFile _sendedPhoto = null;
-    private Guid _inputFileKey = Guid.NewGuid();
     protected override void OnInitialized()
     {
         _chatSettingsActionService.OnStateChanged += HandleStateChange;
@@ -63,7 +62,6 @@
     {
         _sendedPhoto = null;
         _tempImageUrl = string.Empty;
-        _inputFileKey = Guid.NewGuid(); 
     }
     private void HandleStateChange()
     {
@@ -160,6 +158,8 @@
         {
             _isUploading = false;
             await InvokeAsync(StateHasChanged);
+            await Task.Yield();
+            await JSRuntime.InvokeVoidAsync("focusElement", "messageInput");
 
         }
 

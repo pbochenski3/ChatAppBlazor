@@ -17,6 +17,10 @@
 <body>
     <Routes @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
     <script>
+                window.focusElement = (id) => {
+            const ellement = document.getElementById(id);
+            if (element) element.focus();
+        };
                 window.setupSmartScroll = (container) => {
             if (!container) return;
 

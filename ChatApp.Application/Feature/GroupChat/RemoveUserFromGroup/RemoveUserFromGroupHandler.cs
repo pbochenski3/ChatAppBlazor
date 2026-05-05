@@ -34,7 +34,7 @@ namespace ChatApp.Application.Feature.GroupChat.RemoveUserFromGroup
             }
             await _userChatRepo.ArchiveChatAsync(r.ChatId, r.UserId);
 
-            var systemMessage = Message.CreateSystemMessage(r.ChatId, $"{r.AdminName} usunął użytkownika {r.RemovedUserAlias} z grupy!.");
+            var systemMessage = Message.CreateSystemMessage(r.ChatId, $"{r.AdminName} usunął użytkownika {r.RemovedUserAlias} z grupy.");
             await _messageRepo.AddMessageAsync(systemMessage);
             r.AddEvent(new UserLeavedGroupNotification(r.ChatId, systemMessage.Adapt<MessageDTO>(), r.UserId, true));
             return true;

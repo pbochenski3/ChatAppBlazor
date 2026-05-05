@@ -1,0 +1,12 @@
+﻿<div class="profile-container">
+<ImageComponent AvatarUrl="@_appStateService.CurrentUser.AvatarUrl"
+                Name="@_appStateService.CurrentUser.Username"
+                LabelRole="Użytkownik"
+                IsGroup="false"
+                CustomClass="profile-mode" />
+<button class="btn-profile" @onclick="_chatStateService.ToggleSettings">Zamknij profil</button>
+<button class="btn-profile btn-logout" @onclick="() => _appStateService.Logout()">Wyloguj się</button>
+</div>
+@code {
+
+}

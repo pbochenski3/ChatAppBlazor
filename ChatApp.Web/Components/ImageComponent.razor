@@ -1,8 +1,8 @@
 ﻿﻿@using ChatApp.Application.DTO.Chats
 @using ChatApp.Domain.Enums
 @inject ILogger<ImageComponent> Logger
-<div class="profile-wrapper">
-    <div class="avatar-wrapper">
+<div class="image-wrapper @CustomClass">
+    <label for="avatar-upload" class="avatar-wrapper @(isUploading ? "disabled" : "")">
         @if (_tempAvatarUrl != string.Empty)
         {
             <img src="@_tempAvatarUrl" alt="avatarTemp" />
@@ -11,23 +11,22 @@
         {
             <img src="@AvatarUrl" alt="avatar" />
         }
-        <span class="online-badge"></span>
-    </div>
-    <p class="profile-username">@Name</p>
-    <p class="profile-role">@LabelRole</p>
-    <div class="profile-divider"></div>
-    <div class="avatar-upload-container">
-        <InputFile id="avatar-upload" OnChange="OnInputFileChange"
-                   style="display:none;" accept=".jpg,.jpeg,.png,.jfif" />
-        <label for="avatar-upload" disabled="@isUploading" class="user-profile-icon">
-            <p class="user-icon">Wybierz plik</p>
-        </label>
-        @if (selectedFile != null )
+        <div class="avatar-overlay">
+            <span class="avatar-overlay-icon">&#9998;</span>
+        </div>
+    </label>
+    <InputFile id="avatar-upload" OnChange="OnInputFileChange"
+               style="display:none;" accept=".jpg,.jpeg,.png,.jfif"
+               disabled="@isUploading" />
+    <p class="image-username">@Name</p>
+    <p class="image-role">@LabelRole</p>
+    <div class="image-divider"></div>
+    <div class="avatar-upload-container @CustomClass">
+        @if (selectedFile != null)
         {
             <button disabled="@isUploading" class="btn-upload" @onclick="HandleSaveClick">
                 @(isUploading ? "Przesyłanie..." : "Zapisz zmiany")
             </button>
-            <span class="file-name">Wybrano: @selectedFile.Name</span>
         }
     </div>
 </div>
@@ -37,6 +36,7 @@
     [Parameter] public string Name { get; set; } = string.Empty;
     [Parameter] public string LabelRole { get; set; } = string.Empty;
     [Parameter] public bool IsGroup { get; set; } = false;
+    [Parameter] public string CustomClass { get; set; } = "";
     private IBrowserFile? selectedFile;
     private bool isUploading = false;
     public enum PhotoType { Private, Group };

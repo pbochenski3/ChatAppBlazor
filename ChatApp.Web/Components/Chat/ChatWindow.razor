@@ -2,16 +2,14 @@
 @implements IDisposable;
 
 <div class="chat-main-wrapper @(_chatStateService.IsSettingsOpen ? "show-settings" : "")">
-
     @if (_dialogService.IsVisible)
     {
         <ConfirmDialog Title="@_dialogService.Title"
                        Message="@_dialogService.Message"
                        OnClose="OnDialogClose" />
     }
-
     <div class="chat-content">
-       <Topbar/>
+        <Topbar />
         <div class="chat-body">
             <div @ref="chatContainer" class="chat-box" id="chat-window">
                 <div class="chat-messages">
@@ -20,41 +18,39 @@
                         @foreach (var msg in _chatStateService.ReceivedMessages)
                         {
                             <div @key="msg.MessageID"
-                            class="message 
-                            @(IsSystem(msg) ? "system" : "") 
-                            @(IsMyMessage(msg) ? "mine" : "")">
-                                @if (!IsSystem(msg) && !IsMyMessage(msg))
-                                {
-                                    <div class="message-info">
-                                        <span class="message-time">[@msg.SentAt.ToString("HH:mm")]</span>
-                                        @{
-                                            var sender = _chatStateService.UsersInChat.FirstOrDefault(u => u.Username == msg.SenderUsername);
-                                            var displayName = sender?.Alias ?? msg.SenderUsername;
-                                        }
-                                        <span class="message-user">@displayName:</span>
-                                    </div>
-                                }
-                                <div class="message-body">
+                                 class="message @(IsSystem(msg) ? "system" : "") @(IsMyMessage(msg) ? "mine" : "")">
                                 @if (HasImage(msg.imageUrl))
                                 {
                                     <img src="@msg.imageUrl" class="chat-image" />
                                 }
-                                @if(HasText(msg.Content))
-                                {
-                                    <span class="message-content">@msg.Content</span>
-                                }
+                                <div class="message-row">
+                                    @if (!IsSystem(msg) && !IsMyMessage(msg))
+                                    {
+                                        <div class="message-info">
+                                            <span class="message-time">[@msg.SentAt.ToString("HH:mm")]</span>
+                                            @{
+                                                var sender = _chatStateService.UsersInChat.FirstOrDefault(u => u.Username == msg.SenderUsername);
+                                                var displayName = sender?.Alias ?? msg.SenderUsername;
+                                            }
+                                            <span class="message-user">@displayName:</span>
+                                        </div>
+                                    }
+                                    @if (HasText(msg.Content))
+                                    {
+                                        <span class="message-content">@msg.Content</span>
+                                    }
                                 </div>
-                                </div>
+                            </div>
                         }
                     }
                 </div>
             </div>
-            <ChatInput/>
+            <ChatInput />
         </div>
     </div>
-    @if(!_appStateService.CurrentChat.State.IsArchive)
+    @if (!_appStateService.CurrentChat.State.IsArchive)
     {
-    <ChatSettings/>   
+        <ChatSettings />
     }
 </div>
 
