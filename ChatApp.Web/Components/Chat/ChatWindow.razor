@@ -1,4 +1,5 @@
 @using ChatApp.Domain.Enums
+@using ChatApp.Web.Components.Common
 @implements IDisposable;
 
 <div class="chat-main-wrapper @(_chatStateService.IsSettingsOpen ? "show-settings" : "")">
@@ -11,6 +12,7 @@
     <div class="chat-content">
         <Topbar />
         <div class="chat-body">
+            <ImageZoomWindow/>
             <div @ref="chatContainer" class="chat-box" id="chat-window">
                 <div class="chat-messages">
                     @if (_chatStateService.ReceivedMessages != null && _chatStateService.ReceivedMessages.Any())
@@ -21,7 +23,7 @@
                                  class="message @(IsSystem(msg) ? "system" : "") @(IsMyMessage(msg) ? "mine" : "")">
                                 @if (HasImage(msg.imageUrl))
                                 {
-                                    <img src="@msg.imageUrl" class="chat-image" />
+                                <img src="@msg.imageUrl" @onclick="() => _chatStateService.ToogleImageZoom(msg.imageUrl)" class="chat-image" />
                                 }
                                 <div class="message-row">
                                     @if (!IsSystem(msg) && !IsMyMessage(msg))

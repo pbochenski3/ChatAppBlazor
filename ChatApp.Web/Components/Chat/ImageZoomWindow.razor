@@ -1,0 +1,29 @@
+﻿@implements IDisposable;
+
+@if (_chatStateService.IsPhotoZoomed)
+{
+    <div class="zoomed-overlay" @onclick="() => _chatStateService.ToogleImageZoom(null)">
+        <img src="@_chatStateService.CurrentImage"
+             class="zoomed-chat-image"
+             @onclick:stopPropagation="true" />
+    </div>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        _chatStateService.OnStateChanged += HandleStateChanged;
+
+    }
+    private async void HandleStateChanged()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        _chatStateService.OnStateChanged -= HandleStateChanged;
+
+    }
+
+}

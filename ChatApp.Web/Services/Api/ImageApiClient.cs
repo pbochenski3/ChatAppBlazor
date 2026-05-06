@@ -15,7 +15,7 @@ namespace ChatApp.Web.Services.Api
         {
             _httpClient = httpClient;
         }
-        public async Task<IBrowserFile?> GetBrowserFileAsync(InputFileChangeEventArgs e)
+        public async Task<IBrowserFile?> GetBrowserFileAsync(InputFileChangeEventArgs e, UploadType type)
         {
             var file = e.File;
             if (file != null)
@@ -28,7 +28,13 @@ namespace ChatApp.Web.Services.Api
                     file = null;
                     return file;
                 }
-                file = await file.RequestImageFileAsync(extension, 250, 250);
+                var (maxWidth, maxHeight) = type switch
+                {
+                    UploadType.UserAvatar or UploadType.GroupAvatar => (400, 400),
+                    UploadType.ChatImage => (1280, 720),
+                    _ => (800, 800)
+                };
+                file = await file.RequestImageFileAsync(extension, maxWidth, maxHeight);
             }
             return file;
         }

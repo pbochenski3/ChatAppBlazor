@@ -15,11 +15,13 @@ namespace ChatApp.Web.Services.State
         public List<MessageDTO> ReceivedMessages { get; private set; } = new List<MessageDTO>();
 
         public bool IsSettingsOpen { get; set; }
+        public bool IsPhotoZoomed { get; set; }
         public bool IsEmojiOpen { get; set; }
         public bool IsArchive { get; set; } = false;
         public bool IsChatLocked { get; set; } = true;
         public string CurrentUsername { get; set; } = string.Empty;
         public string CurrentAlias { get; set; } = string.Empty;
+        public string CurrentImage { get; set; } = string.Empty;
         public UserDTO CurrentUserDetails { get; set; }
         private ChatSettingsView _settingsView = ChatSettingsView.Settings;
 
@@ -42,6 +44,12 @@ namespace ChatApp.Web.Services.State
             IsSettingsOpen = !IsSettingsOpen;
             OnStateChanged?.Invoke();
         }
+        public void ToogleImageZoom(string url)
+        {
+            IsPhotoZoomed = !IsPhotoZoomed;
+            CurrentImage = url;
+            OnStateChanged?.Invoke();
+        }
         public void ToggleEmojiMenu()
         {
             IsEmojiOpen = !IsEmojiOpen;
@@ -50,8 +58,10 @@ namespace ChatApp.Web.Services.State
         public void SetMessageList(List<MessageDTO> messages)
         {
             ReceivedMessages = messages;
+            _logger.LogDebug("CLICK PHOTO");
             OnStateChanged?.Invoke();
         }
+
         public void AddMessage(MessageDTO dto)
         {
             if (dto != null)

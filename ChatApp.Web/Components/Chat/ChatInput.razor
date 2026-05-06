@@ -91,7 +91,7 @@
     {
         try
         {
-            _sendedPhoto = await _imageService.GetBrowserFileAsync(e);
+            _sendedPhoto = await _imageService.GetBrowserFileAsync(e,UploadType.ChatImage);
             if (_sendedPhoto == null) return;
             var base64 = await _imageService.GetImageStringAsync(_sendedPhoto);
             _tempImageUrl = $"data:{_sendedPhoto.ContentType};base64,{base64}";

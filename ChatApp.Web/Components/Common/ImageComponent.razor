@@ -46,7 +46,7 @@
     {
         try
         {
-            selectedFile = await _imageService.GetBrowserFileAsync(e);
+            selectedFile = await _imageService.GetBrowserFileAsync(e,UploadType.UserAvatar);
             var base64 = await _imageService.GetImageStringAsync(selectedFile);
             _tempAvatarUrl = $"data:{selectedFile.ContentType};base64,{base64}";
         }

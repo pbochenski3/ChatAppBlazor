@@ -1054,11 +1054,18 @@ user-details-wrapper {
 .chat-image {
     display: block;
     max-width: 100%;
-    max-height: 300px;
+    max-height: clamp(180px, 25vh, 400px);
     border-radius: 8px;
     object-fit: contain;
     align-self: flex-start;
+    cursor: zoom-in;
+    transition: filter var(--transition), box-shadow var(--transition);
 }
+    .chat-image:hover {
+        filter: brightness(1.1);
+        box-shadow: 0 0 0 2px var(--accent), 0 0 16px var(--accent-glow);
+        cursor:pointer;
+    }
 
 .message.mine .chat-image {
     align-self: flex-end;
@@ -1130,7 +1137,6 @@ user-details-wrapper {
     .form-control:focus {
         background: transparent;
         -webkit-text-fill-color: var(--text);
-        /* Zielona poświata */
         border-color: var(--accent);
         box-shadow: 0 0 0 1px var(--accent-ring), 0 0 12px var(--accent-glow);
         outline: none;
@@ -1571,6 +1577,7 @@ user-details-wrapper {
     background: transparent;
 }
 
+
 .preview-image {
     display: block;
     width: 120px;
@@ -1593,6 +1600,34 @@ user-details-wrapper {
     font-weight: bold;
     text-shadow: 0 0 4px #fff, 0 0 8px #fff; 
     z-index: 10000;
+}
+/* =========================================
+   Image Zoom Overlay
+   ========================================= */
+.zoomed-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(6px);
+    animation: fadeIn 0.2s ease;
+    cursor: zoom-out;
+}
+
+.zoomed-chat-image {
+    max-width: 90vw;
+    max-height: 90vh;
+    width: auto;
+    height: auto;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--accent-ring);
+    box-shadow: 0 0 40px var(--accent-glow), 0 24px 60px rgba(0, 0, 0, 0.7);
+    object-fit: contain;
+    display: block;
+    cursor: default;
 }
 
 
