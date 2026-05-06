@@ -91,9 +91,11 @@ namespace ChatApp.Infrastructure.Repository
         public async Task<Chat?> GetChatAsync(Guid userId1, Guid userId2, CancellationToken token = default)
         {
             return await _context.Chats
+                .IgnoreAutoIncludes()
                 .Where(c => !c.IsGroup &&
                             c.UserChats.Any(uc => uc.UserID == userId1) &&
-                            c.UserChats.Any(uc => uc.UserID == userId2))
+                            c.UserChats.Any(uc => uc.UserID == userId2) &&
+                            c.IsDeleted == false)
                 .FirstOrDefaultAsync(token);
         }
 
@@ -122,19 +124,19 @@ namespace ChatApp.Infrastructure.Repository
             return existingIds.ToHashSet();
         }
 
-        public async Task TryDeleteChatIfEmptyAsync(Guid chatId)
-        {
+        //public async Task TryDeleteChatIfEmptyAsync(Guid chatId)
+        //{
 
-            var hasMembers = await _context.UserChat.AnyAsync(uc => uc.ChatID == chatId && !uc.IsDeleted);
-            if (!hasMembers)
-            {
-                await _context.Chats
-                    .Where(ch => ch.ChatID == chatId)
-                    .ExecuteUpdateAsync(s => s
-                        .SetProperty(ch => ch.IsDeleted, true)
-                        .SetProperty(ch => ch.DeletedAt, DateTime.UtcNow));
-            }
-        }
+        //    var hasMembers = await _context.UserChat.AnyAsync(uc => uc.ChatID == chatId && !uc.IsDeleted);
+        //    if (!hasMembers)
+        //    {
+        //        await _context.Chats
+        //            .Where(ch => ch.ChatID == chatId)
+        //            .ExecuteUpdateAsync(s => s
+        //                .SetProperty(ch => ch.IsDeleted, true)
+        //                .SetProperty(ch => ch.DeletedAt, DateTime.UtcNow));
+        //    }
+        //}
 
         public async Task UpdateChatNameAsync(Guid chatId, string chatName)
         {

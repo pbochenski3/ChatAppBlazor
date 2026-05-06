@@ -1,13 +1,13 @@
 ﻿using ChatApp.Application.DTO.Chats;
 using ChatApp.Application.DTO.Requests;
 using ChatApp.Application.Feature.Chats.CheckGroupChatExists;
-using ChatApp.Application.Feature.Chats.DeleteChat;
 using ChatApp.Application.Feature.Chats.GetChatDetails;
 using ChatApp.Application.Feature.Chats.GetChatUsers;
 using ChatApp.Application.Feature.Chats.UpdateAdminFlagOnChat;
 using ChatApp.Application.Feature.Chats.UpdateUserAlias;
 using ChatApp.Application.Feature.Files.SaveChatImage;
 using ChatApp.Application.Feature.Files.SaveGroupAvatar;
+using ChatApp.Application.Feature.GroupChat.DeleteChat;
 using ChatApp.Application.Feature.GroupChat.UpdateGroupChatName;
 using ChatApp.Domain.Shared;
 using MediatR;
@@ -59,15 +59,9 @@ namespace ChatApp.Api.Controllers
         {
             var userId = CurrentUserId;
             if (chatId == Guid.Empty) return BadRequest();
-            try
-            {
-                bool result = await _mediator.Send(new DeleteChatCommand(chatId, userId));
-                return result ? Ok() : BadRequest();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+
+            bool result = await _mediator.Send(new DeleteChatCommand(chatId, userId));
+            return result ? Ok() : BadRequest();
         }
         [HttpPatch("{chatId}/name")]
         public async Task<IActionResult> UpdateChatNameAsync([FromRoute] Guid chatId, [FromBody] ChangeChatNameRequest request)

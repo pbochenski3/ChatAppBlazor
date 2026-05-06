@@ -1,6 +1,4 @@
-﻿
-using ChatApp.Application.DTO;
-using ChatApp.Domain.Enums;
+﻿using ChatApp.Domain.Enums;
 using ChatApp.Web.Services.Common;
 using ChatApp.Web.Services.Interfaces.Actions;
 using ChatApp.Web.Services.Interfaces.Api;
@@ -79,31 +77,33 @@ namespace ChatApp.Web.Services.Actions
         }
         public async Task HandleChatDeleteAsync()
         {
-            try
+            if (_appStateService.CurrentChat != null)
             {
-                if (_appStateService.CurrentChat != null)
-                {
-                    await _chatApi.DeleteChatAsync(_appStateService.CurrentChat.Identity.ChatID);
-                    _notification.Notify("Czat został pomyślnie usunięty!", NotificationType.Info);
-                }
-            }
-            catch (Exception ex)
-            {
-                _notification.Notify("Nie udało się usunąć czatu!", NotificationType.Error);
-
-                _logger.LogError($"[ChatSettingsService] HandleChatDelete {ex}");
-
+                await _chatApi.DeleteChatAsync(_appStateService.CurrentChat.Identity.ChatID);
             }
         }
         public void RequestLeaveChat()
         {
-            _dialogService.ShowConfirm(
-                "Opuszczanie czatu",
-                "Czy na pewno chcesz opuścić chat?",
-                "Opuść",
-                "Anuluj",
-                async () => await HandleChatLeaveAsync()
-            );
+            if (_chatStateService.UsersInChat.Count == 1)
+            {
+                _dialogService.ShowConfirm(
+                    "Opuszczanie czatu",
+                    "Jesteś ostatnią osobą na czacie. Po Twoim wyjściu grupa zostanie na stałe zablokowana (tryb archiwalny). Nie będzie można dodawać nowych osób ani wysyłać wiadomości. Czy chcesz kontynuować?",
+                    "Opuść",
+                    "Anuluj",
+                    async () => await HandleChatLeaveAsync()
+                );
+            }
+            else
+            {
+                _dialogService.ShowConfirm(
+                    "Opuszczanie czatu",
+                    "Czy na pewno chcesz opuścić chat?",
+                    "Opuść",
+                    "Anuluj",
+                    async () => await HandleChatLeaveAsync()
+                    );
+            }
         }
         public async Task HandleChatLeaveAsync()
         {

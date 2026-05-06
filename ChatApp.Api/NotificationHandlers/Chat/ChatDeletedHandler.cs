@@ -15,9 +15,9 @@ namespace ChatApp.Api.NotificationHandlers.Chat
             var user = n.UserId.ToString();
 
             await Task.WhenAll(
-                _hubContext.Clients.User(user).SendAsync("NotifyInfo", "Czat został usunięty!", ct),
-                _hubContext.Clients.User(user).SendAsync("SidebarChatsReload", ct),
-                _hubContext.Clients.User(user).SendAsync("ChatClose", ct)
+                _hubContext.Clients.User(user).SendAsync("NotifyInfo", "Czat został usunięty!"),
+                _hubContext.Clients.User(user).SendAsync("SidebarChatsReload"),
+                _hubContext.Clients.User(user).SendAsync("ChatClose")
             );
         }
     }

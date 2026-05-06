@@ -29,5 +29,6 @@ namespace ChatApp.Domain.Interfaces.Repository
         Task<Dictionary<Guid, string>> GetChatAliasesAsync(Guid chatId);
         Task<HashSet<ChatMemberInfo>> GetChatMembersAsync(Guid chatId);
         Task<DateTime?> GetLastReadMessageDateAsync(Guid chatId);
+        Task<bool> HasMultipleMembersAsync(Guid chatId, Guid userId);
     }
 }

@@ -26,7 +26,6 @@ namespace ChatApp.Infrastructure.Repository
                 Status = InviteStatus.Pending,
             });
         }
-
         public async Task UpdateInviteStatusAsync(Invite invite)
         {
             _context.Invites.Update(invite);

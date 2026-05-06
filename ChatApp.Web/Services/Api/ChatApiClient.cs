@@ -76,7 +76,6 @@ namespace ChatApp.Web.Services.Api
             {
                 _logger.LogError(ex, "Failed to load chat messages for ChatId: {ChatId}", chatId);
                 return new List<MessageDTO>();
-                //zmienic zeby wyskakiwal error a nie pusty czat
             }
         }
         public async Task<bool> IsChatExistingAsync(Guid chatId)
@@ -86,7 +85,15 @@ namespace ChatApp.Web.Services.Api
         public async Task DeleteChatAsync(Guid chatId)
         {
             var response = await _httpClient.DeleteAsync($"/api/chat/{chatId}");
-            response.EnsureSuccessStatusCode();
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation($"Chat succesfuly deleted {chatId}", chatId);
+            }
+            else
+            {
+                _logger.LogError($"Chat deletion:  {chatId} FAILED", chatId, response.StatusCode);
+                throw new Exception();
+            }
         }
         public async Task<HashSet<Guid>> GetChatUsersIdsAsync(Guid chatId)
         {

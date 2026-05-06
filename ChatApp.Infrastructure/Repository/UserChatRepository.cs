@@ -104,7 +104,7 @@ namespace ChatApp.Infrastructure.Repository
                 .Where(uc => uc.ChatID == chatId && uc.UserID == userId)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(uc => uc.IsDeleted, true)
-                    .SetProperty(uc => uc.ArchivedAt, DateTime.UtcNow));
+                    .SetProperty(uc => uc.DeletedAt, DateTime.UtcNow));
         }
         public async Task SetChatAccessibilityAsync(Guid chatId, bool active, HashSet<Guid>? userIds = null)
         {
@@ -197,6 +197,7 @@ namespace ChatApp.Infrastructure.Repository
         public async Task<string> GetPrivateUserAliasAsync(Guid chatId, Guid userId)
         {
             var data = await _context.UserChat
+             .IgnoreQueryFilters()
              .AsNoTracking()
              .Where(uc => uc.ChatID == chatId && uc.UserID != userId)
              .Select(uc => new { uc.Alias, uc.User.Username })
@@ -212,6 +213,7 @@ namespace ChatApp.Infrastructure.Repository
                 return new Dictionary<Guid, string>();
 
             return await _context.UserChat
+                .IgnoreQueryFilters()
                 .AsNoTracking()
                 .Where(uc => uc.UserID != userId && chatsIds.Contains(uc.ChatID))
                 .Select(uc => new { uc.ChatID, uc.Alias, uc.User.Username })
@@ -219,6 +221,11 @@ namespace ChatApp.Infrastructure.Repository
                     x => x.ChatID,
                     x => !string.IsNullOrEmpty(x.Alias) ? x.Alias : x.Username
                 );
+        }
+        public async Task<bool> HasMultipleMembersAsync(Guid chatId, Guid userId)
+        {
+            return await _context.UserChat.Where(uc => uc.ChatID == chatId && uc.UserID != userId)
+                .AnyAsync();
         }
         public async Task<bool> CheckIfGroupHaveAdminAsync(Guid chatId, Guid userId)
         {

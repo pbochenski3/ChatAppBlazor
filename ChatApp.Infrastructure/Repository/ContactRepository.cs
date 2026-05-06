@@ -33,41 +33,24 @@ namespace ChatApp.Infrastructure.Repository
                 .ToListAsync();
         }
 
-        public async Task<bool> IsContactDeletedAsync(Guid userId, Guid contactUserId)
+
+        public async Task<bool> TryRestoreContactsAsync(Guid userId, Guid contactUserId)
         {
-            return await _context.Contacts
-                .IgnoreQueryFilters()
-                .AnyAsync(c =>
-                    c.IsDeleted == true && (
-                        (c.UserID == userId && c.ContactUserID == contactUserId) ||
-                        (c.UserID == contactUserId && c.ContactUserID == userId)
-                    ));
-        }
-
-        public async Task RestoreContactsAsync(Guid userId, Guid contactUserId)
-        {
-
-            if (userId == Guid.Empty || contactUserId == Guid.Empty) return;
-
-            await _context.Contacts
+            int affectedRows = await _context.Contacts
                 .IgnoreQueryFilters()
                 .Where(c => (c.UserID == userId && c.ContactUserID == contactUserId)
                          || (c.UserID == contactUserId && c.ContactUserID == userId))
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(c => c.IsDeleted, false)
                     .SetProperty(c => c.DeletedAt, (DateTime?)null));
+
+            return affectedRows > 0;
         }
 
         public async Task AddContactAsync(Contact contact)
         {
             _logger.LogInformation("Adding a new contact to the database.");
             await _context.Contacts.AddAsync(contact);
-        }
-
-        public async Task<bool> IsContactExistingAsync(Guid userId, Guid contactId, CancellationToken token)
-        {
-            return await _context.Contacts
-                .AnyAsync(c => c.UserID == userId && c.ContactUserID == contactId, token);
         }
 
         public async Task DeleteContactAsync(Guid contactUserId, Guid userId)

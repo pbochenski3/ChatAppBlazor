@@ -48,6 +48,7 @@ namespace ChatApp.Infrastructure.Repository
         public async Task<List<Message>> GetMessageHistoryAsync(Guid chatId, DateTime? cutoffDate, CancellationToken token)
         {
             var query = _context.Messages
+                .IgnoreQueryFilters()
                 .AsNoTracking()
                 .Include(m => m.Sender)
                 .Where(m => m.ChatID == chatId);

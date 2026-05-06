@@ -10,7 +10,7 @@ namespace ChatApp.Domain.Interfaces.Repository
         Task<Chat?> FetchChatById(Guid chatId);
         Task AddUserGroupToDb(Guid chatId, HashSet<Guid> userIdsToAdd);
         Task<HashSet<Guid>> GetExistingUsersInChat(Guid chatId, HashSet<Guid> userIdsToCheck);
-        Task TryDeleteChatIfEmptyAsync(Guid chatId);
+        //Task TryDeleteChatIfEmptyAsync(Guid chatId);
         Task UpdateChatNameAsync(Guid chatId, string chatName);
         Task UpdateGroupAvatarUrl(Guid chatId, string avatarUrl);
         Task<string> GetGroupAvatarUrlAsync(Guid chatId);

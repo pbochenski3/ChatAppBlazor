@@ -22,9 +22,11 @@ namespace ChatApp.Application.Feature.GroupChat.LeaveGroupChatAsync
         public async Task<bool> Handle(LeaveGroupChatCommand r, CancellationToken cancellationToken)
         {
             var groupHaveAdmin = await _userChatRepo.CheckIfGroupHaveAdminAsync(r.ChatId, r.UserId);
-            if (!groupHaveAdmin)
+            var lastOnGroup = await _userChatRepo.HasMultipleMembersAsync(r.ChatId, r.UserId);
+
+            if (!groupHaveAdmin && !lastOnGroup)
             {
-                r.AddEvent(new UserActionFailedNotification(r.UserId, "Zanim opuścisz grupe nadaj komuś admina!"));
+                r.AddEvent(new UserActionFailedNotification(r.UserId, "Jesteś ostatnim administratorem. Aby opuścić grupę, musisz wyznaczyć nowego administratora spośród pozostałych członków."));
                 return false;
             }
             var isArchive = await _chatRepo.CheckIfChatIsArchive(r.ChatId, r.UserId);
