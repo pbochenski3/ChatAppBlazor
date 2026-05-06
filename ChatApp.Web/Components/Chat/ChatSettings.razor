@@ -126,7 +126,7 @@
         break;
             case ChatSettingsView.ChangeAlias:
                  <div class="search-container">
-                <input type="text" class="form-control" placeholder="Nowa nazwa użytkownika..."
+                    <input type="text" class="form-control search-input" placeholder="Nowa nazwa użytkownika..."
                        @bind="_newAlias" />
                        </div>
                 <button class="btn-add-action" @onclick="async () => await HandleAliasChangeAsync()">Zatwierdź</button>

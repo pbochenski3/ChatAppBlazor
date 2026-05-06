@@ -60,15 +60,6 @@
         _sidebarActionService.OnSidebarStateChanged += HandleStateChange;
     }
 
-    protected override async Task OnParametersSetAsync()
-    {
-        if (_sidebarStateService.SidebarItems == null || !_sidebarStateService.SidebarItems.Any())
-        {
-            await _sidebarActionService.HandleChatsLoadAsync();
-        }
-
-        StateHasChanged();
-    }
 
     private IEnumerable<UserChatDTO> GetFilteredSidebar()
     {
