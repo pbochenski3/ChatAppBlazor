@@ -1,12 +1,12 @@
 using ChatApp.Application.DTO;
 using ChatApp.Domain.Enums;
+using ChatApp.Web.Events.Sidebar;
+using ChatApp.Web.Events.SignalR;
 using ChatApp.Web.Services.Interfaces.Actions;
 using ChatApp.Web.Services.Interfaces.Api;
 using ChatApp.Web.Services.Interfaces.Common;
 using ChatApp.Web.Services.State;
 using MediatR;
-using static ChatApp.Web.Events.ChatEvents;
-using static ChatApp.Web.Events.SidebarEvents;
 
 namespace ChatApp.Web.Services.Actions
 {
@@ -57,7 +57,7 @@ namespace ChatApp.Web.Services.Actions
             }
             else if (dto.SenderID != _appStateService.CurrentUser.UserID)
             {
-                await _mediator.Publish(new SidebarCounterUpdated(dto.ChatID, false));
+                await _mediator.Publish(new SidebarCounterUpdatedNotification(dto.ChatID, false));
             }
             OnStateChanged?.Invoke();
         }
@@ -119,9 +119,9 @@ namespace ChatApp.Web.Services.Actions
                     {
                         _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", args.ChatId);
                     }
-                    await _mediator.Publish(new RequestToJoinSignalR(args.ChatId));
+                    await _mediator.Publish(new RequestToJoinSignalRNotification(args.ChatId));
                     await _chatApi.MarkAllMessagesAsReadAsync(_appStateService.CurrentChat.Identity.ChatID, token);
-                    await _mediator.Publish(new SidebarCounterUpdated(args.ChatId, true));
+                    await _mediator.Publish(new SidebarCounterUpdatedNotification(args.ChatId, true));
                 }
 
             }
