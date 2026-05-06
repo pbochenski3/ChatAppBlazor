@@ -1,5 +1,5 @@
-﻿
-@implements IDisposable
+﻿@implements IDisposable
+@inject ILogger<SideBarChatsContainer> _logger
 
 <div class="contacts-list">
     <div class="search-container">
@@ -8,27 +8,35 @@
                @bind="searchTerm"
                @bind:event="oninput" />
     </div>
-    @if (_sidebarStateService.SidebarItems == null || !FilteredSidebar.Any())
+    @if (_sidebarStateService.SidebarItems == null || !GetFilteredSidebar().Any())
     {
         <p class="section-hint">Nie znaleziono kontaktów.</p>
     }
     else
     {
-        @foreach (var chat in FilteredSidebar)
+        @foreach (var chat in GetFilteredSidebar())
         {
             <div @key="chat.Identity.ChatID"
                  class="contact-item @(_sidebarStateService.SelectedContactId == chat.Identity.ChatID ? "active" : "")"
                  @onclick="async () => await SelectContact(chat.Identity.ChatID)">
+
                 <div class="contact-avatar-container">
                     <img src="@chat.Identity.AvatarUrl" class="contact-img" alt="avatar" />
                 </div>
-                <div class="contact-info">
-                    <p class="contact-name">@chat.Identity.ChatName</p>
 
-                    <p class="contact-name @(chat.State.IsArchive ? "is-archive" : "")">
+                <div class="contact-info">
+                    <div class="contact-header">
+                        <p class="contact-name">@chat.Identity.ChatName</p>
+                        @if (chat.State.UnreadMessageCount > 0)
+                        {
+                            <span class="unread-badge">@chat.State.UnreadMessageCount</span>
+                        }
+                    </div>
+
+                    <p class="contact-last-message @(chat.State.IsArchive ? "is-archive" : "")">
                         @if (chat.State.IsArchive)
                         {
-                            @("🔒 Archiwum")
+                            <span>🔒 Archiwum</span>
                         }
                         else if (chat.LastMessage?.LastMessageContent != null)
                         {
@@ -37,11 +45,6 @@
                                             : $"{chat.LastMessage.LastMessageSender}: {chat.LastMessage.LastMessageContent}")
                         }
                     </p>
-
-                    @if (chat.State.UnreadMessageCount > 0)
-                    {
-                        <p class="unread-badge">@chat.State.UnreadMessageCount nowe wiadomości!</p>
-                    }
                 </div>
             </div>
         }
@@ -63,12 +66,17 @@
         {
             await _sidebarActionService.HandleChatsLoadAsync();
         }
+            StateHasChanged();
     }
 
-    private IEnumerable<UserChatDTO> FilteredSidebar =>
-    _sidebarStateService.SidebarItems?.Where(c => string.IsNullOrWhiteSpace(searchTerm) ||
-                           c.Identity.ChatName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-    ?? Enumerable.Empty<UserChatDTO>();
+    private IEnumerable<UserChatDTO> GetFilteredSidebar()
+    {
+        var items = _sidebarStateService.SidebarItems;
+        if (items == null) return Enumerable.Empty<UserChatDTO>();
+
+        return items.Where(c => string.IsNullOrWhiteSpace(searchTerm) ||
+                                c.Identity.ChatName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+    }
 
     private async Task SelectContact(Guid contactId)
     {
@@ -79,7 +87,10 @@
     }
     private void HandleStateChange()
     {
-        _ = InvokeAsync(StateHasChanged);
+        var count = _sidebarStateService.SidebarItems?.FirstOrDefault()?.State.UnreadMessageCount;
+        _logger.LogInformation("Sidebar otrzymał sygnał! Pierwszy licznik: {Count}", count);
+
+        InvokeAsync(StateHasChanged);
     }
     public void Dispose()
     {

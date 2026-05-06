@@ -12,6 +12,7 @@ namespace ChatApp.Web.Services.State
         {
             _logger = logger;
         }
+
         public bool IsPending { get; set; } = false;
         public bool IsSearchingGlobal { get; set; } = false;
         public List<UserChatDTO> SidebarItems { get; set; } = new List<UserChatDTO>();

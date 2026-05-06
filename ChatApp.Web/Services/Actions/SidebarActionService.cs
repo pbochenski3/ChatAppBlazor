@@ -1,4 +1,5 @@
-﻿using ChatApp.Application.DTO.Requests;
+﻿using ChatApp.Application.DTO.Chats;
+using ChatApp.Application.DTO.Requests;
 using ChatApp.Domain.Enums;
 using ChatApp.Web.Services.Interfaces.Actions;
 using ChatApp.Web.Services.Interfaces.Api;
@@ -56,29 +57,32 @@ namespace ChatApp.Web.Services.Actions
         }
         public async Task HandleCounterUpdateAsync(Guid chatId, bool clean)
         {
-            var index = _sidebarStateService.SidebarItems.FindIndex(sb => sb.Identity.ChatID == chatId);
+            var items = _sidebarStateService.SidebarItems;
+            if (items == null) return;
+
+            var index = items.FindIndex(sb => sb.Identity.ChatID == chatId);
 
             if (index != -1)
             {
-                if (clean)
-                {
-                    _sidebarStateService.SidebarItems[index].State.UnreadMessageCount = 0;
-                    _logger.LogInformation("Counter cleared for: {ChatId}", chatId);
-                }
-                else
-                {
-                    var updatedItem = _sidebarStateService.SidebarItems[index];
-                    updatedItem.State.UnreadMessageCount += 1;
+                var item = items[index];
 
-                    _sidebarStateService.SidebarItems.RemoveAt(index);
-                    _sidebarStateService.SidebarItems.Insert(0, updatedItem);
-                    _logger.LogInformation("Counter increased for: {ChatId}. Current: {Count}", chatId, updatedItem.State.UnreadMessageCount);
+                if (clean)
+                    item.State.UnreadMessageCount = 0;
+                else
+                    item.State.UnreadMessageCount++;
+
+                var newList = new List<UserChatDTO>(items);
+
+                if (!clean)
+                {
+                    newList.RemoveAt(index);
+                    newList.Insert(0, item);
                 }
+
+                _sidebarStateService.SidebarItems = newList;
+
+                _logger.LogInformation("Licznik zaktualizowany. Event wysłany.");
                 OnSidebarStateChanged?.Invoke();
-            }
-            else if (!clean)
-            {
-                // await HandleSidebarLoadAsync(true);
             }
         }
         public async Task HandleInviteResponseAsync(InviteActionRequest request)

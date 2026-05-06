@@ -57,7 +57,7 @@ namespace ChatApp.Web.Services.Actions
             }
             else if (dto.SenderID != _appStateService.CurrentUser.UserID)
             {
-                await _mediator.Publish(new SidebarCounterUpdated(dto.ChatID, true));
+                await _mediator.Publish(new SidebarCounterUpdated(dto.ChatID, false));
             }
             OnStateChanged?.Invoke();
         }
