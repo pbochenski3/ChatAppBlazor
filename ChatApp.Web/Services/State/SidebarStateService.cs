@@ -19,7 +19,6 @@ namespace ChatApp.Web.Services.State
         public List<InviteDTO> ReceivedInvites { get; set; } = new List<InviteDTO>();
         public List<UserSearchResultDTO> FoundUsers { get; set; } = new List<UserSearchResultDTO>();
         public SidebarView SidebarView { get; set; } = SidebarView.Contacts;
-        public Guid SelectedContactId;
 
 
     }

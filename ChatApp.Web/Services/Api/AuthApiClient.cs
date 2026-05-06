@@ -1,7 +1,5 @@
 ﻿using ChatApp.Application.DTO;
-using ChatApp.Application.DTO.Result;
 using ChatApp.Domain.Enums;
-using ChatApp.Web.Services.Common;
 using ChatApp.Web.Services.Interfaces.Api;
 using ChatApp.Web.Services.Interfaces.Common;
 using ChatApp.Web.Services.State;
@@ -19,7 +17,7 @@ namespace ChatApp.Web.Services.Api
         private readonly NavigationManager _nav;
 
 
-        public AuthApiClient(AppStateService appStateService, HttpClient httpClient, ILogger<AuthApiClient> logger,INotificationService notify,NavigationManager nav)
+        public AuthApiClient(AppStateService appStateService, HttpClient httpClient, ILogger<AuthApiClient> logger, INotificationService notify, NavigationManager nav)
         {
             _appStateService = appStateService;
             _httpClient = httpClient;
@@ -39,7 +37,6 @@ namespace ChatApp.Web.Services.Api
                 {
                     _appStateService.CurrentUser = loggedInUser;
                     await _appStateService.SetUserAsync(loggedInUser);
-                    _appStateService.Message = "Logged in successfully!";
                 }
                 else
                 {
@@ -81,14 +78,14 @@ namespace ChatApp.Web.Services.Api
 
             var response = await _httpClient.PostAsJsonAsync<UserDTO>("api/auth/register", dto);
             var responseMessage = await response.Content.ReadAsStringAsync();
-            if(response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
             {
                 _notify.Notify(responseMessage, NotificationType.Info);
                 _nav.NavigateTo("/");
             }
             else
             {
-            _notify.Notify(responseMessage, NotificationType.Warning);
+                _notify.Notify(responseMessage, NotificationType.Warning);
             }
         }
     }

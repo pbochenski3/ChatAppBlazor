@@ -22,7 +22,6 @@
 
 @code {
     private bool _isDataLoaded = false; 
-    private string? _notification = string.Empty;
     private UserDTO _currentUser = new UserDTO();
 
     protected override async Task OnInitializedAsync()
@@ -37,7 +36,6 @@
         await _chatHubService.StartAsync();
 
         _currentUser = _appStateService.CurrentUser;
-        _notification = _appStateService.Message;
 
         try
         {
@@ -46,7 +44,7 @@
 
             await _sidebarActionService.HandleInvitesLoadAsync();
             await _sidebarActionService.HandleChatsLoadAsync();
-            await JS.InvokeVoidAsync("hideLoader");
+
             _notificationService.Notify($"{_currentUser.Username} witaj ponownie!", NotificationType.System);
         }
         catch (Exception ex)
@@ -59,11 +57,19 @@
         }
         finally
         {
-          _isDataLoaded = true;
+            _isDataLoaded = true;
         }
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if(firstRender)
+        {
+            var lastChatId = await _appStateService.GetSelectedChatId();
+            if (lastChatId != Guid.Empty)
+            {
+                await _chatActionService.HandleChatLoadAsync(new ContactSelectedArgs(lastChatId, false));
+            }
+        }
         if (_isDataLoaded)
         {
             await JS.InvokeVoidAsync("hideLoader");

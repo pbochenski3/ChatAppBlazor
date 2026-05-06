@@ -83,6 +83,7 @@ namespace ChatApp.Web.Services.Actions
             }
             if (args.Force && !isSameChat)
             {
+
                 return;
             }
             if (_appStateService.IsProfileOpen)
@@ -189,7 +190,7 @@ namespace ChatApp.Web.Services.Actions
         }
         public async Task HandleChatCloseAsync()
         {
-            await _appStateService.SetChatAsync(null);
+            _appStateService.CurrentChat = null;
             OnStateChanged?.Invoke();
         }
 

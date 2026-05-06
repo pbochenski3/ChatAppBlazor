@@ -1,6 +1,5 @@
 using ChatApp.Application.DTO;
 using ChatApp.Domain.Enums;
-using System.Collections.ObjectModel;
 
 namespace ChatApp.Web.Services.State
 {
@@ -32,7 +31,7 @@ namespace ChatApp.Web.Services.State
                 if (_settingsView != value)
                 {
                     _settingsView = value;
-                    OnStateChanged?.Invoke(); 
+                    OnStateChanged?.Invoke();
                 }
             }
         }

@@ -17,7 +17,7 @@
         @foreach (var chat in GetFilteredSidebar())
         {
             <div @key="chat.Identity.ChatID"
-                 class="contact-item @(_sidebarStateService.SelectedContactId == chat.Identity.ChatID ? "active" : "")"
+                 class="contact-item @(_appStateService.SelectedChatId == chat.Identity.ChatID ? "active" : "")"
                  @onclick="async () => await SelectContact(chat.Identity.ChatID)">
 
                 <div class="contact-avatar-container">
@@ -66,7 +66,8 @@
         {
             await _sidebarActionService.HandleChatsLoadAsync();
         }
-            StateHasChanged();
+
+        StateHasChanged();
     }
 
     private IEnumerable<UserChatDTO> GetFilteredSidebar()
@@ -78,11 +79,11 @@
                                 c.Identity.ChatName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
     }
 
-    private async Task SelectContact(Guid contactId)
+    private async Task SelectContact(Guid chatId)
     {
-        _sidebarStateService.SelectedContactId = contactId;
+        await _appStateService.SetActiveChatAsync(chatId);
         _chatStateService.SettingsView = ChatSettingsView.Settings;
-        await _chatActionService.HandleChatLoadAsync(new ContactSelectedArgs(contactId));
+        await _chatActionService.HandleChatLoadAsync(new ContactSelectedArgs(chatId));
         StateHasChanged();
     }
     private void HandleStateChange()
