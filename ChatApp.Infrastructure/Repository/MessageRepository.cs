@@ -22,7 +22,6 @@ namespace ChatApp.Infrastructure.Repository
             _logger.LogInformation("Adding a new message to the database: {MessageID}", message.MessageID);
             await _context.Messages.AddAsync(message);
         }
-
         public async Task<Dictionary<Guid, MessagePreview>> GetMessagePreviewsAsync(List<Guid> ids)
         {
             if (ids == null || !ids.Any())
@@ -69,6 +68,32 @@ namespace ChatApp.Infrastructure.Repository
                 .ExecuteUpdateAsync(s => s
                 .SetProperty(m => m.imageUrl, url));
 
+        }
+        public async Task<bool> UpdateMessageContentAsync(Guid messageId, Guid chatId, string content, DateTime editTime)
+        {
+            var message = await _context.Messages
+            .Include(m => m.History)
+            .Where(m => m.ChatID == chatId)
+            .FirstOrDefaultAsync(m => m.MessageID == messageId);
+            if (message == null) return false;
+
+            int nextVersion = message.History.Any()
+                ? message.History.Max(e => e.Version) + 1
+                : 1;
+
+            await _context.Messages.Where(m => m.MessageID == messageId)
+                .ExecuteUpdateAsync(s =>
+                s.SetProperty(m => m.Content, content));
+
+            await _context.MessagesHistory.AddAsync(
+                new MessageHistory
+                {
+                    MessageId = messageId,
+                    Version = nextVersion,
+                    EditedAt = editTime,
+                    OldContent = content,
+                });
+            return true;
         }
     }
 

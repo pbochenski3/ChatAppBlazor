@@ -26,6 +26,14 @@ namespace ChatApp.Infrastructure.Repository.Decorators
 
             await _innerRepository.AddMessageAsync(message);
         }
+        public async Task<bool> UpdateMessageContentAsync(Guid messageId, Guid chatId, string content, DateTime editTime)
+        {
+            if (!string.IsNullOrWhiteSpace(content))
+            {
+                content = _encryptionService.Encrypt(content);
+            }
+            return await _innerRepository.UpdateMessageContentAsync(messageId, chatId, content, editTime);
+        }
 
         public async Task<List<Message>> GetMessageHistoryAsync(Guid chatId, DateTime? cutoffDate, CancellationToken token)
         {

@@ -15,6 +15,7 @@ namespace ChatApp.Domain.Entities
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
         public MessageType MessageType { get; set; }
+        public virtual ICollection<MessageHistory> History { get; set; }
 
         public static Message CreateSystemMessage(Guid chatId, string content)
         {
