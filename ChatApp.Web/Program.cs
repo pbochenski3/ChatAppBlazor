@@ -18,6 +18,7 @@ builder.Services.AddScoped<ChatHubService>();
 builder.Services.AddScoped<ISidebarActionService, SidebarActionService>();
 builder.Services.AddScoped<IChatSettingsActionService, ChatSettingsActionService>();
 builder.Services.AddScoped<IChatActionService, ChatActionService>();
+builder.Services.AddScoped<IChatMessageActionService, ChatMessageActionService>();
 builder.Services.AddScoped<DialogService>();
 builder.Services.AddScoped<IImageApiClient, ImageApiClient>();
 builder.Services.AddScoped<IAuthClient, AuthApiClient>();

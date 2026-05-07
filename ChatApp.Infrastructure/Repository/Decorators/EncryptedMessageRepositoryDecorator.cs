@@ -61,9 +61,9 @@ namespace ChatApp.Infrastructure.Repository.Decorators
             return previews;
         }
 
-        public async Task<bool> DeleteMessageAsync(Guid messageId, Guid chatId, Guid userId)
+        public async Task<bool> DeleteMessageAsync(Guid messageId, Guid chatId)
         {
-            return await _innerRepository.DeleteMessageAsync(messageId, chatId, userId);
+            return await _innerRepository.DeleteMessageAsync(messageId, chatId);
         }
     }
 }

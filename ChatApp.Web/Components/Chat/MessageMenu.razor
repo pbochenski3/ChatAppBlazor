@@ -1,0 +1,35 @@
+﻿<h3 @onclick="ToggleMenu">⋮</h3>
+@if (_isMenuOpened)
+{
+    <div class="message-menu-wrapper">
+        <button class="btn-message" @onclick="HandleEditClick">Edytuj</button>
+        <button class="btn-message delete" @onclick="HandleDeleteClick">Usuń</button>
+    </div>
+}
+@code {
+    [Parameter] public  Guid MessageId { get; set; }
+    [Parameter] public EventCallback OnEditClicked { get; set; }
+    [Parameter] public EventCallback OnDeleteClicked { get; set; }
+    private bool _isMenuOpened;
+    private Guid _chatId => _appStateService.CurrentChat.Identity.ChatID;
+    private void ToggleMenu()
+    {
+        _isMenuOpened = !_isMenuOpened;
+    }
+    private async Task EditMessegeAsync()
+    {
+        var content = string.Empty;
+        await _chatMessageActionService.RequestMessageEdited(MessageId, _chatId, content);
+
+    }
+    private async Task HandleEditClick()
+    {
+        _isMenuOpened = false; 
+        await OnEditClicked.InvokeAsync(); 
+    }
+    private async void HandleDeleteClick()
+    {
+        _isMenuOpened = false;
+        await OnEditClicked.InvokeAsync();
+    }
+}
