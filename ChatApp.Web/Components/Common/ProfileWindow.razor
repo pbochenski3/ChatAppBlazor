@@ -4,9 +4,8 @@
                 LabelRole="Użytkownik"
                 IsGroup="false"
                 CustomClass="profile-mode" />
-<button class="btn-profile" @onclick="_chatStateService.ToggleSettings">Zamknij profil</button>
+<button class="btn-profile" @onclick="() => _appStateService.CloseProfile()">Zamknij profil</button>
 <button class="btn-profile btn-logout" @onclick="() => _appStateService.Logout()">Wyloguj się</button>
 </div>
 @code {
-
 }

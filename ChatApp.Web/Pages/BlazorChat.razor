@@ -78,6 +78,7 @@
     }
     private void SubscribeToEvent()
     {
+        _appStateService.OnStateChanged += HandleStateChanged;
         _chatActionService.OnStateChanged += HandleStateChanged;
         _chatHubService.OnAvatarReload += HandleAvatarReloadAsync;
         _chatHubService.OnGroupAvatarReload += HandleGroupAvatarReloadAsync;
@@ -86,6 +87,7 @@
     }
     private void UnSubscribeToEvent()
     {
+        _appStateService.OnStateChanged -= HandleStateChanged;
         _chatActionService.OnStateChanged -= HandleStateChanged;
         _chatHubService.OnAvatarReload -= HandleAvatarReloadAsync;
         _chatHubService.OnGroupAvatarReload -= HandleGroupAvatarReloadAsync;

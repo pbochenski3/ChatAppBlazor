@@ -39,7 +39,7 @@
                                     }
                                     @if (HasText(msg.Content))
                                     {
-                                        <span class="message-content">@msg.Content</span>
+                                        <span class="message-content">@LinkParser.Parse(msg.Content,_navManager.BaseUri)</span>
                                     }
                                 </div>
                             </div>

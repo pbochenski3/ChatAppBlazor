@@ -33,6 +33,7 @@ namespace ChatApp.Web.Services.State
         public UserChatDTO? CurrentChat { get; set; } = null;
         public bool IsProfileOpen { get; set; } = false;
         public event Func<Task>? OnLogoutRequested;
+        public event Action? OnStateChanged;
         public Guid SelectedChatId { get; private set; } = Guid.Empty;
         public async Task LoadSessionAsync()
         {
@@ -70,6 +71,11 @@ namespace ChatApp.Web.Services.State
                 catch { return null; }
             }
             return null;
+        }
+        public void CloseProfile()
+        {
+            IsProfileOpen = false;
+            OnStateChanged?.Invoke();
         }
         public async Task SetUserAsync(UserDTO user)
         {

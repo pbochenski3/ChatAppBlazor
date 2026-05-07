@@ -1,0 +1,31 @@
+﻿@page "/exit-warning"
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="warning-container">
+    <h3>⚠️ Opuszczasz ChatApp</h3>
+    <p>Zaraz zostaniesz przekierowany do zewnętrznej witryny! Jeżeli nie jest to celowe działanie albo adres wygląda ci na niebezpieczny zamknij stronę!</p>
+    <div class="url-box">@_targetUrl</div>
+
+    <p>Pamiętaj, aby nie podawać tam swoich haseł ani danych do logowania.</p>
+
+    <div class="actions">
+        <a href="@_targetUrl" class="btn-confirm">Rozumiem, przejdź do strony</a>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? url { get; set; }
+
+    private string _targetUrl => url ?? "/";
+    protected override async Task OnInitializedAsync()
+    {
+        await JS.InvokeVoidAsync("hideLoader");
+    }
+    private void GoBack()
+    {
+        Nav.NavigateTo("/hub");
+    }
+}
