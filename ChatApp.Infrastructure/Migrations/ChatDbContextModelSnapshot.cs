@@ -140,6 +140,9 @@ namespace ChatApp.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsEdited")
+                        .HasColumnType("bit");
+
                     b.Property<int>("MessageType")
                         .HasColumnType("int");
 

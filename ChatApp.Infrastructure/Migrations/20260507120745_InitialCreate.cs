@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -109,6 +110,7 @@ namespace ChatApp.Infrastructure.Migrations
                     SentAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false),
                     ChatID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SenderID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsEdited = table.Column<bool>(type: "bit", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
                     MessageType = table.Column<int>(type: "int", nullable: false)
@@ -121,7 +123,7 @@ namespace ChatApp.Infrastructure.Migrations
                         column: x => x.ChatID,
                         principalTable: "Chats",
                         principalColumn: "ChatID",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Messages_Users_SenderID",
                         column: x => x.SenderID,
@@ -161,6 +163,26 @@ namespace ChatApp.Infrastructure.Migrations
                         principalTable: "Users",
                         principalColumn: "UserID",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MessagesHistory",
+                columns: table => new
+                {
+                    MessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Version = table.Column<int>(type: "int", nullable: false),
+                    EditedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false),
+                    OldContent = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MessagesHistory", x => new { x.MessageId, x.Version });
+                    table.ForeignKey(
+                        name: "FK_MessagesHistory_Messages_MessageId",
+                        column: x => x.MessageId,
+                        principalTable: "Messages",
+                        principalColumn: "MessageID",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -214,10 +236,13 @@ namespace ChatApp.Infrastructure.Migrations
                 name: "Invites");
 
             migrationBuilder.DropTable(
-                name: "Messages");
+                name: "MessagesHistory");
 
             migrationBuilder.DropTable(
                 name: "UserChat");
+
+            migrationBuilder.DropTable(
+                name: "Messages");
 
             migrationBuilder.DropTable(
                 name: "Chats");

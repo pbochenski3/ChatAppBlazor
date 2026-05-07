@@ -1,4 +1,5 @@
-﻿<div class="chat-messages">
+﻿@implements IDisposable;
+<div class="chat-messages">
     @if (_chatStateService.ReceivedMessages != null && _chatStateService.ReceivedMessages.Any())
     {
         @foreach (var msg in _chatStateService.ReceivedMessages)
@@ -23,8 +24,6 @@
                         </div>
                     }
                     @if (HasText(msg.Content))
-                        @if (!msg.IsDeleted)
-                        {
                             @if (_editingMessageId == msg.MessageID)
                             {
                                 <div class="edit-container">
@@ -38,13 +37,12 @@
                                 <MessageMenu
                                     OnEditClicked="() => StartEditing(msg)" 
                                     OnDeleteClicked="() => DeleteMessage(msg)"/>
-                                <span class="message-content">@LinkParser.Parse(msg.Content, _navManager.BaseUri)</span>
+                                <span class="message-content @(msg.IsDeleted ? "deleted" : "")">@LinkParser.Parse(msg.Content, _navManager.BaseUri)</span>
 
                                 @if (msg.IsEdited)
                                 {
                                     <span class="message-edit-note"> (edytowano)</span>
                                 }
-                            }
                         }
                 </div>
             </div>
@@ -59,7 +57,17 @@
     private bool HasText(string msg) => !string.IsNullOrWhiteSpace(msg);
     @code {
         private Guid? _editingMessageId; 
-        private string _editText = string.Empty; 
+        private string _editText = string.Empty;
+
+        protected override async Task OnInitializedAsync()
+        {
+            _chatStateService.OnStateChanged += HandleStateChanged;
+            _chatMessageActionService.OnStateChanged += HandleStateChanged;
+        }
+        private async void HandleStateChanged()
+        {
+            await InvokeAsync(StateHasChanged);
+        }
 
         private void StartEditing(MessageDTO msg)
         {
@@ -80,11 +88,19 @@
                 CancelEditing();
                 return;
             }
+            msg.Content = _editText;
             await _chatMessageActionService.RequestMessageEdited(msg.MessageID, msg.ChatID, msg.Content);
+            CancelEditing();
         }
         private async Task DeleteMessage(MessageDTO msg)
         {
             await _chatMessageActionService.RequestMessageDeleted(msg.MessageID, msg.ChatID);
+
+        }
+        public void Dispose()
+        {
+            _chatStateService.OnStateChanged -= HandleStateChanged;
+            _chatMessageActionService.OnStateChanged -= HandleStateChanged;
 
         }
     }

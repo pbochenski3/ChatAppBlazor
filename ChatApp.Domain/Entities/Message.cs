@@ -12,10 +12,11 @@ namespace ChatApp.Domain.Entities
         public Chat Chat { get; set; } = null!;
         public Guid? SenderID { get; set; } = null!;
         public User Sender { get; set; } = null!;
+        public bool IsEdited { get; set; } = false;
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
         public MessageType MessageType { get; set; }
-        public virtual ICollection<MessageHistory> History { get; set; }
+        public virtual ICollection<MessageHistory> History { get; set; } = null!;
 
         public static Message CreateSystemMessage(Guid chatId, string content)
         {

@@ -26,6 +26,7 @@ builder.Services.AddScoped<IChatApiClient, ChatApiClient>();
 builder.Services.AddScoped<IContactApiClient, ContactApiClient>();
 builder.Services.AddScoped<IInviteApiClient, InviteApiClient>();
 builder.Services.AddScoped<IGroupChatApiClient, GroupChatApiClient>();
+builder.Services.AddScoped<IMessageApiClient, MessageApiClient>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ITokenProvider>(sp => sp.GetRequiredService<AppStateService>());
 builder.Services.AddTransient<AuthorizationHandler>();

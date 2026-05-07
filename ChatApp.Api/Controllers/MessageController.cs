@@ -61,12 +61,12 @@ namespace ChatApp.Api.Controllers
             var result = await _mediator.Send(new EditMessageCommand(chatId, messageId, content, userId));
             return result ? Ok() : BadRequest();
         }
-        [HttpDelete("{chatId}/{messageId}")]
+        [HttpDelete("{chatId}/{messageId}/delete")]
         public async Task<IActionResult> DeleteMessageAsync([FromRoute] Guid chatId, [FromRoute] Guid messageId, CancellationToken ct)
         {
             var userId = CurrentUserId;
             if (chatId == Guid.Empty) return BadRequest();
-            var result = await _mediator.Send(new DeleteMessageCommand(chatId, messageId, userId));
+            var result = await _mediator.Send(new DeleteMessageCommand(messageId, chatId, userId));
             return result ? Ok() : BadRequest();
         }
     }

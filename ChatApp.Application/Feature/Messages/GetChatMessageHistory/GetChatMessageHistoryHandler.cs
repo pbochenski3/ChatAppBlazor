@@ -46,6 +46,8 @@ namespace ChatApp.Application.Feature.Messages.GetChatMessageHistory
                 SenderID = m.SenderID,
                 ChatID = m.ChatID,
                 MessageType = m.MessageType,
+                IsDeleted = m.IsDeleted,
+                IsEdited = m.IsEdited,
                 Alias = m.MessageType == MessageType.System
                     ? "SYSTEM"
                     : (m.SenderID.HasValue && aliases.TryGetValue(m.SenderID.Value, out var alias) ? alias : m.Sender?.Username ?? "Użytkownik")
