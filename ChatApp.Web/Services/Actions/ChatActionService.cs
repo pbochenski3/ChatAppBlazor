@@ -1,6 +1,5 @@
 using ChatApp.Application.DTO;
 using ChatApp.Domain.Enums;
-using ChatApp.Web.Events.Sidebar;
 using ChatApp.Web.Events.SignalR;
 using ChatApp.Web.Services.Interfaces.Actions;
 using ChatApp.Web.Services.Interfaces.Api;
@@ -19,10 +18,12 @@ namespace ChatApp.Web.Services.Actions
         private readonly ILogger<ChatActionService> _logger;
         private readonly IMediator _mediator;
         private readonly INotificationService _notification;
+        private readonly ISidebarActionService _sidebarActionService;
 
         public ChatActionService(
             AppStateService appStateService,
             ChatStateService chatStateService,
+            ISidebarActionService sidebarActionService,
             IChatApiClient chatApi,
             IGroupChatApiClient groupChatApi,
             ILogger<ChatActionService> logger,
@@ -38,6 +39,7 @@ namespace ChatApp.Web.Services.Actions
             _logger = logger;
             _mediator = mediator;
             _notification = notification;
+            _sidebarActionService = sidebarActionService;
         }
         public event Action? OnStateChanged;
         private CancellationTokenSource? _chatLoadingCts;
@@ -54,10 +56,6 @@ namespace ChatApp.Web.Services.Actions
                 {
                     MarkAsRead(dto.ChatID, dto.MessageID);
                 }
-            }
-            else if (dto.SenderID != _appStateService.CurrentUser.UserID)
-            {
-                await _mediator.Publish(new SidebarCounterUpdatedNotification(dto.ChatID, false));
             }
             OnStateChanged?.Invoke();
         }
@@ -121,7 +119,7 @@ namespace ChatApp.Web.Services.Actions
                     }
                     await _mediator.Publish(new RequestToJoinSignalRNotification(args.ChatId));
                     await _chatApi.MarkAllMessagesAsReadAsync(_appStateService.CurrentChat.Identity.ChatID, token);
-                    await _mediator.Publish(new SidebarCounterUpdatedNotification(args.ChatId, true));
+                    await _sidebarActionService.HandleCounterUpdateAsync(args.ChatId, true);
                 }
 
             }

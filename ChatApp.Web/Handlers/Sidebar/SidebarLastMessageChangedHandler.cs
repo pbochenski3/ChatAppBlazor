@@ -15,7 +15,8 @@ namespace ChatApp.Web.Handlers.Sidebar
 
         public async Task Handle(SidebarLastMessageChangedNotification notification, CancellationToken cancellationToken)
         {
-            await _sidebarActionService.HandleSidebarLastMessageReloadAsync(notification.ChatId, notification.LastSender, notification.LastMessage);
+            await _sidebarActionService.HandleSidebarLastMessageReloadAsync(notification.Message.ChatID, notification.Message.Alias, notification.Message.Content);
+            await _sidebarActionService.HandleCounterUpdateAsync(notification.Message.ChatID, false);
         }
     }
 }

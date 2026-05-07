@@ -40,11 +40,11 @@
 
         try
         {
+            await _sidebarActionService.HandleInvitesLoadAsync();
+            await _sidebarActionService.HandleChatsLoadAsync();
             await _chatHubService.StartAsync();
             SubscribeToEvent();
 
-            await _sidebarActionService.HandleInvitesLoadAsync();
-            await _sidebarActionService.HandleChatsLoadAsync();
 
             _notificationService.Notify($"{_currentUser.Username} witaj ponownie!", NotificationType.System);
         }

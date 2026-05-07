@@ -1,5 +1,4 @@
-﻿using ChatApp.Application.DTO.Chats;
-using ChatApp.Application.DTO.Requests;
+﻿using ChatApp.Application.DTO.Requests;
 using ChatApp.Domain.Enums;
 using ChatApp.Web.Services.Interfaces.Actions;
 using ChatApp.Web.Services.Interfaces.Api;
@@ -59,29 +58,22 @@ namespace ChatApp.Web.Services.Actions
         {
             var items = _sidebarStateService.SidebarItems;
             if (items == null) return;
-
             var index = items.FindIndex(sb => sb.Identity.ChatID == chatId);
 
             if (index != -1)
             {
                 var item = items[index];
-
-                if (clean)
-                    item.State.UnreadMessageCount = 0;
-                else
-                    item.State.UnreadMessageCount++;
-
-                var newList = new List<UserChatDTO>(items);
-
-                if (!clean)
+                if (_appStateService.CurrentChat.Identity.ChatID != chatId)
                 {
-                    newList.RemoveAt(index);
-                    newList.Insert(0, item);
+                    item.State.UnreadMessageCount++;
+                    items.RemoveAt(index);
+                    items.Insert(0, item);
                 }
-
-                _sidebarStateService.SidebarItems = newList;
-
-                _logger.LogInformation("Licznik zaktualizowany. Event wysłany.");
+                if (clean)
+                {
+                    item.State.UnreadMessageCount = 0;
+                }
+                _sidebarStateService.SidebarItems = items;
                 OnSidebarStateChanged?.Invoke();
             }
         }
@@ -103,7 +95,6 @@ namespace ChatApp.Web.Services.Actions
             _sidebarStateService.ReceivedInvites = await _inviteApiClient.GetUserInvitesAsync();
             _sidebarStateService.IsPending = false;
             OnSidebarStateChanged?.Invoke();
-            _logger.LogInformation("Invite reload triggered for user {Username}", _appStateService.CurrentUser.Username);
         }
         public async Task HandleSendInviteAsync(Guid contactId)
         {
@@ -114,7 +105,8 @@ namespace ChatApp.Web.Services.Actions
         }
         public async Task HandleSidebarLastMessageReloadAsync(Guid chatId, string sender, string content)
         {
-            var itemsToUpdate = _sidebarStateService.SidebarItems.FirstOrDefault(sb => sb.Identity.ChatID == chatId);
+            var items = _sidebarStateService.SidebarItems;
+            var itemsToUpdate = items.FirstOrDefault(sb => sb.Identity.ChatID == chatId);
             if (itemsToUpdate != null)
             {
                 itemsToUpdate.LastMessage.LastMessageContent = content;
