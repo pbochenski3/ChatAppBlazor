@@ -69,6 +69,15 @@ namespace ChatApp.Infrastructure.Repository
                 .SetProperty(m => m.imageUrl, url));
 
         }
+        public async Task<bool> DeleteMessageAsync(Guid messageId, Guid chatId)
+        {
+            var rowsAffected = await _context.Messages.Where(m => m.MessageID == messageId && m.ChatID == chatId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(m => m.IsDeleted, true)
+                    .SetProperty(uc => uc.DeletedAt, DateTime.UtcNow)
+                );
+            return rowsAffected > 0 ? true : false;
+        }
         public async Task<bool> UpdateMessageContentAsync(Guid messageId, Guid chatId, string content, DateTime editTime)
         {
             var message = await _context.Messages

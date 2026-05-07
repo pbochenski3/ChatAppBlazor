@@ -1,4 +1,5 @@
 ﻿using ChatApp.Application.DTO;
+using ChatApp.Application.Feature.Messages.DeleteMessage;
 using ChatApp.Application.Feature.Messages.EditMessage;
 using ChatApp.Application.Feature.Messages.GetChatMessageHistory;
 using ChatApp.Application.Feature.Messages.MarkAllMessagesAsRead;
@@ -58,6 +59,14 @@ namespace ChatApp.Api.Controllers
             var userId = CurrentUserId;
             if (chatId == Guid.Empty) return BadRequest();
             var result = await _mediator.Send(new EditMessageCommand(chatId, messageId, content, userId));
+            return result ? Ok() : BadRequest();
+        }
+        [HttpDelete("{chatId}/{messageId}")]
+        public async Task<IActionResult> DeleteMessageAsync([FromRoute] Guid chatId, [FromRoute] Guid messageId, CancellationToken ct)
+        {
+            var userId = CurrentUserId;
+            if (chatId == Guid.Empty) return BadRequest();
+            var result = await _mediator.Send(new DeleteMessageCommand(chatId, messageId, userId));
             return result ? Ok() : BadRequest();
         }
     }

@@ -9,5 +9,7 @@ namespace ChatApp.Domain.Interfaces.Repository
         Task<List<Message>> GetMessageHistoryAsync(Guid chatId, DateTime? cutoffDate, CancellationToken token);
         Task<Dictionary<Guid, MessagePreview>> GetMessagePreviewsAsync(List<Guid> ids);
         Task<bool> UpdateMessageContentAsync(Guid messageId, Guid chatId, string content, DateTime editTime);
+        Task<bool> DeleteMessageAsync(Guid messageId, Guid chatId);
+
     }
 }
