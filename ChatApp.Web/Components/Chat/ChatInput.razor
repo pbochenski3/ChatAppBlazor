@@ -23,7 +23,9 @@
                    disabled="@_isArchive"
                    @bind="_messageContent"
                    @bind:event="oninput"
-                   @onkeydown="HandleKeyDownAsync" />
+                   @onkeydown="HandleKeyDownAsync"
+                   spellcheck="false"
+                   autocomplete="off" />
 
                 <InputFile id="chat-image-icon"
                            @ref="_inputFile"
@@ -114,7 +116,6 @@
     {
         _chatStateService.IsEmojiOpen = false;
         if (_appStateService.CurrentChat == null) return;
-        StateHasChanged();
         var contentToSend = _messageContent;
         var photoToRestore = _sendedPhoto;
         var chatId = _appStateService.CurrentChat.Identity.ChatID;
@@ -184,7 +185,6 @@
         finally
         {
             _isUploading = false;
-            await InvokeAsync(StateHasChanged);
             await Task.Yield();
             await JSRuntime.InvokeVoidAsync("focusElement", "messageInput");
 

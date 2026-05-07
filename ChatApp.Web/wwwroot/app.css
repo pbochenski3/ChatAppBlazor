@@ -764,17 +764,6 @@ body {
         background: var(--surface3);
         color: var(--text);
     }
-
-.chat-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background: transparent !important;
-    height: 100%;
-    min-width: 0;
-    overflow: hidden;
-}
-
 .top-bar {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
@@ -1120,6 +1109,7 @@ user-details-wrapper {
     outline: none;
     caret-color: var(--accent);
     -webkit-text-fill-color: var(--text);
+    opacity: 1;
 }
 .form-control.search-input {
     border: 1.5px solid var(--accent-ring);

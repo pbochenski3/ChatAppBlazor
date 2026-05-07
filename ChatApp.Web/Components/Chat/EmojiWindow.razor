@@ -1,5 +1,5 @@
 ﻿@implements IDisposable
-<div class="emoji-open" onclick="@_chatStateService.ToggleEmojiMenu">😊</div>
+<div class="emoji-open" @onclick="@_chatStateService.ToggleEmojiMenu">😊</div>
 
 @if(_chatStateService.IsEmojiOpen)
 {

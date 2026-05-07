@@ -94,6 +94,7 @@
                     if (!file.type.startsWith('image/')) return; 
 
                     const input = document.getElementById(inputId);
+                    if (!input) return;
                     const dataTransfer = new DataTransfer();
                     dataTransfer.items.add(file);
                     input.files = dataTransfer.files;
@@ -111,16 +112,25 @@
                 }
             });
 
-            const zone = document.querySelector('.message-input-area');
+                 const zone = document.querySelector('.message-input-area');
             if (zone) {
                 zone.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    handleFiles(e.dataTransfer.files);
+                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        e.preventDefault(); 
+                        handleFiles(e.dataTransfer.files);
+                    }
                 });
+
+                zone.addEventListener('dragover', (e) => {
+                    if (e.dataTransfer.types.includes('Files')) {
+                        e.preventDefault();
+                        zone.classList.add('drag-active');
+                    }
+                });
+
+                zone.addEventListener('dragleave', () => zone.classList.remove('drag-active'));
+                zone.addEventListener('drop', () => zone.classList.remove('drag-active'));
             }
-        zone.addEventListener('dragover', () => zone.classList.add('drag-active'));
-        zone.addEventListener('dragleave', () => zone.classList.remove('drag-active'));
-        zone.addEventListener('drop', () => zone.classList.remove('drag-active'));
         };
         //focus na czat
                 window.focusElement = (id) => {
