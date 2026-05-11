@@ -77,7 +77,7 @@
         protected override async Task OnInitializedAsync()
         {
             _chatStateService.OnStateChanged += HandleStateChanged;
-            _chatMessageActionService.OnStateChanged += HandleStateChanged;
+
         }
         private async void HandleStateChanged()
         {
@@ -104,18 +104,17 @@
                 return;
             }
             msg.Content = _editText;
-            await _chatMessageActionService.RequestMessageEdited(msg.MessageID, msg.ChatID, msg.Content);
+            msg.IsEdited = true;
+            await _messageApiClient.EditMessageAsync(msg.MessageID, msg.ChatID, msg.Content);
             CancelEditing();
         }
         private async Task DeleteMessage(MessageDTO msg)
         {
-            await _chatMessageActionService.RequestMessageDeleted(msg.MessageID, msg.ChatID);
-
+            await _messageApiClient.DeleteMessageAsync(msg.MessageID, msg.ChatID);
         }
         public void Dispose()
         {
             _chatStateService.OnStateChanged -= HandleStateChanged;
-            _chatMessageActionService.OnStateChanged -= HandleStateChanged;
 
         }
     }

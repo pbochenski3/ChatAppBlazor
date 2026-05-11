@@ -1,5 +1,4 @@
 using ChatApp.Application.DTO;
-using ChatApp.Application.Notifications.Message;
 using ChatApp.Web.Events.Chat;
 using ChatApp.Web.Events.Sidebar;
 using ChatApp.Web.Services.Interfaces.Common;
@@ -50,8 +49,8 @@ public class ChatHubService : IAsyncDisposable
         HubConnection.On("SidebarInvitesReload", async () => await _mediator.Publish(new InvitesListChangedNotification()));
         HubConnection.On<MessageDTO>("UpdateLastMessage", async (message) => await _mediator.Publish(new SidebarLastMessageChangedNotification(message)));
         HubConnection.On<Guid, Guid, bool>("UpdateFlagOnChat", async (userId, chatId, flag) => await _mediator.Publish(new RequestToUpdateFlagOnChatNotification(userId, chatId, flag)));
-        HubConnection.On<Guid, Guid>("MessageDeleted", async (chatId, messageId) => await _mediator.Publish(new MessageDeletedNotification(chatId, messageId)));
-        HubConnection.On<Guid, Guid, string>("MessageEdited", async (chatId, messageId, newContent) => await _mediator.Publish(new MessageEditedNotification(chatId, messageId, newContent)));
+        HubConnection.On<Guid, Guid>("MessageDeleted", async (chatId, messageId) => await _mediator.Publish(new ChatMessegeDeletedNotification(messageId, chatId)));
+        HubConnection.On<Guid, Guid, string>("MessageEdited", async (chatId, messageId, newContent) => await _mediator.Publish(new ChatMessageEditedNotification(messageId, chatId, newContent)));
 
         HubConnection.On<string, Guid>("ContactAvatarReload", async (avatarUrl, userId) =>
         {

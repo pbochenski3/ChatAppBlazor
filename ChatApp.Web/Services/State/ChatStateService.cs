@@ -87,6 +87,22 @@ namespace ChatApp.Web.Services.State
 
             OnStateChanged?.Invoke();
         }
+        public void UpdateChatMessage(Guid messageId, string content, bool isEdited)
+        {
+            var message = ReceivedMessages.Where(m => m.MessageID == messageId).FirstOrDefault();
+            if (message == null) return;
+            message.Content = content;
+            message.IsEdited = isEdited;
+            OnStateChanged?.Invoke();
+        }
+        public void DeleteChatMessage(Guid messageId, bool isDeleted)
+        {
+            var message = ReceivedMessages.Where(m => m.MessageID == messageId).FirstOrDefault();
+            if (message == null) return;
+            message.Content = "Wiadomość została usunięta";
+            message.IsDeleted = isDeleted;
+            OnStateChanged?.Invoke();
 
+        }
     }
 }

@@ -1,16 +1,22 @@
 ﻿using ChatApp.Web.Events.Chat;
-using ChatApp.Web.Services.Interfaces.Actions;
+using ChatApp.Web.Services.State;
 using MediatR;
 
 namespace ChatApp.Web.Handlers.Chat
 {
     public class ChatMessageEditedHandler : INotificationHandler<ChatMessageEditedNotification>
     {
-        private readonly IChatMessageActionService _messageAction;
-        public ChatMessageEditedHandler(IChatMessageActionService messageAction) => _messageAction = messageAction;
+        private readonly ChatStateService _chatState;
+        private readonly AppStateService _appState;
+        public ChatMessageEditedHandler(ChatStateService chatState, AppStateService appState)
+        {
+            _chatState = chatState;
+            _appState = appState;
+        }
         public async Task Handle(ChatMessageEditedNotification n, CancellationToken cancellationToken)
         {
-            await _messageAction.HandleMessageEditedAsync(n.MessageId, n.ChatId, n.Content);
+            if (_appState.CurrentChat?.Identity.ChatID != n.ChatId) return;
+            _chatState.UpdateChatMessage(n.MessageId, n.Content, true);
         }
     }
 }
