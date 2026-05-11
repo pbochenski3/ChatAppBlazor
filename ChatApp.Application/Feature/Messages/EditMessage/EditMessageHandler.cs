@@ -13,7 +13,7 @@ namespace ChatApp.Application.Feature.Messages.EditMessage
         public async Task<bool> Handle(EditMessageCommand r, CancellationToken cancellationToken)
         {
             var editTime = DateTime.UtcNow;
-            var result = await _messageRepo.UpdateMessageContentAsync(r.MessageId, r.ChatId, r.Content, editTime);
+            var result = await _messageRepo.UpdateMessageContentAsync(r.MessageId, r.ChatId, r.Content, r.UserId, editTime);
             if (!result)
             {
                 r.AddEvent(new UserActionFailedNotification(r.UserId, "Nie udało się edytować wiadomości!"));

@@ -4,53 +4,68 @@
     {
         @foreach (var msg in _chatStateService.ReceivedMessages)
         {
+            <div @key="msg.MessageID" class="message-outer @(IsMyMessage(msg) ? "mine" : "")">
 
-            <div @key="msg.MessageID"
-                 class="message @(IsSystem(msg) ? "system" : "") @(IsMyMessage(msg) ? "mine" : "")">
-                @if (HasImage(msg.imageUrl))
-                {
-                    <img src="@msg.imageUrl" @onclick="() => _chatStateService.ToogleImageZoom(msg.imageUrl)" class="chat-image" />
-                }
-                <div class="message-row">
-                    @if (!IsSystem(msg) && !IsMyMessage(msg))
-                    {
-                        <div class="message-info">
-                            <span class="message-time">[@msg.SentAt.ToString("HH:mm")]</span>
-                            @{
-                                var sender = _chatStateService.UsersInChat.FirstOrDefault(u => u.Username == msg.SenderUsername);
-                                var displayName = sender?.Alias ?? msg.SenderUsername;
-                            }
-                            <span class="message-user">@displayName:</span>
-                        </div>
-                    }
-                    @if (HasText(msg.Content))
+                <div class="message-bundle">
+
+                    <div class="message @(IsSystem(msg) ? "system" : "") @(IsMyMessage(msg) ? "mine" : "")">
+
+                        @if (HasImage(msg.imageUrl))
+                        {
+                            <img src="@msg.imageUrl" @onclick="() => _chatStateService.ToogleImageZoom(msg.imageUrl)" class="chat-image" />
+                        }
+
+                        @if (!IsSystem(msg) && !IsMyMessage(msg))
+                        {
+                            <div class="message-info">
+                                <span class="message-time">[@msg.SentAt.ToString("HH:mm")]</span>
+                                @{
+                                    var sender = _chatStateService.UsersInChat.FirstOrDefault(u => u.Username == msg.SenderUsername);
+                                    var displayName = sender?.Alias ?? msg.SenderUsername;
+                                }
+                                <span class="message-user">@displayName:</span>
+                            </div>
+                        }
+
+                        <div class="message-row">
                             @if (_editingMessageId == msg.MessageID)
                             {
                                 <div class="edit-container">
-                                    <input @bind="_editText" @bind:event="oninput" class="edit-input" />
-                                    <button @onclick="() => SaveEdit(msg)" class="btn-save">Zapisz</button>
-                                    <button @onclick="CancelEditing" class="btn-cancel">Anuluj</button>
+                                    <input @bind="_editText" @bind:event="oninput" class="edit-input" @onclick:stopPropagation="true" />
+                                    <div class="edit-actions">
+                                        <button @onclick="() => SaveEdit(msg)" class="btn-save">Zapisz</button>
+                                        <button @onclick="CancelEditing" class="btn-cancel">Anuluj</button>
+                                    </div>
                                 </div>
                             }
                             else
                             {
-                                <MessageMenu
-                                    OnEditClicked="() => StartEditing(msg)" 
-                                    OnDeleteClicked="() => DeleteMessage(msg)"/>
-                                <span class="message-content @(msg.IsDeleted ? "deleted" : "")">@LinkParser.Parse(msg.Content, _navManager.BaseUri)</span>
+                                <span class="message-content @(msg.IsDeleted ? "deleted" : "")">
+                                    @LinkParser.Parse(msg.Content, _navManager.BaseUri)
+                                </span>
+                            }
+                        </div>
 
-                                @if (msg.IsEdited)
-                                {
-                                    <span class="message-edit-note"> (edytowano)</span>
-                                }
+                        @if (IsMyMessage(msg) && !msg.IsDeleted && _editingMessageId != msg.MessageID)
+                        {
+                            <MessageMenu OnEditClicked="() => StartEditing(msg)"
+                                         OnDeleteClicked="() => DeleteMessage(msg)"
+                                         IsDeleted="msg.IsDeleted"
+                                         IsMine="true" />
                         }
+                    </div>
+
+                    @if (msg.IsEdited && !msg.IsDeleted)
+                    {
+                        <span class="message-edit-note">(edytowano)</span>
+                    }
                 </div>
             </div>
         }
     }
 </div>
-
 @code {
+    private bool IsDeleted(MessageDTO msg) => msg.IsDeleted;
     private bool IsMyMessage(MessageDTO msg) => msg.SenderUsername == _appStateService.CurrentUser?.Username;
     private bool IsSystem(MessageDTO msg) => msg.MessageType == MessageType.System;
     private bool HasImage(string msg) => !string.IsNullOrWhiteSpace(msg);

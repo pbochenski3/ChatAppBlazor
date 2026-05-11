@@ -1,32 +1,35 @@
-﻿<h3 @onclick="ToggleMenu">⋮</h3>
-@if (_isMenuOpened)
-{
-    <div class="message-menu-wrapper">
-        <button class="btn-message" @onclick="HandleEditClick">Edytuj</button>
-        <button class="btn-message delete" @onclick="HandleDeleteClick">Usuń</button>
-    </div>
-}
+﻿<div class="message-menu-trigger-wrapper">
+    <button class="message-menu-trigger" @onclick="ToggleMenu" @onclick:stopPropagation="true">⋮</button>
+
+    @if (_isMenuOpened)
+    {
+        <div class="message-menu-wrapper" @onclick:stopPropagation="true">
+            <button class="btn-message" @onclick="HandleEditClick">Edytuj</button>
+            <button class="btn-message delete" @onclick="HandleDeleteClick">Usuń</button>
+        </div>
+    }
+</div>
+
 @code {
-    [Parameter] public  Guid MessageId { get; set; }
+    [Parameter] public Guid MessageId { get; set; }
     [Parameter] public EventCallback OnEditClicked { get; set; }
     [Parameter] public EventCallback OnDeleteClicked { get; set; }
     private bool _isMenuOpened;
+    [Parameter] public bool IsDeleted { get; set; }
+    [Parameter] public bool IsMine { get; set; }
     private Guid _chatId => _appStateService.CurrentChat.Identity.ChatID;
+
     private void ToggleMenu()
     {
         _isMenuOpened = !_isMenuOpened;
     }
-    private async Task EditMessegeAsync()
-    {
-        var content = string.Empty;
-        await _chatMessageActionService.RequestMessageEdited(MessageId, _chatId, content);
 
-    }
     private async Task HandleEditClick()
     {
-        _isMenuOpened = false; 
-        await OnEditClicked.InvokeAsync(); 
+        _isMenuOpened = false;
+        await OnEditClicked.InvokeAsync();
     }
+
     private async void HandleDeleteClick()
     {
         _isMenuOpened = false;

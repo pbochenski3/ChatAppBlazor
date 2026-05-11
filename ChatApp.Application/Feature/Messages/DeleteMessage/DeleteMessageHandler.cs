@@ -14,7 +14,7 @@ namespace ChatApp.Application.Feature.Messages.EditMessage
         public async Task<bool> Handle(DeleteMessageCommand r, CancellationToken cancellationToken)
         {
             var editTime = DateTime.UtcNow;
-            var result = await _messageRepo.DeleteMessageAsync(r.MessageId, r.ChatId);
+            var result = await _messageRepo.DeleteMessageAsync(r.MessageId, r.ChatId, r.UserId);
             if (!result)
             {
                 r.AddEvent(new UserActionFailedNotification(r.UserId, "Nie udało się usunąć wiadomości!"));

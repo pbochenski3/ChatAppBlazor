@@ -141,27 +141,48 @@
                 window.setupSmartScroll = (container) => {
             if (!container) return;
 
-            const doScroll = (isSmooth) => {
-                container.scrollTo({
-                    top: container.scrollHeight,
-                    behavior: isSmooth ? 'smooth' : 'auto'
-                });
+            const SCROLL_THRESHOLD = 100; 
+            let isUserScrolling = false;
+            let scrollTimeout;
+
+            const isNearBottom = () => {
+                return container.scrollHeight - container.scrollTop - container.clientHeight <= SCROLL_THRESHOLD;
             };
 
-            doScroll(false);
+            const scrollIfNearBottom = (isSmooth) => {
+                if (isNearBottom()) {
+                    container.scrollTo({
+                        top: container.scrollHeight,
+                        behavior: isSmooth ? 'smooth' : 'auto'
+                    });
+                }
+            };
+
+            container.addEventListener('scroll', () => {
+                isUserScrolling = true;
+                clearTimeout(scrollTimeout);
+                
+                scrollTimeout = setTimeout(() => {
+                    isUserScrolling = false;
+                }, 1000);
+            });
+
+            scrollIfNearBottom(false);
 
             const observer = new MutationObserver(() => {
-                doScroll(true);
+                scrollIfNearBottom(true); 
+                
                 container.querySelectorAll('img:not([data-loaded])').forEach(img => {
                     img.setAttribute('data-loaded', 'true');
                     img.addEventListener('load', () => {
-                        doScroll(true);
+                        scrollIfNearBottom(true);
                     });
                 });
             });
 
             observer.observe(container, { childList: true, subtree: true });
         };
+        
         window.scrollToElement = (el) => el.scrollTop = el.scrollHeight;
     </script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>

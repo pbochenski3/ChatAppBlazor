@@ -69,7 +69,7 @@ namespace ChatApp.Infrastructure.Repository
                 .SetProperty(m => m.imageUrl, url));
 
         }
-        public async Task<bool> DeleteMessageAsync(Guid messageId, Guid chatId)
+        public async Task<bool> DeleteMessageAsync(Guid messageId, Guid chatId, Guid userId)
         {
             var message = await _context.Messages
             .Include(m => m.History)
@@ -78,6 +78,9 @@ namespace ChatApp.Infrastructure.Repository
             int version = message.History.Any()
             ? message.History.Max(m => m.Version) + 1
             : 1;
+            var permission = message.SenderID == userId;
+            if (permission == false) return false;
+
             await _context.MessagesHistory.AddAsync(
                new MessageHistory
                {
@@ -94,14 +97,15 @@ namespace ChatApp.Infrastructure.Repository
                 );
             return rowsAffected > 0 ? true : false;
         }
-        public async Task<bool> UpdateMessageContentAsync(Guid messageId, Guid chatId, string content, DateTime editTime)
+        public async Task<bool> UpdateMessageContentAsync(Guid messageId, Guid chatId, string content, Guid userId, DateTime editTime)
         {
             var message = await _context.Messages
             .Include(m => m.History)
             .Where(m => m.ChatID == chatId)
             .FirstOrDefaultAsync(m => m.MessageID == messageId);
             if (message == null) return false;
-
+            var permission = message.SenderID == userId;
+            if (permission == false) return false;
             int nextVersion = message.History.Any()
                 ? message.History.Max(e => e.Version) + 1
                 : 1;
@@ -116,7 +120,8 @@ namespace ChatApp.Infrastructure.Repository
 
             await _context.Messages.Where(m => m.MessageID == messageId)
                 .ExecuteUpdateAsync(s =>
-                s.SetProperty(m => m.Content, content));
+                s.SetProperty(m => m.Content, content)
+                .SetProperty(m => m.IsEdited, true));
 
             return true;
         }
