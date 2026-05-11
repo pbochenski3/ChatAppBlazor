@@ -140,6 +140,9 @@ namespace ChatApp.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsEdited")
+                        .HasColumnType("bit");
+
                     b.Property<int>("MessageType")
                         .HasColumnType("int");
 
@@ -164,6 +167,27 @@ namespace ChatApp.Infrastructure.Migrations
                         .HasDatabaseName("Messages_UnreadCounter");
 
                     b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("ChatApp.Domain.Entities.MessageHistory", b =>
+                {
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EditedAt")
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<string>("OldContent")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("MessageId", "Version");
+
+                    b.ToTable("MessagesHistory");
                 });
 
             modelBuilder.Entity("ChatApp.Domain.Entities.User", b =>
@@ -288,7 +312,7 @@ namespace ChatApp.Infrastructure.Migrations
                     b.HasOne("ChatApp.Domain.Entities.Chat", "Chat")
                         .WithMany("Messages")
                         .HasForeignKey("ChatID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("ChatApp.Domain.Entities.User", "Sender")
@@ -299,6 +323,15 @@ namespace ChatApp.Infrastructure.Migrations
                     b.Navigation("Chat");
 
                     b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("ChatApp.Domain.Entities.MessageHistory", b =>
+                {
+                    b.HasOne("ChatApp.Domain.Entities.Message", null)
+                        .WithMany("History")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ChatApp.Domain.Entities.UserChat", b =>
@@ -325,6 +358,11 @@ namespace ChatApp.Infrastructure.Migrations
                     b.Navigation("Messages");
 
                     b.Navigation("UserChats");
+                });
+
+            modelBuilder.Entity("ChatApp.Domain.Entities.Message", b =>
+                {
+                    b.Navigation("History");
                 });
 
             modelBuilder.Entity("ChatApp.Domain.Entities.User", b =>

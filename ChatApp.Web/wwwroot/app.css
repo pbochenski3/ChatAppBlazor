@@ -10,6 +10,7 @@
     --border-hover: #2e4340;
     --accent: #00e5a0;
     --accent2: #00b87a;
+    --accent3: #93f600;
     --accent-dim: rgba(0, 229, 160, 0.08);
     --accent-glow: rgba(0, 229, 160, 0.15);
     --accent-ring: rgba(0, 229, 160, 0.25);
@@ -978,29 +979,25 @@ a {
 }
 
 .message {
+    position: relative;
     background: var(--surface2);
-    margin-bottom: 8px;
     padding: 0.5625rem 0.875rem;
     border-radius: var(--radius-md);
-    border-left: 2px solid var(--accent2);
+    border-left: 2px solid var(--accent2); 
     animation: fadeIn 0.25s ease;
     transition: border-color var(--transition);
-    max-width: 70%;
     width: fit-content;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    display: block; 
 }
 
     .message.system {
         border-left-color: #1E90FF;
         font-style: italic;
     }
-
     .message.mine {
-        border-left: 0;
-        border-right: 2px solid #7CFC00;
-        align-self: flex-end;
+        border-left: none;
+        border-right: 2px solid var(--accent3); 
+        background: var(--surface2);
     }
 
     .message:hover {
@@ -1019,6 +1016,7 @@ a {
     gap: 4px;
     min-width: 0;
 }
+
 
 .message-info {
     display: flex;
@@ -1048,6 +1046,16 @@ a {
     word-break: break-word;
     white-space: pre-wrap;
     line-height: 1.5;
+}
+    .message-content.deleted {
+        font-style: italic;
+    }
+.message-edit-note {
+    font-size: 0.75rem;
+    color: lightgray;
+    margin-top: 4px;
+    padding: 0 4px;
+    font-style: italic;
 }
 
 .chat-image {
@@ -2021,3 +2029,174 @@ a {
         border-color: var(--danger);
         box-shadow: 0 0 12px rgba(255, 94, 94, 0.3);
     }
+
+/* =========================================
+   13. Message Menu & Edit Mode
+   ========================================= */
+
+.message-outer {
+    display: flex;
+    width: 100%;
+    margin-bottom: 12px;
+    justify-content: flex-start;
+}
+
+    .message-outer.mine {
+        justify-content: flex-end;
+    }
+
+.message-bundle {
+    display: flex;
+    flex-direction: column;
+    max-width: 80%; 
+}
+
+.message-outer.mine .message-bundle {
+    align-items: flex-end;
+}
+
+.message-menu-trigger-wrapper {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+
+
+.message-outer.mine .message-menu-trigger-wrapper {
+    left: -36px; 
+}
+
+.message-menu-trigger {
+    cursor: pointer;
+    font-size: 2rem;
+    color: var(--muted2);
+    padding: 4px;
+    border: none;
+    background: transparent;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition);
+    line-height: 1;
+    opacity: 0; 
+    visibility: hidden;
+}
+
+.message-outer:hover .message-menu-trigger {
+    opacity: 1;
+    visibility: visible;
+}
+
+.message-menu-trigger:hover {
+    color: var(--accent);
+    background: var(--accent-dim);
+}
+
+.message-menu-wrapper {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    min-width: 140px;
+    overflow: hidden;
+    animation: fadeIn 0.15s ease-out;
+}
+
+.btn-message {
+    width: 100%;
+    padding: 10px 14px;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background var(--transition);
+}
+
+    .btn-message:hover {
+        background: var(--surface2);
+    }
+
+    .btn-message.delete {
+        color: var(--danger);
+        border-top: 1px solid var(--border);
+    }
+
+        .btn-message.delete:hover {
+            background: rgba(255, 94, 94, 0.1);
+        }
+
+.edit-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    min-width: 250px;
+    padding: 4px 0;
+}
+
+.edit-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    padding: 8px 12px;
+    font-size: 0.92rem;
+    outline: none;
+}
+
+    .edit-input:focus {
+        box-shadow: 0 0 0 2px var(--accent-dim);
+    }
+
+.edit-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.btn-save, .btn-cancel {
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.btn-save {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+}
+
+    .btn-save:hover {
+        filter: brightness(1.1);
+        box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+.btn-cancel {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+}
+
+    .btn-cancel:hover {
+        background: var(--surface3);
+        color: var(--text);
+    }
+
+
+

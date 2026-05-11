@@ -13,6 +13,8 @@ namespace ChatApp.Application.DTO
         public string SenderUsername { get; set; } = string.Empty;
         public string Alias { get; set; } = string.Empty;
         public Guid ChatID { get; set; }
+        public bool IsDeleted { get; set; }
+        public bool IsEdited { get; set; }
         public MessageType MessageType { get; set; }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using ChatApp.Application.DTO;
+using ChatApp.Application.Feature.Messages.DeleteMessage;
+using ChatApp.Application.Feature.Messages.EditMessage;
 using ChatApp.Application.Feature.Messages.GetChatMessageHistory;
 using ChatApp.Application.Feature.Messages.MarkAllMessagesAsRead;
 using ChatApp.Application.Feature.Messages.MarkAsRead;
@@ -49,6 +51,22 @@ namespace ChatApp.Api.Controllers
             var userId = CurrentUserId;
             if (chatId == Guid.Empty) return BadRequest();
             var result = await _mediator.Send(new MarkAllMessagesAsReadCommand(userId, chatId));
+            return result ? Ok() : BadRequest();
+        }
+        [HttpPatch("{chatId}/{messageId}/edit")]
+        public async Task<IActionResult> EditMessageAsync([FromRoute] Guid chatId, [FromRoute] Guid messageId, [FromBody] string content, CancellationToken ct)
+        {
+            var userId = CurrentUserId;
+            if (chatId == Guid.Empty) return BadRequest();
+            var result = await _mediator.Send(new EditMessageCommand(chatId, messageId, content, userId));
+            return result ? Ok() : BadRequest();
+        }
+        [HttpDelete("{chatId}/{messageId}/delete")]
+        public async Task<IActionResult> DeleteMessageAsync([FromRoute] Guid chatId, [FromRoute] Guid messageId, CancellationToken ct)
+        {
+            var userId = CurrentUserId;
+            if (chatId == Guid.Empty) return BadRequest();
+            var result = await _mediator.Send(new DeleteMessageCommand(messageId, chatId, userId));
             return result ? Ok() : BadRequest();
         }
     }

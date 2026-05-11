@@ -162,7 +162,6 @@ namespace ChatApp.Web.Services.Actions
                 _logger.LogWarning(ex, "[BLAZORHUB] Failed to load users for chat {Id}", chatId);
             }
         }
-
         public async Task HandleUserAliasChangeAsync(Guid chatId, Guid userId, string newAlias)
         {
             if (_appStateService.CurrentUser?.UserID != userId) return;

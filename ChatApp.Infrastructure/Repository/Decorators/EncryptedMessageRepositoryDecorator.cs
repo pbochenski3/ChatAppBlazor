@@ -26,6 +26,14 @@ namespace ChatApp.Infrastructure.Repository.Decorators
 
             await _innerRepository.AddMessageAsync(message);
         }
+        public async Task<bool> UpdateMessageContentAsync(Guid messageId, Guid chatId, string content, Guid userId, DateTime editTime)
+        {
+            if (!string.IsNullOrWhiteSpace(content))
+            {
+                content = _encryptionService.Encrypt(content);
+            }
+            return await _innerRepository.UpdateMessageContentAsync(messageId, chatId, content, userId, editTime);
+        }
 
         public async Task<List<Message>> GetMessageHistoryAsync(Guid chatId, DateTime? cutoffDate, CancellationToken token)
         {
@@ -53,5 +61,9 @@ namespace ChatApp.Infrastructure.Repository.Decorators
             return previews;
         }
 
+        public async Task<bool> DeleteMessageAsync(Guid messageId, Guid chatId, Guid userId)
+        {
+            return await _innerRepository.DeleteMessageAsync(messageId, chatId, userId);
+        }
     }
 }

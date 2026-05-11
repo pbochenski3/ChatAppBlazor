@@ -14,6 +14,7 @@ namespace ChatApp.Infrastructure.Repository
         public DbSet<UserChat> UserChat { get; set; }
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<Invite> Invites { get; set; }
+        public DbSet<MessageHistory> MessagesHistory { get; set; }
         protected override void OnModelCreating(ModelBuilder mb)
         {
             mb.Entity<Contact>(entity =>
@@ -110,7 +111,7 @@ namespace ChatApp.Infrastructure.Repository
                 entity.HasMany(c => c.Messages)
                         .WithOne(m => m.Chat)
                         .HasForeignKey(m => m.ChatID)
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
             });
             mb.Entity<UserChat>(entity =>
             {
@@ -138,6 +139,17 @@ namespace ChatApp.Infrastructure.Repository
                 .HasPrecision(0);
 
 
+            });
+            mb.Entity<MessageHistory>(entity =>
+            {
+                entity.HasKey(mh => new { mh.MessageId, mh.Version });
+
+                entity.Property(uc => uc.EditedAt)
+                .HasPrecision(0);
+                entity.HasOne<Message>()
+               .WithMany(m => m.History)
+               .HasForeignKey(mh => mh.MessageId)
+               .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }
