@@ -40,7 +40,6 @@ namespace ChatApp.Web.Services.Actions
             try
             {
                 _sidebarStateService.SidebarItems = await _contactApiClient.GetSidebarItemsAsync();
-                _logger.LogInformation("Sidebar reloaded. Items count: {Count}", _sidebarStateService.SidebarItems.Count);
 
             }
             catch (Exception ex)

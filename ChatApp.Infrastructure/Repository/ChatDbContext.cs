@@ -60,6 +60,9 @@ namespace ChatApp.Infrastructure.Repository
                     .WithMany(u => u.ReceivedInvites)
                     .HasForeignKey(i => i.ReceiverID)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(i => new { i.Status, i.SenderID, i.ReceiverID })
+                      .HasDatabaseName("IX_Invites_Status_Sender_Receiver");
             });
             mb.Entity<User>(entity =>
                 {
@@ -73,6 +76,8 @@ namespace ChatApp.Infrastructure.Repository
                     .HasForeignKey(m => m.SenderID)
                     .OnDelete(DeleteBehavior.Restrict);
 
+                    entity.HasIndex(u => u.Username)
+                          .HasDatabaseName("IX_Users_Username");
                 });
 
             mb.Entity<Message>(entity =>
@@ -91,6 +96,8 @@ namespace ChatApp.Infrastructure.Repository
                 entity.Property(m => m.DeletedAt)
                 .HasPrecision(0);
 
+                entity.HasIndex(m => new { m.ChatID, m.SentAt, m.MessageType, m.IsDeleted, m.SenderID })
+                      .HasDatabaseName("IX_Messages_ChatID_SentAt_Type_Deleted_Sender");
             });
 
             mb.Entity<Chat>(entity =>
@@ -138,7 +145,8 @@ namespace ChatApp.Infrastructure.Repository
                 entity.Property(uc => uc.LastReadAt)
                 .HasPrecision(0);
 
-
+                entity.HasIndex(uc => new { uc.ChatID, uc.IsArchive })
+                      .HasDatabaseName("IX_UserChat_ChatID_IsArchive");
             });
             mb.Entity<MessageHistory>(entity =>
             {

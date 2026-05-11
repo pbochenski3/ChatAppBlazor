@@ -69,10 +69,7 @@
     </div>
     <Routes @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
     <script>
-        //offline loading
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/service-worker.js');
-        }
+
         //loader
             const hints = [
                 "Karmienie chomików w serwerowni...",
