@@ -1,7 +1,6 @@
 ﻿using ChatApp.Application.DTO;
 using ChatApp.Application.DTO.Chats;
 using ChatApp.Application.Interfaces;
-using MediatR;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using System.Text.Json;
@@ -12,23 +11,21 @@ namespace ChatApp.Web.Services.State
     public class AppStateService : ITokenProvider
     {
         private readonly IJSRuntime _js;
-        private readonly IMediator _mediator;
         private readonly ILogger<AppStateService> _logger;
         private readonly NavigationManager _navManager;
         private const string UserKey = "current_user_session";
         private const string ActiveChatKey = "lastChatId";
         public AppStateService(IJSRuntime js,
             NavigationManager navManager,
-            IMediator mediator,
             ILogger<AppStateService> logger
             )
         {
             _js = js;
             _navManager = navManager;
-            _mediator = mediator;
             _logger = logger;
         }
         public bool IsInitialized { get; private set; } = false;
+        public string PageTitle { get; set; } = "ChatApp";
         public UserDTO? CurrentUser { get; set; } = null;
         public UserChatDTO? CurrentChat { get; set; } = null;
         public bool IsProfileOpen { get; set; } = false;
@@ -45,6 +42,11 @@ namespace ChatApp.Web.Services.State
             }
             ;
             IsInitialized = true;
+        }
+        public void SetPageTitle(string title)
+        {
+            PageTitle = title;
+            OnStateChanged?.Invoke();
         }
         public async Task<Guid> GetSelectedChatId()
         {

@@ -1,4 +1,6 @@
 ﻿@using ChatApp.Web.Components.Common
+@implements IDisposable
+<PageTitle>@_appStateService.PageTitle</PageTitle>
 @inherits LayoutComponentBase
 <NotificationWindow />
 @if (_appStateService.IsInitialized)
@@ -9,9 +11,19 @@
 @code 
 {
 
-
     protected override async Task OnInitializedAsync()
     {
+        _appStateService.OnStateChanged += HandleStateChanged;
         await _appStateService.LoadSessionAsync();
+    }
+
+    private void HandleStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        _appStateService.OnStateChanged -= HandleStateChanged;
     }
 }

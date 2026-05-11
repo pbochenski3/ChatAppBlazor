@@ -68,10 +68,13 @@ namespace ChatApp.Web.Services.Actions
                     item.State.UnreadMessageCount++;
                     items.RemoveAt(index);
                     items.Insert(0, item);
+                    _appStateService.SetPageTitle($"Masz {item.State.UnreadMessageCount} nowych wiadomości!");
                 }
                 if (clean)
                 {
                     item.State.UnreadMessageCount = 0;
+                    _appStateService.SetPageTitle($"Chat {item.Identity.ChatName}");
+
                 }
                 _sidebarStateService.SidebarItems = items;
                 OnSidebarStateChanged?.Invoke();

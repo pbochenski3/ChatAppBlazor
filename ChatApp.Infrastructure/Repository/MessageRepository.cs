@@ -28,6 +28,7 @@ namespace ChatApp.Infrastructure.Repository
                 return new Dictionary<Guid, MessagePreview>();
 
             return await _context.Messages
+                .IgnoreQueryFilters()
                 .AsNoTracking()
                 .Where(m => ids.Contains(m.MessageID))
                 .Select(m => new

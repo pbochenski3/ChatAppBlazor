@@ -22,6 +22,7 @@
     private string _targetUrl => url ?? "/";
     protected override async Task OnInitializedAsync()
     {
+        _appStateService.SetPageTitle("ChatApp - Ostrzeżenie");
         await JS.InvokeVoidAsync("hideLoader");
     }
     private void GoBack()

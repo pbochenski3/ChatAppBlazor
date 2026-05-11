@@ -28,7 +28,7 @@
     protected override async Task OnInitializedAsync()
     {
 
-
+        _appStateService.SetPageTitle("ChatApp - Hub");
         if (_appStateService.CurrentUser == null)
         {
             _navManager.NavigateTo("/");

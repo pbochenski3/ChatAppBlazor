@@ -55,6 +55,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        _appStateService.SetPageTitle("ChatApp - Logowanie");
         await JS.InvokeVoidAsync("hideLoader");
         if (_appStateService.CurrentUser != null)
         {
