@@ -53,6 +53,7 @@
     private int PendingInvitesCount => _sidebarStateService?.ReceivedInvites?.Count ?? 0;
     protected override async Task OnInitializedAsync()
     {
+        _sidebarStateService.OnStateChanged += HandleStateChange;
         _sidebarActionService.OnSidebarStateChanged += HandleStateChange;
     }
    private void HandleStateChange()
@@ -68,6 +69,7 @@
 
     public void Dispose()
     {
+        _sidebarStateService.OnStateChanged -= HandleStateChange;
         _sidebarActionService.OnSidebarStateChanged -= HandleStateChange;
     }
 }

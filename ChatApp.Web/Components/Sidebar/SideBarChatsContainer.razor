@@ -58,6 +58,7 @@
     {
         _chatSettingsActionService.OnStateChanged += HandleStateChange;
         _sidebarActionService.OnSidebarStateChanged += HandleStateChange;
+        _sidebarStateService.OnStateChanged += HandleStateChange;
     }
 
 
@@ -88,5 +89,7 @@
     {
         _chatSettingsActionService.OnStateChanged -= HandleStateChange;
         _sidebarActionService.OnSidebarStateChanged -= HandleStateChange;
+        _sidebarStateService.OnStateChanged -= HandleStateChange;
+
     }
 }

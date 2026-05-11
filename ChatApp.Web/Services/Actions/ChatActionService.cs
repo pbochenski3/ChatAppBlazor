@@ -81,7 +81,6 @@ namespace ChatApp.Web.Services.Actions
             }
             if (args.Force && !isSameChat)
             {
-
                 return;
             }
             if (_appStateService.IsProfileOpen)

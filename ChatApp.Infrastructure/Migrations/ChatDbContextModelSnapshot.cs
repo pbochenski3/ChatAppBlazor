@@ -116,6 +116,9 @@ namespace ChatApp.Infrastructure.Migrations
 
                     b.HasIndex("SenderID");
 
+                    b.HasIndex("Status", "SenderID", "ReceiverID")
+                        .HasDatabaseName("IX_Invites_Status_Sender_Receiver");
+
                     b.ToTable("Invites");
                 });
 
@@ -166,6 +169,9 @@ namespace ChatApp.Infrastructure.Migrations
                     b.HasIndex("ChatID", "MessageID", "SenderID")
                         .HasDatabaseName("Messages_UnreadCounter");
 
+                    b.HasIndex("ChatID", "SentAt", "MessageType", "IsDeleted", "SenderID")
+                        .HasDatabaseName("IX_Messages_ChatID_SentAt_Type_Deleted_Sender");
+
                     b.ToTable("Messages");
                 });
 
@@ -213,9 +219,12 @@ namespace ChatApp.Infrastructure.Migrations
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("UserID");
+
+                    b.HasIndex("Username")
+                        .HasDatabaseName("IX_Users_Username");
 
                     b.ToTable("Users");
                 });
@@ -262,9 +271,10 @@ namespace ChatApp.Infrastructure.Migrations
 
                     b.HasKey("UserID", "ChatID");
 
-                    b.HasIndex("ChatID");
-
                     b.HasIndex("UserID");
+
+                    b.HasIndex("ChatID", "IsArchive")
+                        .HasDatabaseName("IX_UserChat_ChatID_IsArchive");
 
                     b.ToTable("UserChat");
                 });

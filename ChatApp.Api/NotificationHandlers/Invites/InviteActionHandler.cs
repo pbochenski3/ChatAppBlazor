@@ -25,13 +25,10 @@ namespace ChatApp.Api.NotificationHandlers.Invites
                 _hubContext.Clients.User(n.SenderId.ToString()).SendAsync("SidebarChatsReload")
             );
 
-            if (n.NewChatId == n.OldChatId)
-            {
-                await Task.WhenAll(
-                    _hubContext.Clients.User(n.ReciverId.ToString()).SendAsync("ChatReload", n.NewChatId, true),
-                    _hubContext.Clients.User(n.SenderId.ToString()).SendAsync("ChatReload", n.NewChatId, true)
-                );
-            }
+            await Task.WhenAll(
+                _hubContext.Clients.User(n.ReciverId.ToString()).SendAsync("ChatReload", n.NewChatId, true),
+                _hubContext.Clients.User(n.SenderId.ToString()).SendAsync("ChatReload", n.NewChatId, true)
+            );
         }
     }
 }
