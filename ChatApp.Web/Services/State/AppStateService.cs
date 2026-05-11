@@ -74,6 +74,11 @@ namespace ChatApp.Web.Services.State
             }
             return null;
         }
+        public void SetInitialization(bool value)
+        {
+            IsInitialized = value;
+            OnStateChanged?.Invoke();
+        }
         public void CloseProfile()
         {
             IsProfileOpen = false;

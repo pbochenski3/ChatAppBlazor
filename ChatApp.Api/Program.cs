@@ -9,7 +9,6 @@ using ChatApp.Infrastructure.Providers;
 using ChatApp.Infrastructure.Repository;
 using ChatApp.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -18,7 +17,10 @@ using System.Text;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
-
+if (builder.Environment.IsProduction())
+{
+    builder.WebHost.UseStaticWebAssets();
+}
 var JwtSetting = builder.Configuration.GetSection("JwtSettings");
 var key = Encoding.UTF8.GetBytes(JwtSetting["Key"]!);
 var issuer = JwtSetting["Issuer"];

@@ -1,6 +1,7 @@
 using ChatApp.Application.DTO;
 using ChatApp.Web.Events.Chat;
 using ChatApp.Web.Events.Sidebar;
+using ChatApp.Web.Services.Common;
 using ChatApp.Web.Services.Interfaces.Common;
 using ChatApp.Web.Services.State;
 using MediatR;
@@ -37,6 +38,21 @@ public class ChatHubService : IAsyncDisposable
     private void RegisterHandlers()
     {
         if (HubConnection == null) return;
+        HubConnection.Reconnecting += (error) =>
+        {
+            _appStateService.SetInitialization(false);
+            return Task.CompletedTask;
+        };
+        HubConnection.Reconnected += async (connectionId) =>
+        {
+            var chatId = await _appStateService.GetSelectedChatId();
+            if (chatId != Guid.Empty)
+            {
+                await JoinChatGroupSignalAsync(chatId);
+            }
+            _appStateService.SetInitialization(true);
+
+        };
         _appStateService.OnLogoutRequested += StopAsync;
         HubConnection.On<MessageDTO>("ReceiveMessage", async (message) => await _mediator.Publish(new IncomingMessageReceivedNotification(message)));
         HubConnection.On("ChatClose", async () => await _mediator.Publish(new ChatRoomClosedNotification()));
@@ -82,7 +98,7 @@ public class ChatHubService : IAsyncDisposable
                         return Task.FromResult(token);
                     };
                 })
-                .WithAutomaticReconnect()
+                .WithAutomaticReconnect(new RetryPolicy())
                 .Build();
         RegisterHandlers();
         await HubConnection.StartAsync();

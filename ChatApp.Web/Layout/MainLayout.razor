@@ -3,12 +3,21 @@
 <PageTitle>@_appStateService.PageTitle</PageTitle>
 @inherits LayoutComponentBase
 <NotificationWindow />
+
 @if (_appStateService.IsInitialized)
 {
     @Body
 }
-
-@code 
+else
+{
+    <div id="app-loader" class="initial-loader">
+        <div class="spinner-ring"></div>
+        <div id="loader-text" class="loader-text">Wystąpił problem z połaczeniem!</div>
+        <div id="loader-text" class="loading-sub">Własnię to naprawiamy!</div>
+        <div id="loader-text" class="loading-sub">To potrwa tylko chwilę... Chyba</div>
+    </div>    
+}
+@code
 {
 
     protected override async Task OnInitializedAsync()
