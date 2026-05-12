@@ -1,5 +1,5 @@
 ChatApp 🚀
-Real-time chat application built with .NET 8/9, featuring a Blazor WebAssembly frontend and a SignalR backend.
+Real-time chat application built with .NET 10, featuring a Blazor WebAssembly frontend and a SignalR backend.
 
 🌟 Key Features
 Real-time Messaging: Instant message delivery using SignalR Hubs.
