@@ -67,6 +67,7 @@ namespace ChatApp.Web.Services.Api
                 UploadType.UserAvatar => "api/user/Avatar",
                 UploadType.GroupAvatar => $"api/chat/groupAvatar?chatId={targetId}",
                 UploadType.ChatImage => $"api/chat/chatImage?chatId={targetId}",
+                _ => throw new InvalidOperationException("Nieobsługiwany typ przesyłki."),
             };
             var response = await _httpClient.PostAsync(url, content);
             if (!response.IsSuccessStatusCode)
@@ -76,7 +77,7 @@ namespace ChatApp.Web.Services.Api
             }
             var result = await response.Content.ReadFromJsonAsync<FileResponse>();
 
-            return result.Url ?? string.Empty;
+            return result?.Url ?? string.Empty;
 
 
         }

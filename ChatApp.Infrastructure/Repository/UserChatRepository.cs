@@ -1,5 +1,4 @@
 using ChatApp.Domain.Entities;
-using ChatApp.Domain.Enums;
 using ChatApp.Domain.Interfaces.Repository;
 using ChatApp.Domain.Models;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +15,19 @@ namespace ChatApp.Infrastructure.Repository
         {
             _context = context;
             _logger = logger;
+        }
+        public async Task<string> GetPrivateUserAliasAsync(Guid chatId, Guid userId)
+        {
+            var data = await _context.UserChat
+             .IgnoreQueryFilters()
+             .AsNoTracking()
+             .Where(uc => uc.ChatID == chatId && uc.UserID != userId)
+             .Select(uc => new { uc.Alias, uc.User.Username })
+             .FirstOrDefaultAsync();
+
+            return data != null
+                ? (!string.IsNullOrEmpty(data.Alias) ? data.Alias : data.Username)
+                : "Użytkownik";
         }
         public async Task UpdateAdminFlagAsync(Guid userId, Guid chatId, bool flag)
         {
@@ -52,22 +64,6 @@ namespace ChatApp.Infrastructure.Repository
                               && m.SenderID != userId
                               && !m.IsDeleted))
                  .FirstOrDefaultAsync();
-        }
-        public async Task<List<(Guid ChatId, int Count)>> CountAllUnreadMessageCountsAsync(Guid userId)
-        {
-            var rawData = await _context.UserChat
-                .Where(uc => uc.UserID == userId && uc.IsArchive == false)
-                .Select(uc => new
-                {
-                    Id = uc.ChatID,
-                    UnreadCount = uc.Chat.Messages.Count(m =>
-                        m.SentAt > uc.LastReadAt &&
-                        m.SenderID != userId &&
-                        !m.IsDeleted &&
-                        m.MessageType != MessageType.System)
-                })
-                .ToListAsync();
-            return rawData.Select(x => (x.Id, x.UnreadCount)).ToList();
         }
         public async Task ArchiveChatAsync(Guid chatId, Guid userId)
         {
@@ -194,34 +190,7 @@ namespace ChatApp.Infrastructure.Repository
                 .Select(uc => uc.UserID)
                 .FirstOrDefaultAsync(token);
         }
-        public async Task<string> GetPrivateUserAliasAsync(Guid chatId, Guid userId)
-        {
-            var data = await _context.UserChat
-             .IgnoreQueryFilters()
-             .AsNoTracking()
-             .Where(uc => uc.ChatID == chatId && uc.UserID != userId)
-             .Select(uc => new { uc.Alias, uc.User.Username })
-             .FirstOrDefaultAsync();
 
-            return data != null
-                ? (!string.IsNullOrEmpty(data.Alias) ? data.Alias : data.Username)
-                : "Użytkownik";
-        }
-        public async Task<Dictionary<Guid, string>> GetPrivateUsersAliasesAsync(Guid userId, List<Guid> chatsIds)
-        {
-            if (chatsIds == null || !chatsIds.Any())
-                return new Dictionary<Guid, string>();
-
-            return await _context.UserChat
-                .IgnoreQueryFilters()
-                .AsNoTracking()
-                .Where(uc => uc.UserID != userId && chatsIds.Contains(uc.ChatID))
-                .Select(uc => new { uc.ChatID, uc.Alias, uc.User.Username })
-                .ToDictionaryAsync(
-                    x => x.ChatID,
-                    x => !string.IsNullOrEmpty(x.Alias) ? x.Alias : x.Username
-                );
-        }
         public async Task<bool> HasMultipleMembersAsync(Guid chatId, Guid userId)
         {
             return await _context.UserChat.Where(uc => uc.ChatID == chatId && uc.UserID != userId)
@@ -265,6 +234,10 @@ namespace ChatApp.Infrastructure.Repository
                 .Where(uc => uc.ChatID == chatId)
                 .Select(uc => (DateTime?)uc.LastReadAt)
                 .FirstOrDefaultAsync();
+        }
+        public IQueryable<UserChat> GetUserChatsQuery()
+        {
+            return _context.UserChat.AsNoTracking();
         }
 
     }

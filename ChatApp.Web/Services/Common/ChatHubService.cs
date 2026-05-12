@@ -16,21 +16,18 @@ public class ChatHubService : IAsyncDisposable
 
     private readonly AppStateService _appStateService;
     private readonly string _baseHubUrl;
-    private readonly ILogger<ChatHubService> _logger;
     private readonly IMediator _mediator;
     private readonly INotificationService _notify;
 
     public ChatHubService(
         IConfiguration configuration,
         AppStateService appStateService,
-        ILogger<ChatHubService> logger,
         IMediator mediator,
         INotificationService notify
         )
     {
         _appStateService = appStateService;
         _baseHubUrl = configuration["SignalR:HubUrl"] ?? throw new ArgumentNullException("SignalR:HubUrl");
-        _logger = logger;
         _mediator = mediator;
         _notify = notify;
     }
@@ -59,7 +56,6 @@ public class ChatHubService : IAsyncDisposable
         HubConnection.On<Guid, bool>("ChatReload", async (id, force) => await _mediator.Publish(new ChatUpdatedNotification(id, force)));
         HubConnection.On<Guid>("UsersInChatReload", async (chatId) => await _mediator.Publish(new UsersInChatUpdatedNotification(chatId)));
         HubConnection.On<Guid, Guid, string>("UserAliasChanged", async (chatId, userId, newAlias) => await _mediator.Publish(new UserAliasChangedNotification(chatId, userId, newAlias)));
-
         HubConnection.On<Guid, string, Guid>("UpdateChatName", async (chatId, newName, userId) => await _mediator.Publish(new ChatNameChangedNotification(chatId, newName, userId)));
         HubConnection.On("SidebarChatsReload", async () => await _mediator.Publish(new ChatListChangedNotification()));
         HubConnection.On("SidebarInvitesReload", async () => await _mediator.Publish(new InvitesListChangedNotification()));
@@ -67,7 +63,6 @@ public class ChatHubService : IAsyncDisposable
         HubConnection.On<Guid, Guid, bool>("UpdateFlagOnChat", async (userId, chatId, flag) => await _mediator.Publish(new RequestToUpdateFlagOnChatNotification(userId, chatId, flag)));
         HubConnection.On<Guid, Guid, Guid>("MessageDeleted", async (chatId, messageId, userId) => await _mediator.Publish(new ChatMessegeDeletedNotification(messageId, chatId, userId)));
         HubConnection.On<Guid, Guid, string, Guid>("MessageEdited", async (chatId, messageId, newContent, userId) => await _mediator.Publish(new ChatMessageEditedNotification(messageId, chatId, newContent, userId)));
-
         HubConnection.On<string, Guid>("ContactAvatarReload", async (avatarUrl, userId) =>
         {
             await (OnAvatarReload?.Invoke(avatarUrl, userId) ?? Task.CompletedTask);
@@ -119,7 +114,13 @@ public class ChatHubService : IAsyncDisposable
     }
     public async Task<string> GetUserAvatarUrlAsync()
     {
-        return await HubConnection.InvokeAsync<string>("GetUserAvatarUrlAsync");
+        if (HubConnection is null)
+        {
+            throw new InvalidOperationException("Hub connection is not established.");
+        }
+
+        return await HubConnection!.InvokeAsync<string>("GetUserAvatarUrlAsync");
+
     }
     public async ValueTask DisposeAsync()
     {

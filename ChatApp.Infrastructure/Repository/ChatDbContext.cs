@@ -119,6 +119,10 @@ namespace ChatApp.Infrastructure.Repository
                         .WithOne(m => m.Chat)
                         .HasForeignKey(m => m.ChatID)
                         .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(c => c.LastMessage)
+                .WithMany()
+                .HasForeignKey(c => c.LastMessageID)
+                .OnDelete(DeleteBehavior.Restrict);
             });
             mb.Entity<UserChat>(entity =>
             {

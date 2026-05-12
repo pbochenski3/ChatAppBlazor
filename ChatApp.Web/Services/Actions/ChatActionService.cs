@@ -55,7 +55,7 @@ namespace ChatApp.Web.Services.Actions
                 if (_chatStateService.ReceivedMessages.Any(m => m.MessageID == dto.MessageID)) return;
 
                 _chatStateService.AddMessage(dto);
-                if (dto.SenderID != _appStateService.CurrentUser.UserID)
+                if (dto.SenderID != _appStateService.CurrentUser?.UserID)
                 {
                     MarkAsRead(dto.ChatID, dto.MessageID);
                 }
@@ -179,7 +179,7 @@ namespace ChatApp.Web.Services.Actions
                 {
                     selectedUser.IsAdmin = flag;
                 }
-                if (_appStateService.CurrentUser.UserID == userId)
+                if (_appStateService.CurrentUser?.UserID == userId)
                 {
                     _appStateService.CurrentChat.State.IsAdmin = flag;
                 }

@@ -15,6 +15,7 @@ namespace ChatApp.Domain.Entities
         public bool IsGroup { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
         public Guid? LastMessageID { get; private set; }
+        public virtual Message? LastMessage { get; set; }
         public DateTime LastMessageAt { get; set; }
 
         public Message AddMembers(User admin, List<User> usersToAdd)
@@ -97,13 +98,13 @@ namespace ChatApp.Domain.Entities
                     Alias = user.Username
                 });
             }
-            var adminChat = chat.UserChats.FirstOrDefault(u => u.UserID == admin.UserID);
+            var adminChat = chat.UserChats.FirstOrDefault(u => u.UserID == admin?.UserID);
             if (adminChat != null)
             {
                 adminChat.IsAdmin = true;
             }
             var names = string.Join(", ", membersToAdd.Where(m => m.UserID != UserId).Select(u => u.Username));
-            var message = Message.CreateSystemMessage(chatId, $"{admin.Username} stworzył czat z: {names}.");
+            var message = Message.CreateSystemMessage(chatId, $"{admin?.Username} stworzył czat z: {names}.");
 
             return (chat, message);
         }

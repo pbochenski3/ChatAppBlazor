@@ -16,7 +16,7 @@ namespace ChatApp.Application.Feature.Chats.GetChatDetails
             var chat = await _userChatRepo.GetUserChatAsync(r.ChatId, r.UserId, cancellationToken);
             var alias = await _userChatRepo.GetPrivateUserAliasAsync(r.ChatId, r.UserId);
 
-            if (chat == null) return null;
+            if (chat == null) throw new KeyNotFoundException("Chat not found for the user.");
 
             return new UserChatDTO
             {

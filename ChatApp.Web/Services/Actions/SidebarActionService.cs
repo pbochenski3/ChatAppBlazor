@@ -62,7 +62,7 @@ namespace ChatApp.Web.Services.Actions
             if (index != -1)
             {
                 var item = items[index];
-                if (_appStateService.CurrentChat.Identity.ChatID != chatId)
+                if (_appStateService.CurrentChat?.Identity.ChatID != chatId)
                 {
                     item.State.UnreadMessageCount++;
                     items.RemoveAt(index);
