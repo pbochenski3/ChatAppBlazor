@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using System.Security.Cryptography;
 
 namespace ChatApp.Domain.Entities
@@ -14,7 +14,7 @@ namespace ChatApp.Domain.Entities
         public string AvatarUrl { get; set; } = string.Empty;
         public bool IsGroup { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
-        public Guid? LastMessageID { get; private set; }
+        public Guid? LastMessageID { get; set; }
         public virtual Message? LastMessage { get; set; }
         public DateTime LastMessageAt { get; set; }
 
@@ -45,7 +45,7 @@ namespace ChatApp.Domain.Entities
                 ? $"{admin.Username} dodał użytkownika {names}"
                 : $"{admin.Username} dodał użytkowników {names}";
 
-            return Message.CreateSystemMessage(this.ChatID, content);
+            return Message.CreateSystemMessage(this.ChatID, content, admin.UserID);
         }
         public static Chat CreatePrivateChat(User user1, User user2)
         {
@@ -104,7 +104,7 @@ namespace ChatApp.Domain.Entities
                 adminChat.IsAdmin = true;
             }
             var names = string.Join(", ", membersToAdd.Where(m => m.UserID != UserId).Select(u => u.Username));
-            var message = Message.CreateSystemMessage(chatId, $"{admin?.Username} stworzył czat z: {names}.");
+            var message = Message.CreateSystemMessage(chatId, $"{admin?.Username} stworzył czat z: {names}.", admin?.UserID);
 
             return (chat, message);
         }

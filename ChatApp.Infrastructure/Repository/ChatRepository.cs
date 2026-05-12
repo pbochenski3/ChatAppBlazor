@@ -153,14 +153,15 @@ namespace ChatApp.Infrastructure.Repository
         }
         public async Task UpdateLastSentMessageAsync(Guid chatId, Guid messageId)
         {
-            var affected = await _context.Chats
-                .Include(uc => uc.UserChats)
-                .Where(uc => uc.ChatID == chatId)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(uc => uc.LastMessageID, messageId)
-                    .SetProperty(uc => uc.LastMessageAt, DateTime.UtcNow)
-                );
-            _logger.LogInformation("UpdateLastSentMessageAsync: updated {Count} UserChat rows for ChatID={ChatId}", affected, chatId);
+            var chat = await _context.Chats
+                .FirstOrDefaultAsync(c => c.ChatID == chatId);
+
+            if (chat != null)
+            {
+                chat.LastMessageID = messageId;
+                chat.LastMessageAt = DateTime.UtcNow;
+                _logger.LogInformation("UpdateLastSentMessageAsync: updated ChatID={ChatId} with MessageID={MessageId}", chatId, messageId);
+            }
         }
     }
 }

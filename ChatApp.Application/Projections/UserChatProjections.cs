@@ -1,4 +1,4 @@
-﻿using ChatApp.Application.DTO.Chats;
+using ChatApp.Application.DTO.Chats;
 using ChatApp.Domain.Entities;
 
 namespace ChatApp.Application.Projections
@@ -14,7 +14,10 @@ namespace ChatApp.Application.Projections
                     ChatID = uc.ChatID,
                     ChatName = uc.Chat.IsGroup
                         ? (uc.Chat.ChatName ?? "Grupa")
-                        : (uc.Alias ?? uc.Chat.UserChats
+                        : (uc.Chat.UserChats
+                            .Where(p => p.UserID != currentUserId)
+                            .Select(p => p.Alias)
+                            .FirstOrDefault() ?? uc.Chat.UserChats
                             .Where(p => p.UserID != currentUserId)
                             .Select(p => p.User.Username)
                             .FirstOrDefault() ?? "Użytkownik"),

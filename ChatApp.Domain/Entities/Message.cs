@@ -1,4 +1,4 @@
-﻿using ChatApp.Domain.Enums;
+using ChatApp.Domain.Enums;
 
 namespace ChatApp.Domain.Entities
 {
@@ -18,7 +18,7 @@ namespace ChatApp.Domain.Entities
         public MessageType MessageType { get; set; }
         public virtual ICollection<MessageHistory> History { get; set; } = null!;
 
-        public static Message CreateSystemMessage(Guid chatId, string content)
+        public static Message CreateSystemMessage(Guid chatId, string content, Guid? senderId = null)
         {
             return new Message
             {
@@ -26,7 +26,8 @@ namespace ChatApp.Domain.Entities
                 ChatID = chatId,
                 Content = content,
                 MessageType = MessageType.System,
-                SentAt = DateTime.UtcNow
+                SentAt = DateTime.UtcNow,
+                SenderID = senderId ?? Guid.Empty
             };
         }
     }

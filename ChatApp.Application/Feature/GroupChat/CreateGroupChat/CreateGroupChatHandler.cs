@@ -1,4 +1,4 @@
-﻿using ChatApp.Application.Notifications.GroupChat;
+using ChatApp.Application.Notifications.GroupChat;
 using ChatApp.Domain.Entities;
 using ChatApp.Domain.Interfaces.Repository;
 using MediatR;
@@ -31,8 +31,10 @@ namespace ChatApp.Application.Feature.GroupChat.CreateGroupChat
             var result = Chat.CreateNewGroup(r.UserId, existingUsers);
             targetChat = result.Chat;
             systemMessage = result.SystemMessage;
-            await _messageRepo.AddMessageAsync(systemMessage);
+            systemMessage.SenderID = r.UserId;
             await _chatRepo.AddChatAsync(targetChat);
+            await _messageRepo.AddMessageAsync(systemMessage);
+            await _chatRepo.UpdateLastSentMessageAsync(targetChat.ChatID, systemMessage.MessageID);
             r.AddEvent(new GroupChatCreatedNotification(targetChat.ChatID, existingsUsersIds));
             return true;
 
