@@ -1,6 +1,6 @@
-using ChatApp.Api;
 using ChatApp.Api.Components;
 using ChatApp.Api.Services;
+using ChatApp.Api.SignalR;
 using ChatApp.Application.DTO.Shared;
 using ChatApp.Application.Interfaces;
 using ChatApp.Application.Notifications.Chat;
@@ -130,8 +130,9 @@ builder.Services.AddScoped<IInviteRepository, InviteRepository>();
 //Chat
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
-//SignalR - UserIdProvider
+//SignalR 
 builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+builder.Services.AddScoped<ISignalRNotificationService, SignalRNotificationService>();
 // Connection tracker for debugging SignalR connections
 builder.Services.AddSingleton<ConnectionTracker>();
 //JWT

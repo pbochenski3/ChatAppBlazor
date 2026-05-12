@@ -1,17 +1,17 @@
-﻿using ChatApp.Application.Notifications.User;
+﻿using ChatApp.Application.Interfaces;
+using ChatApp.Application.Notifications.User;
 using ChatApp.Domain.Interfaces.Repository;
 using MediatR;
-using Microsoft.AspNetCore.SignalR;
 
 namespace ChatApp.Api.NotificationHandlers.Users
 {
     public class UserAvatarUploadedHandler : INotificationHandler<UserAvatarUploadedNotification>
     {
-        private readonly IHubContext<ChatHub> _hubContext;
+        private readonly ISignalRNotificationService _signalR;
         private readonly IContactRepository _contactRepo;
-        public UserAvatarUploadedHandler(IHubContext<ChatHub> hubContext, IContactRepository contactRepo)
+        public UserAvatarUploadedHandler(ISignalRNotificationService signalR, IContactRepository contactRepo)
         {
-            _hubContext = hubContext;
+            _signalR = signalR;
             _contactRepo = contactRepo;
         }
         public async Task Handle(UserAvatarUploadedNotification n, CancellationToken cancellationToken)
@@ -19,7 +19,7 @@ namespace ChatApp.Api.NotificationHandlers.Users
             var contacts = await _contactRepo.GetAllContactsAsync(n.UserId);
             var contactsToNofitify = contacts.Select(c => c.ContactUserID.ToString()).ToList();
             var allRecipients = contactsToNofitify.Append(n.UserId.ToString()).ToList();
-            await _hubContext.Clients.Users(allRecipients).SendAsync("ContactAvatarReload", n.AvatarUrl, n.UserId);
+            await _signalR.SendToUsers(allRecipients, "ContactAvatarReload", n.AvatarUrl, n.UserId);
         }
     }
 }

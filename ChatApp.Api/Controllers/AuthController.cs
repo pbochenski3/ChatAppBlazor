@@ -1,4 +1,5 @@
-﻿using ChatApp.Application.DTO;
+﻿using ChatApp.Api.SignalR;
+using ChatApp.Application.DTO;
 using ChatApp.Application.Feature.Auth.LoginUser;
 using ChatApp.Application.Feature.Auth.RegisterUser;
 using MediatR;
