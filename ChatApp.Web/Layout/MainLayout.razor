@@ -4,7 +4,7 @@
 @inherits LayoutComponentBase
 <NotificationWindow />
 
-@if (_appStateService.IsInitialized)
+@if (_appStateService.IsInitialized && !_appStateService.IsConnecting)
 {
     @Body
 }

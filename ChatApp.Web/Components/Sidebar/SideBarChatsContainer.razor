@@ -40,7 +40,7 @@
                         }
                         else if (chat.LastMessage?.LastMessageContent != null)
                         {
-                            @((chat.LastMessage.LastMessageSender == _appStateService.CurrentUser.Username)
+                            @((chat.LastMessage.LastMessageSenderId == _appStateService.CurrentUser?.UserID)
                                             ? $"Ty: {chat.LastMessage.LastMessageContent}"
                                             : $"{chat.LastMessage.LastMessageSender}: {chat.LastMessage.LastMessageContent}")
                         }

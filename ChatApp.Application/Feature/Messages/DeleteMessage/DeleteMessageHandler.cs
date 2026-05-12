@@ -20,7 +20,7 @@ namespace ChatApp.Application.Feature.Messages.EditMessage
                 r.AddEvent(new UserActionFailedNotification(r.UserId, "Nie udało się usunąć wiadomości!"));
                 return false;
             }
-            r.AddEvent(new MessageDeletedNotification(r.ChatId, r.MessageId));
+            r.AddEvent(new MessageDeletedNotification(r.ChatId, r.MessageId, r.UserId));
             return true;
 
         }

@@ -12,7 +12,7 @@ namespace ChatApp.Web.Services.Interfaces.Actions
         Task HandleGlobalSearchAsync(string query);
         Task HandleInvitesLoadAsync();
         Task HandleSendInviteAsync(Guid contactId);
-        Task HandleSidebarLastMessageReloadAsync(Guid chatId, string sender, string content);
+        Task HandleSidebarLastMessageReloadAsync(Guid chatId, string sender, string content, Guid userId);
         Task HandleChatNameReloadAsync(Guid chatId, string newChatName, Guid userId);
         Task HandleSidebarLockAsync();
         Task Refresh();

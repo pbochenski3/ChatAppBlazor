@@ -20,8 +20,7 @@ namespace ChatApp.Web.Handlers.Chat
         {
             if (_appState.CurrentChat?.Identity.ChatID != n.ChatId) return;
             _chatState.DeleteChatMessage(n.MessageId, true);
-            var sender = _sidebarState.GetLastMessageSender(n.ChatId);
-            _sidebarState.UpdateSidebarMessage(n.ChatId, $"{sender} usunął/a wiadomość");
+            _sidebarState.UpdateSidebarMessage(n.ChatId, "usunął/a wiadomość");
         }
     }
 }

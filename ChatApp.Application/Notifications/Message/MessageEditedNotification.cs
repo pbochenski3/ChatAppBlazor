@@ -2,5 +2,5 @@
 
 namespace ChatApp.Application.Notifications.Message
 {
-    public record MessageEditedNotification(Guid ChatId, Guid MessageId, string Content) : INotification;
+    public record MessageEditedNotification(Guid ChatId, Guid MessageId, string Content, Guid UserId) : INotification;
 }

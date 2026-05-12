@@ -40,7 +40,8 @@ namespace ChatApp.Infrastructure.Repository
                         Author = m.Sender.UserChats
                             .Where(u => u.Alias != null)
                             .Select(u => u.Alias)
-                            .FirstOrDefault() ?? string.Empty
+                            .FirstOrDefault() ?? string.Empty,
+                        SenderId = m.SenderID,
                     }
                 })
                 .ToDictionaryAsync(x => x.MessageID, x => x.Preview);

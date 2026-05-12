@@ -105,7 +105,7 @@ namespace ChatApp.Web.Services.Actions
             _sidebarStateService.IsSearchingGlobal = false;
             _sidebarStateService.IsPending = false;
         }
-        public async Task HandleSidebarLastMessageReloadAsync(Guid chatId, string sender, string content)
+        public async Task HandleSidebarLastMessageReloadAsync(Guid chatId, string sender, string content, Guid senderId)
         {
             var items = _sidebarStateService.SidebarItems;
             var itemsToUpdate = items.FirstOrDefault(sb => sb.Identity.ChatID == chatId);
@@ -113,6 +113,7 @@ namespace ChatApp.Web.Services.Actions
             {
                 itemsToUpdate.LastMessage.LastMessageContent = content;
                 itemsToUpdate.LastMessage.LastMessageSender = sender;
+                itemsToUpdate.LastMessage.LastMessageSenderId = senderId;
             }
 
             OnSidebarStateChanged?.Invoke();

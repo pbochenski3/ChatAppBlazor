@@ -8,7 +8,7 @@ namespace ChatApp.Application.DTO
         public string Content { get; set; } = string.Empty;
         public string imageUrl { get; set; } = string.Empty;
         public DateTime SentAt { get; set; } = DateTime.UtcNow;
-        public Guid? SenderID { get; set; }
+        public Guid SenderID { get; set; }
         public Guid ReceiverId { get; set; }
         public string SenderUsername { get; set; } = string.Empty;
         public string Alias { get; set; } = string.Empty;

@@ -99,7 +99,10 @@ namespace ChatApp.Application.Feature.Sidebar.GetSidebarItems
                     LastMessageSender = uc.Chat.LastMessageID.HasValue && contentDict.TryGetValue(uc.Chat.LastMessageID.Value, out var authorPreview)
                         ? authorPreview.Author
                         : "System",
-                    LastMessageAt = uc.Chat.LastMessageAt
+                    LastMessageAt = uc.Chat.LastMessageAt,
+                    LastMessageSenderId = uc.Chat.LastMessageID.HasValue && contentDict.TryGetValue(uc.Chat.LastMessageID.Value, out var lastMessageId)
+                        ? lastMessageId.SenderId
+                        : null,
                 }
             };
         }

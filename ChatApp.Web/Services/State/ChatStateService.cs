@@ -71,7 +71,7 @@ namespace ChatApp.Web.Services.State
             }
         }
 
-        public void UpdateUserAliasInMessages(Guid userId, string newAlias)
+        public async Task UpdateUserAliasInMessages(Guid userId, string newAlias)
         {
             var messagesToUpdate = ReceivedMessages.Where(m => m.SenderID == userId).ToList();
             foreach (var message in messagesToUpdate)

@@ -19,6 +19,7 @@ namespace ChatApp.Web.Services.Actions
         private readonly IMediator _mediator;
         private readonly INotificationService _notification;
         private readonly ISidebarActionService _sidebarActionService;
+        private readonly SidebarStateService _sidebarStateService;
 
         public ChatActionService(
             AppStateService appStateService,
@@ -28,7 +29,8 @@ namespace ChatApp.Web.Services.Actions
             IGroupChatApiClient groupChatApi,
             ILogger<ChatActionService> logger,
             IMediator mediator,
-            INotificationService notification
+            INotificationService notification,
+            SidebarStateService sidebarStateService
 
             )
         {
@@ -40,6 +42,7 @@ namespace ChatApp.Web.Services.Actions
             _mediator = mediator;
             _notification = notification;
             _sidebarActionService = sidebarActionService;
+            _sidebarStateService = sidebarStateService;
         }
         public event Action? OnStateChanged;
         private CancellationTokenSource? _chatLoadingCts;
@@ -163,9 +166,8 @@ namespace ChatApp.Web.Services.Actions
         }
         public async Task HandleUserAliasChangeAsync(Guid chatId, Guid userId, string newAlias)
         {
-            if (_appStateService.CurrentUser?.UserID != userId) return;
-            if (_appStateService.CurrentChat?.Identity.ChatID != chatId) return;
-            _chatStateService.UpdateUserAliasInMessages(userId, newAlias);
+            await _chatStateService.UpdateUserAliasInMessages(userId, newAlias);
+            await _sidebarStateService.UpdateSidebarLastMessageAlias(chatId, newAlias, userId);
             OnStateChanged?.Invoke();
         }
         public async Task HandleUpdateFlagOnChatAsync(Guid userId, Guid chatId, bool flag)
@@ -188,8 +190,7 @@ namespace ChatApp.Web.Services.Actions
         {
             _appStateService.CurrentChat = null;
             OnStateChanged?.Invoke();
+
         }
-
-
     }
 }

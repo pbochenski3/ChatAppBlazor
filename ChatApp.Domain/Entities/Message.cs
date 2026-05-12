@@ -10,7 +10,7 @@ namespace ChatApp.Domain.Entities
         public DateTime SentAt { get; set; }
         public Guid ChatID { get; set; }
         public Chat Chat { get; set; } = null!;
-        public Guid? SenderID { get; set; } = null!;
+        public Guid SenderID { get; set; }
         public User Sender { get; set; } = null!;
         public bool IsEdited { get; set; } = false;
         public bool IsDeleted { get; set; } = false;

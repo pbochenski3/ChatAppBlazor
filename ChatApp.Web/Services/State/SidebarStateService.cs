@@ -29,9 +29,13 @@ namespace ChatApp.Web.Services.State
             }
             OnStateChanged?.Invoke();
         }
-        public string GetLastMessageSender(Guid ChatId)
+        public async Task UpdateSidebarLastMessageAlias(Guid chatId, string newAlias, Guid userId)
         {
-            return SidebarItems.FirstOrDefault(c => c.Identity.ChatID == ChatId)?.LastMessage?.LastMessageSender ?? string.Empty;
+            var chat = SidebarItems.FirstOrDefault(c => c.Identity.ChatID == chatId);
+            if (chat == null) return;
+            chat.LastMessage.LastMessageSender = newAlias;
+            OnStateChanged?.Invoke();
         }
+
     }
 }
