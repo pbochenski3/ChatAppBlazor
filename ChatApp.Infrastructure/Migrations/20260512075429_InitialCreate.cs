@@ -35,7 +35,7 @@ namespace ChatApp.Infrastructure.Migrations
                 columns: table => new
                 {
                     UserID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Username = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Username = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     IsOnline = table.Column<bool>(type: "bit", nullable: false),
                     AvatarUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false),
@@ -109,7 +109,7 @@ namespace ChatApp.Infrastructure.Migrations
                     imageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SentAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false),
                     ChatID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SenderID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    SenderID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     IsEdited = table.Column<bool>(type: "bit", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
@@ -201,9 +201,19 @@ namespace ChatApp.Infrastructure.Migrations
                 column: "SenderID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Invites_Status_Sender_Receiver",
+                table: "Invites",
+                columns: new[] { "Status", "SenderID", "ReceiverID" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Messages_ChatID_SentAt",
                 table: "Messages",
                 columns: new[] { "ChatID", "SentAt" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_ChatID_SentAt_Type_Deleted_Sender",
+                table: "Messages",
+                columns: new[] { "ChatID", "SentAt", "MessageType", "IsDeleted", "SenderID" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Messages_SenderID",
@@ -216,14 +226,19 @@ namespace ChatApp.Infrastructure.Migrations
                 columns: new[] { "ChatID", "MessageID", "SenderID" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserChat_ChatID",
+                name: "IX_UserChat_ChatID_IsArchive",
                 table: "UserChat",
-                column: "ChatID");
+                columns: new[] { "ChatID", "IsArchive" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserChat_UserID",
                 table: "UserChat",
                 column: "UserID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Username",
+                table: "Users",
+                column: "Username");
         }
 
         /// <inheritdoc />

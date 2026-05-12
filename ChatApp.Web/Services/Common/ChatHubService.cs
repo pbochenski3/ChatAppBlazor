@@ -40,7 +40,7 @@ public class ChatHubService : IAsyncDisposable
         if (HubConnection == null) return;
         HubConnection.Reconnecting += (error) =>
         {
-            _appStateService.SetInitialization(false);
+            _appStateService.SetConnecting(true);
             return Task.CompletedTask;
         };
         HubConnection.Reconnected += async (connectionId) =>
@@ -50,7 +50,7 @@ public class ChatHubService : IAsyncDisposable
             {
                 await JoinChatGroupSignalAsync(chatId);
             }
-            _appStateService.SetInitialization(true);
+            _appStateService.SetConnecting(false);
 
         };
         _appStateService.OnLogoutRequested += StopAsync;
@@ -65,8 +65,8 @@ public class ChatHubService : IAsyncDisposable
         HubConnection.On("SidebarInvitesReload", async () => await _mediator.Publish(new InvitesListChangedNotification()));
         HubConnection.On<MessageDTO>("UpdateLastMessage", async (message) => await _mediator.Publish(new SidebarLastMessageChangedNotification(message)));
         HubConnection.On<Guid, Guid, bool>("UpdateFlagOnChat", async (userId, chatId, flag) => await _mediator.Publish(new RequestToUpdateFlagOnChatNotification(userId, chatId, flag)));
-        HubConnection.On<Guid, Guid>("MessageDeleted", async (chatId, messageId) => await _mediator.Publish(new ChatMessegeDeletedNotification(messageId, chatId)));
-        HubConnection.On<Guid, Guid, string>("MessageEdited", async (chatId, messageId, newContent) => await _mediator.Publish(new ChatMessageEditedNotification(messageId, chatId, newContent)));
+        HubConnection.On<Guid, Guid, Guid>("MessageDeleted", async (chatId, messageId, userId) => await _mediator.Publish(new ChatMessegeDeletedNotification(messageId, chatId, userId)));
+        HubConnection.On<Guid, Guid, string, Guid>("MessageEdited", async (chatId, messageId, newContent, userId) => await _mediator.Publish(new ChatMessageEditedNotification(messageId, chatId, newContent, userId)));
 
         HubConnection.On<string, Guid>("ContactAvatarReload", async (avatarUrl, userId) =>
         {

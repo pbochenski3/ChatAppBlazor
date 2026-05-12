@@ -2,5 +2,5 @@
 
 namespace ChatApp.Web.Events.Chat
 {
-    public record ChatMessageEditedNotification(Guid MessageId, Guid ChatId, string Content) : INotification;
+    public record ChatMessageEditedNotification(Guid MessageId, Guid ChatId, string Content, Guid UserId) : INotification;
 }

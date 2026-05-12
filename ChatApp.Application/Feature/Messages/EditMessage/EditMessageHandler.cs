@@ -19,7 +19,7 @@ namespace ChatApp.Application.Feature.Messages.EditMessage
                 r.AddEvent(new UserActionFailedNotification(r.UserId, "Nie udało się edytować wiadomości!"));
                 return false;
             }
-            r.AddEvent(new MessageEditedNotification(r.ChatId, r.MessageId, r.Content));
+            r.AddEvent(new MessageEditedNotification(r.ChatId, r.MessageId, r.Content, r.UserId));
             return true;
 
         }

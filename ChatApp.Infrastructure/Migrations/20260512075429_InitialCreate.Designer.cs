@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ChatDbContext))]
-    [Migration("20260507120745_InitialCreate")]
+    [Migration("20260512075429_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -119,6 +119,9 @@ namespace ChatApp.Infrastructure.Migrations
 
                     b.HasIndex("SenderID");
 
+                    b.HasIndex("Status", "SenderID", "ReceiverID")
+                        .HasDatabaseName("IX_Invites_Status_Sender_Receiver");
+
                     b.ToTable("Invites");
                 });
 
@@ -149,7 +152,7 @@ namespace ChatApp.Infrastructure.Migrations
                     b.Property<int>("MessageType")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("SenderID")
+                    b.Property<Guid>("SenderID")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("SentAt")
@@ -168,6 +171,9 @@ namespace ChatApp.Infrastructure.Migrations
 
                     b.HasIndex("ChatID", "MessageID", "SenderID")
                         .HasDatabaseName("Messages_UnreadCounter");
+
+                    b.HasIndex("ChatID", "SentAt", "MessageType", "IsDeleted", "SenderID")
+                        .HasDatabaseName("IX_Messages_ChatID_SentAt_Type_Deleted_Sender");
 
                     b.ToTable("Messages");
                 });
@@ -216,9 +222,12 @@ namespace ChatApp.Infrastructure.Migrations
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("UserID");
+
+                    b.HasIndex("Username")
+                        .HasDatabaseName("IX_Users_Username");
 
                     b.ToTable("Users");
                 });
@@ -265,9 +274,10 @@ namespace ChatApp.Infrastructure.Migrations
 
                     b.HasKey("UserID", "ChatID");
 
-                    b.HasIndex("ChatID");
-
                     b.HasIndex("UserID");
+
+                    b.HasIndex("ChatID", "IsArchive")
+                        .HasDatabaseName("IX_UserChat_ChatID_IsArchive");
 
                     b.ToTable("UserChat");
                 });
@@ -321,7 +331,8 @@ namespace ChatApp.Infrastructure.Migrations
                     b.HasOne("ChatApp.Domain.Entities.User", "Sender")
                         .WithMany("Messages")
                         .HasForeignKey("SenderID")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Chat");
 

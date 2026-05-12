@@ -21,7 +21,7 @@
                                 <span class="message-time">[@msg.SentAt.ToString("HH:mm")]</span>
                                 @{
                                     var sender = _chatStateService.UsersInChat.FirstOrDefault(u => u.Username == msg.SenderUsername);
-                                    var displayName = sender?.Alias ?? msg.SenderUsername;
+                                    var displayName = sender?.Alias;
                                 }
                                 <span class="message-user">@displayName:</span>
                             </div>
@@ -77,6 +77,7 @@
         protected override async Task OnInitializedAsync()
         {
             _chatStateService.OnStateChanged += HandleStateChanged;
+            _chatActionService.OnStateChanged += HandleStateChanged;
 
         }
         private async void HandleStateChanged()
@@ -115,6 +116,8 @@
         public void Dispose()
         {
             _chatStateService.OnStateChanged -= HandleStateChanged;
+            _chatActionService.OnStateChanged -= HandleStateChanged;
+
 
         }
     }

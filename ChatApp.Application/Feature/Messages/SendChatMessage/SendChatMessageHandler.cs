@@ -10,12 +10,10 @@ namespace ChatApp.Application.Feature.Messages.SendChatMessage
     {
         private readonly IMessageRepository _messageRepo;
         private readonly IChatRepository _chatRepo;
-        private readonly IMediator _mediator;
-        public SendChatMessageHandler(IMediator mediator, IMessageRepository messageRepo, IChatRepository chatRepo)
+        public SendChatMessageHandler(IMessageRepository messageRepo, IChatRepository chatRepo)
         {
             _messageRepo = messageRepo;
             _chatRepo = chatRepo;
-            _mediator = mediator;
         }
         public async Task<bool> Handle(SendChatMessageCommand r, CancellationToken cancellationToken)
         {

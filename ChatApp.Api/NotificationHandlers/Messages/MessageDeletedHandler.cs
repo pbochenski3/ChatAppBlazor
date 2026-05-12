@@ -14,7 +14,7 @@ namespace ChatApp.Api.NotificationHandlers.Messages
 
         public async Task Handle(MessageDeletedNotification n, CancellationToken cancellationToken)
         {
-            await _hubContext.Clients.Group(n.ChatId.ToString()).SendAsync("MessageDeleted", n.ChatId, n.MessageId);
+            await _hubContext.Clients.Group(n.ChatId.ToString()).SendAsync("MessageDeleted", n.ChatId, n.MessageId, n.UserId);
         }
     }
 }

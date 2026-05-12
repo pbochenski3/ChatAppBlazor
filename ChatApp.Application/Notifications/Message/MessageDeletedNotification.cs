@@ -2,5 +2,5 @@
 
 namespace ChatApp.Application.Notifications.Message
 {
-    public record MessageDeletedNotification(Guid ChatId, Guid MessageId) : INotification;
+    public record MessageDeletedNotification(Guid ChatId, Guid MessageId, Guid UserId) : INotification;
 }

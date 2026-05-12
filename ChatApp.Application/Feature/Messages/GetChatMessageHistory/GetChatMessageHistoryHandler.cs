@@ -49,8 +49,10 @@ namespace ChatApp.Application.Feature.Messages.GetChatMessageHistory
                 IsDeleted = m.IsDeleted,
                 IsEdited = m.IsEdited,
                 Alias = m.MessageType == MessageType.System
-                    ? "SYSTEM"
-                    : (m.SenderID.HasValue && aliases.TryGetValue(m.SenderID.Value, out var alias) ? alias : m.Sender?.Username ?? "Użytkownik")
+                ? "SYSTEM"
+                : (aliases.TryGetValue(m.SenderID, out var alias)
+                ? alias
+                : m.Sender?.Username ?? "Użytkownik")
             }).ToList();
         }
     }

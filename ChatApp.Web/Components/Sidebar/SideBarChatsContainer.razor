@@ -40,7 +40,7 @@
                         }
                         else if (chat.LastMessage?.LastMessageContent != null)
                         {
-                            @((chat.LastMessage.LastMessageSender == _appStateService.CurrentUser.Username)
+                            @((chat.LastMessage.LastMessageSenderId == _appStateService.CurrentUser?.UserID)
                                             ? $"Ty: {chat.LastMessage.LastMessageContent}"
                                             : $"{chat.LastMessage.LastMessageSender}: {chat.LastMessage.LastMessageContent}")
                         }
@@ -58,6 +58,7 @@
     {
         _chatSettingsActionService.OnStateChanged += HandleStateChange;
         _sidebarActionService.OnSidebarStateChanged += HandleStateChange;
+        _sidebarStateService.OnStateChanged += HandleStateChange;
     }
 
 
@@ -88,5 +89,7 @@
     {
         _chatSettingsActionService.OnStateChanged -= HandleStateChange;
         _sidebarActionService.OnSidebarStateChanged -= HandleStateChange;
+        _sidebarStateService.OnStateChanged -= HandleStateChange;
+
     }
 }

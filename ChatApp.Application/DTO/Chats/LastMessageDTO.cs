@@ -5,6 +5,7 @@
         public Guid? LastMessageID { get; set; }
         public string? LastMessageContent { get; set; } = string.Empty;
         public string? LastMessageSender { get; set; } = string.Empty;
+        public Guid? LastMessageSenderId { get; set; }
         public DateTime LastMessageAt { get; set; }
     }
 }

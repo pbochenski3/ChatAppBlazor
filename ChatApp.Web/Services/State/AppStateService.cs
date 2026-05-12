@@ -25,6 +25,7 @@ namespace ChatApp.Web.Services.State
             _logger = logger;
         }
         public bool IsInitialized { get; private set; } = false;
+        public bool IsConnecting { get; private set; } = false;
         public string PageTitle { get; set; } = "ChatApp";
         public UserDTO? CurrentUser { get; set; } = null;
         public UserChatDTO? CurrentChat { get; set; } = null;
@@ -74,9 +75,9 @@ namespace ChatApp.Web.Services.State
             }
             return null;
         }
-        public void SetInitialization(bool value)
+        public void SetConnecting(bool value)
         {
-            IsInitialized = value;
+            IsConnecting = value;
             OnStateChanged?.Invoke();
         }
         public void CloseProfile()

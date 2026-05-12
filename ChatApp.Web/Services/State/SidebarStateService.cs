@@ -12,14 +12,30 @@ namespace ChatApp.Web.Services.State
         {
             _logger = logger;
         }
-
+        public event Action? OnStateChanged;
         public bool IsPending { get; set; } = false;
         public bool IsSearchingGlobal { get; set; } = false;
         public List<UserChatDTO> SidebarItems { get; set; } = new List<UserChatDTO>();
         public List<InviteDTO> ReceivedInvites { get; set; } = new List<InviteDTO>();
         public List<UserSearchResultDTO> FoundUsers { get; set; } = new List<UserSearchResultDTO>();
         public SidebarView SidebarView { get; set; } = SidebarView.Contacts;
-
+        public void UpdateSidebarMessage(Guid chatId, string content)
+        {
+            var chat = SidebarItems.FirstOrDefault(c => c.Identity.ChatID == chatId);
+            if (chat == null) return;
+            if (chat.LastMessage != null)
+            {
+                chat.LastMessage.LastMessageContent = content;
+            }
+            OnStateChanged?.Invoke();
+        }
+        public async Task UpdateSidebarLastMessageAlias(Guid chatId, string newAlias, Guid userId)
+        {
+            var chat = SidebarItems.FirstOrDefault(c => c.Identity.ChatID == chatId);
+            if (chat == null) return;
+            chat.LastMessage.LastMessageSender = newAlias;
+            OnStateChanged?.Invoke();
+        }
 
     }
 }
