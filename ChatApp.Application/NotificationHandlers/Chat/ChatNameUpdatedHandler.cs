@@ -1,21 +1,21 @@
-﻿using ChatApp.Application.Notifications.Chat;
+﻿using ChatApp.Application.Interfaces;
+using ChatApp.Application.Notifications.Chat;
 using ChatApp.Domain.Entities;
 using ChatApp.Domain.Interfaces.Repository;
 using MediatR;
-using Microsoft.AspNetCore.SignalR;
 
 namespace ChatApp.Api.NotificationHandlers.Chat
 {
     public class ChatNameUpdatedHandler : INotificationHandler<ChatNameUpdatedNotification>
     {
-        private readonly IHubContext<ChatHub> _hubContext;
+        private readonly ISignalRNotificationService _signalR;
         private readonly IUserChatRepository _userChatRepo;
         private readonly IMessageRepository _messageRepo;
-        public ChatNameUpdatedHandler(IMessageRepository messageRepo, IUserChatRepository userChatRepo, IHubContext<ChatHub> hubContext)
+        public ChatNameUpdatedHandler(IMessageRepository messageRepo, IUserChatRepository userChatRepo, ISignalRNotificationService signalR)
         {
             _messageRepo = messageRepo;
             _userChatRepo = userChatRepo;
-            _hubContext = hubContext;
+            _signalR = signalR;
 
         }
         public async Task Handle(ChatNameUpdatedNotification n, CancellationToken ct)
@@ -25,8 +25,8 @@ namespace ChatApp.Api.NotificationHandlers.Chat
             var systemMessage = Message.CreateSystemMessage(n.ChatId, $"{n.Request.AdminName} zmienił nazwe czatu na {n.Request.NewName}");
             Guid userIdDummy = Guid.Empty;
             await _messageRepo.AddMessageAsync(systemMessage);
-            await _hubContext.Clients.Users(usersToNofitify).SendAsync("ReceiveMessage", systemMessage);
-            await _hubContext.Clients.Users(usersToNofitify).SendAsync("UpdateChatName", n.ChatId, n.Request.NewName, userIdDummy);
+            await _signalR.SendToUsers(usersToNofitify, "ReceiveMessage", systemMessage);
+            await _signalR.SendToUsers(usersToNofitify, "UpdateChatName", n.ChatId, n.Request.NewName, userIdDummy);
         }
     }
 }
